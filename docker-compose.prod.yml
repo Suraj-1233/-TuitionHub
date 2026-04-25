@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: tuitionhub-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: tuitionhub
+      MYSQL_USER: tuition_user
+      MYSQL_PASSWORD: tuition_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  backend:
+    image: ${DOCKERHUB_USERNAME}/tuitionhub-backend:latest
+    container_name: tuitionhub-backend
+    depends_on:
+      - db
+    environment:
+      DB_URL: jdbc:mysql://db:3306/tuitionhub
+      DB_USERNAME: tuition_user
+      DB_PASSWORD: tuition_password
+      JWT_SECRET: ${JWT_SECRET}
+      RAZORPAY_KEY: ${RAZORPAY_KEY}
+      RAZORPAY_SECRET: ${RAZORPAY_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+    ports:
+      - "8081:8080"
+    volumes:
+      - backend_uploads:/app/uploads
+
+  frontend:
+    image: ${DOCKERHUB_USERNAME}/tuitionhub-frontend:latest
+    container_name: tuitionhub-frontend
+    depends_on:
+      - backend
+    ports:
+      - "81:80"
+
+volumes:
+  mysql_data:
+  backend_uploads:
