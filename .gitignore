@@ -31,6 +31,8 @@ bin/
 .env
 environment.ts
 environment.prod.ts
+deployment_info.txt
+client_secret_*.json
 
 
 /node_modules

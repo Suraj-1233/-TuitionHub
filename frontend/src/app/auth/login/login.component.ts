@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { environment } from '../../../environments/environment';
 
 declare const google: any;
 
@@ -269,7 +270,7 @@ export class LoginComponent implements OnInit {
       script.onload = () => {
         if (typeof google !== 'undefined') {
           google.accounts.id.initialize({
-            client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com', // Replace with real client ID
+            client_id: environment.googleClientId,
             callback: (response: any) => this.handleGoogleResponse(response)
           });
         }
