@@ -5,6 +5,8 @@ import { PaymentService } from '../../shared/services/payment.service';
 import { Payment, Batch } from '../../shared/models/models';
 import { BatchService } from '../../shared/services/batch.service';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
+import { ToastService } from '../../shared/services/toast.service';
 
 declare var Razorpay: any;
 
@@ -163,7 +165,11 @@ export class StudentPaymentsComponent implements OnInit {
     });
   }
 
-  constructor(private paymentService: PaymentService, private batchService: BatchService) { }
+  constructor(
+    private paymentService: PaymentService, 
+    private batchService: BatchService,
+    private toast: ToastService
+  ) {}
 
   ngOnInit() {
     this.loadPayments();
