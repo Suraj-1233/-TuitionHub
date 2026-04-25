@@ -133,7 +133,6 @@ declare var Razorpay: any;
     .gap-6 { gap: 1.5rem; }
     @media (min-width: 768px) { .md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); } }
     @media (min-width: 1024px) { .lg\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); } }
-  `]}
   `]
 })
 export class StudentPaymentsComponent implements OnInit {
