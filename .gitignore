@@ -1,0 +1,33 @@
+# Node
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/
+.metadata/
+.project
+.classpath
+.factorypath
+.settings/
+*.log
+bin/
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+.DS_Store
+
+# Env
+.env
+environment.ts
+environment.prod.ts

@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: tuitionhub-backend
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/tuitionhub?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: tuition_user
+    password: tuition_password
+
+  # h2:
+  #   console:
+  #     enabled: true
+  #     path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:TuitionHubSuperSecretKeyForJWTTokenGeneration2024!@#}
+    expiration: 86400000  # 24 hours
+
+  otp:
+    expiry-minutes: 10
+
+  cors:
+    allowed-origins: http://localhost:4200
+
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:rzp_test_xxxxxxxxxxxx}
+    key-secret: ${RAZORPAY_KEY_SECRET:your_razorpay_secret}
+
+logging:
+  level:
+    com.tuitionhub: DEBUG
+    org.springframework.security: WARN
