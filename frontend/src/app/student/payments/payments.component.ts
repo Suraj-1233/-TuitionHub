@@ -151,11 +151,11 @@ export class StudentPaymentsComponent implements OnInit {
   get pendingBatches() {
     // Current month identifier
     const targetMonth = this.currentMonth;
-    
+
     // Find batches that don't have a successful payment for this month
     return this.myBatches.filter(batch => {
-      const hasPaid = this.payments.some(p => 
-        p.batchName === batch.name && 
+      const hasPaid = this.payments.some(p =>
+        p.batchName === batch.name &&
         (p.forMonth.includes(targetMonth) || p.forMonth === this.currentMonthName) &&
         p.status === 'PAID'
       );
@@ -163,7 +163,7 @@ export class StudentPaymentsComponent implements OnInit {
     });
   }
 
-  constructor(private paymentService: PaymentService, private batchService: BatchService) {}
+  constructor(private paymentService: PaymentService, private batchService: BatchService) { }
 
   ngOnInit() {
     this.loadPayments();
