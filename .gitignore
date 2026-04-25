@@ -31,3 +31,6 @@ bin/
 .env
 environment.ts
 environment.prod.ts
+
+
+/node_modules
