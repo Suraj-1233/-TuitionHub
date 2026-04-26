@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@org.springframework.context.annotation.Profile("!prod")
 public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
