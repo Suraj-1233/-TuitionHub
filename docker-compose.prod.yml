@@ -4,6 +4,7 @@ services:
   db:
     image: mysql:8.0
     container_name: tuitionhub-db
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root_password
       MYSQL_DATABASE: tuitionhub
@@ -19,6 +20,7 @@ services:
     container_name: tuitionhub-backend
     depends_on:
       - db
+    restart: always
     environment:
       DB_URL: jdbc:mysql://db:3306/tuitionhub
       DB_USERNAME: tuition_user
@@ -38,6 +40,7 @@ services:
     container_name: tuitionhub-frontend
     depends_on:
       - backend
+    restart: always
     ports:
       - "81:80"
 
