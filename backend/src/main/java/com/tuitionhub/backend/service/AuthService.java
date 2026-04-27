@@ -66,13 +66,28 @@ public class AuthService {
         boolean isTeacher = request.getRole() == Role.TEACHER;
         String otp = generateOtp();
         String encodedOtp = passwordEncoder.encode(otp);
+        
+        // Ensure mobile is null if empty to avoid unique constraint issues
+        String mobile = (request.getMobile() == null || request.getMobile().trim().isEmpty()) ? null : request.getMobile();
 
         User user = User.builder()
                 .email(request.getEmail())
                 .name(request.getName())
-                .mobile(request.getMobile())
+                .mobile(mobile)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
+                .studentClass(request.getStudentClass())
+                .board(request.getBoard())
+                .subject(request.getSubject())
+                .qualification(request.getQualification())
+                .bio(request.getBio())
+                .fees(request.getFees())
+                .timingFrom(request.getTimingFrom())
+                .timingTo(request.getTimingTo())
+                .availableDays(request.getAvailableDays())
+                .city(request.getCity())
+                .country(request.getCountry())
+                .timezone(request.getTimezone() != null ? request.getTimezone() : "Asia/Kolkata")
                 .isActive(false) // Mandatory verification
                 .isApproved(!isTeacher)
                 .otp(encodedOtp)
@@ -80,6 +95,16 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+
+        // If parent is registering, link to child if email provided
+        if (request.getRole() == Role.PARENT && request.getChildEmail() != null && !request.getChildEmail().isEmpty()) {
+            User student = userRepository.findByEmail(request.getChildEmail()).orElse(null);
+            if (student != null && student.getRole() == Role.STUDENT) {
+                student.setParent(user);
+                userRepository.save(student);
+                log.info("Linked parent {} to student {}", user.getEmail(), student.getEmail());
+            }
+        }
 
         // Send OTP for verification
         otpService.sendOtp(user.getEmail(), otp);
