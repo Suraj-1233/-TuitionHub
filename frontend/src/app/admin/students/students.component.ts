@@ -76,80 +76,98 @@ import { User } from '../../shared/models/models';
               </td>
               <td class="text-right">
                 <div class="action-group">
-                  <button class="btn-view" (click)="toggleExpand(student)">{{ expandedStudent?.id === student.id ? '▲ Hide' : '▼ View Details' }}</button>
+                  <button class="btn-view" (click)="expandedStudent = student">
+                    <span class="icon">🔍</span> View Details
+                  </button>
                   <button 
                     *ngIf="student.isActive"
                     class="btn-outline-danger" 
-                    (click)="deactivate(student.id)"
+                    (click)="$event.stopPropagation(); deactivate(student.id)"
                   >Deactivate</button>
                   <button 
                     *ngIf="!student.isActive"
                     class="btn-primary-sm" 
-                    (click)="activate(student.id)"
+                    (click)="$event.stopPropagation(); activate(student.id)"
                   >Activate</button>
                 </div>
               </td>
             </tr>
-            <!-- Expanded Student Detail -->
-            <tr *ngIf="expandedStudent && expandedStudent.id === student.id" class="detail-row">
-              <td colspan="5" class="detail-panel">
-                <div class="detail-header">
-                  <span class="icon-wrap">📋</span> {{ expandedStudent.name }}'s Enrolled Batches
-                </div>
-                <div *ngIf="getAssignedBatches(expandedStudent.id).length === 0" class="empty-state-mini">
-                  Not enrolled in any batch yet.
-                </div>
-                <div class="batch-grid" *ngIf="getAssignedBatches(expandedStudent.id).length > 0">
-                  <div *ngFor="let batch of getAssignedBatches(expandedStudent.id)" class="batch-premium-card">
-                    <div class="batch-premium-top">
-                      <div class="batch-title-group">
-                        <div class="batch-name">{{ batch.name }}</div>
-                        <span class="subject-pill">{{ batch.subject }}</span>
-                      </div>
-                      <div class="batch-price">₹{{ batch.monthlyFees }}<span>/mo</span></div>
-                    </div>
-                    
-                    <div class="batch-info-grid">
-                      <div class="info-item">
-                        <span class="info-icon">👨‍🏫</span>
-                        <div>
-                          <div class="info-label">Mentor</div>
-                          <div class="info-value">{{ batch.teacher?.name }}</div>
-                        </div>
-                      </div>
-                      <div class="info-item">
-                        <span class="info-icon">🕒</span>
-                        <div>
-                          <div class="info-label">Timing</div>
-                          <div class="info-value">{{ batch.timingFrom }} - {{ batch.timingTo }}</div>
-                        </div>
-                      </div>
-                      <div class="info-item">
-                        <span class="info-icon">📅</span>
-                        <div>
-                          <div class="info-label">Days</div>
-                          <div class="info-value">{{ batch.days }}</div>
-                        </div>
-                      </div>
-                      <div class="info-item">
-                        <span class="info-icon">🌍</span>
-                        <div>
-                          <div class="info-label">Timezone</div>
-                          <div class="info-value">{{ batch.timezone || 'Asia/Kolkata' }}</div>
-                        </div>
-                      </div>
-                    </div>
+            </ng-container>
 
-                    <div class="batch-action-footer">
-                       <button class="btn-remove-batch" (click)="unassign(batch.id, expandedStudent.id)">
-                         <span class="icon">🗑️</span> Remove Enrollment
-                       </button>
+            <!-- Student Details Modal -->
+            <div class="modal-overlay" *ngIf="expandedStudent" (click)="expandedStudent = null">
+              <div class="modal-content glass animate-pop" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                  <div class="header-left">
+                    <div class="modal-avatar student">{{ expandedStudent.name.charAt(0) }}</div>
+                    <div>
+                      <h3>{{ expandedStudent.name }}</h3>
+                      <p>{{ expandedStudent.studentClass || 'N/A' }} • {{ expandedStudent.board || 'N/A' }}</p>
+                    </div>
+                  </div>
+                  <button class="close-btn" (click)="expandedStudent = null">×</button>
+                </div>
+
+                <div class="modal-body">
+                  <div class="detail-header-row">
+                    <span class="icon-wrap">📋</span> Enrolled Batches
+                  </div>
+                  
+                  <div *ngIf="getAssignedBatches(expandedStudent.id).length === 0" class="empty-state-mini">
+                    <p>This student is not enrolled in any batches yet.</p>
+                  </div>
+
+                  <div class="batch-grid" *ngIf="getAssignedBatches(expandedStudent.id).length > 0">
+                    <div *ngFor="let batch of getAssignedBatches(expandedStudent.id)" class="batch-premium-card">
+                      <div class="batch-premium-top">
+                        <div class="batch-title-group">
+                          <div class="batch-name">{{ batch.name }}</div>
+                          <span class="subject-pill">{{ batch.subject }}</span>
+                        </div>
+                        <div class="batch-price">₹{{ batch.monthlyFees }}<span>/mo</span></div>
+                      </div>
+                      
+                      <div class="batch-info-grid">
+                        <div class="info-item">
+                          <span class="info-icon">👨‍🏫</span>
+                          <div>
+                            <div class="info-label">Mentor</div>
+                            <div class="info-value">{{ batch.teacher?.name }}</div>
+                          </div>
+                        </div>
+                        <div class="info-item">
+                          <span class="info-icon">🕒</span>
+                          <div>
+                            <div class="info-label">Timing</div>
+                            <div class="info-value">{{ batch.timingFrom }} - {{ batch.timingTo }}</div>
+                          </div>
+                        </div>
+                        <div class="info-item">
+                          <span class="info-icon">📅</span>
+                          <div>
+                            <div class="info-label">Days</div>
+                            <div class="info-value">{{ batch.days }}</div>
+                          </div>
+                        </div>
+                        <div class="info-item">
+                          <span class="info-icon">🌍</span>
+                          <div>
+                            <div class="info-label">Timezone</div>
+                            <div class="info-value">{{ batch.timezone || 'Asia/Kolkata' }}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="batch-action-footer">
+                         <button class="btn-remove-batch" (click)="unassign(batch.id, expandedStudent.id)">
+                           <span class="icon">🗑️</span> Remove Enrollment
+                         </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </td>
-            </tr>
-            </ng-container>
+              </div>
+            </div>
           </tbody>
         </table>
         </div>
@@ -194,13 +212,25 @@ import { User } from '../../shared/models/models';
     .btn-primary-sm { background: var(--primary-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
     .btn-view { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; padding: 0.45rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem; }
     .btn-view:hover { background: #4338CA; color: white; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(67, 56, 202, 0.2); }
-    .detail-row td { padding: 0 !important; border-bottom: 2px solid #E2E8F0; }
-    .detail-panel { background: #F8FAFC; box-shadow: inset 0 4px 6px -4px rgba(0,0,0,0.05); padding: 2rem !important; }
-    .detail-header { font-size: 1.125rem; font-weight: 800; color: #1E293B; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
-    .icon-wrap { background: white; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .empty-state-mini { padding: 2rem; text-align: center; color: #64748B; background: white; border-radius: 12px; border: 1px dashed #CBD5E1; }
+
+    /* Modal Styles */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+    .modal-content { background: white; width: 100%; max-width: 1000px; max-height: 90vh; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow-y: auto; position: relative; border: 1px solid rgba(255,255,255,0.2); }
+    .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; sticky: top; }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .modal-avatar { width: 48px; height: 48px; border-radius: 14px; background: #EEF2FF; color: #4338CA; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; }
+    .modal-avatar.student { background: #F0FDF4; color: #16A34A; }
+    .modal-header h3 { font-size: 1.25rem; font-weight: 800; color: #0F172A; margin: 0; }
+    .modal-header p { font-size: 0.875rem; color: #64748B; margin: 4px 0 0; }
+    .close-btn { background: #F1F5F9; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.5rem; color: #64748B; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .close-btn:hover { background: #E2E8F0; color: #0F172A; transform: rotate(90deg); }
+
+    .modal-body { padding: 2rem; }
+    .detail-header-row { font-size: 1.125rem; font-weight: 800; color: #1E293B; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+    .icon-wrap { background: #F8FAFC; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .empty-state-mini { padding: 3rem; text-align: center; color: #64748B; background: #F8FAFC; border-radius: 16px; border: 1px dashed #CBD5E1; }
     
-    .batch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.5rem; }
+    .batch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
     .batch-premium-card { background: white; border-radius: 16px; padding: 1.5rem; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); transition: all 0.3s ease; position: relative; overflow: hidden; }
     .batch-premium-card:hover { transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.08); border-color: #C7D2FE; }
     .batch-premium-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(to bottom, #6366F1, #8B5CF6); }
@@ -222,7 +252,7 @@ import { User } from '../../shared/models/models';
     .btn-remove-batch { display: flex; align-items: center; gap: 0.5rem; background: #FFF1F2; color: #E11D48; border: 1px solid #FECDD3; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .btn-remove-batch:hover { background: #E11D48; color: white; transform: scale(1.02); }
     
-    .btn-outline-danger { background: transparent; border: 1px solid #FECACA; color: var(--danger-color); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+    .btn-outline-danger { background: transparent; border: 1px solid #FECACA; color: var(--danger-color); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
     .text-right { text-align: right; }
   `]
 })
@@ -235,7 +265,7 @@ export class AdminStudentsComponent implements OnInit {
   expandedStudent: User | null = null;
 
   toggleExpand(student: User) {
-    this.expandedStudent = this.expandedStudent?.id === student.id ? null : student;
+    this.expandedStudent = student;
   }
 
   constructor(private adminService: AdminService, private toast: ToastService) {}
