@@ -268,7 +268,7 @@ import { Assignment, AssignmentService } from 'src/app/shared/services/assignmen
 })
 export class TeacherBatchDetailsComponent implements OnInit {
   batch: Batch | null = null;
-  activeTab: 'materials' | 'assignments' | 'schedule' = 'materials';
+  activeTab: 'materials' | 'assignments' | 'schedule' | 'attendance' = 'materials';
   newProposedTime = '';
   selectedFileName = '';
   selectedFile: File | null = null;

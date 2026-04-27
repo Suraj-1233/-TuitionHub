@@ -30,12 +30,24 @@ import { ToastService } from '../../shared/services/toast.service';
         <!-- Reset Form -->
         <form *ngIf="!success" (ngSubmit)="resetPassword()" #resetForm="ngForm">
           <p class="text-center text-sm text-secondary mb-4">
-            Enter your new password below.
+            Enter your email, the OTP sent to you, and your new password.
           </p>
 
           <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-control" [(ngModel)]="email" name="email"
+                   placeholder="your@email.com" required email>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">6-Digit OTP</label>
+            <input type="text" class="form-control text-center tracking-widest" [(ngModel)]="otp" name="otp"
+                   placeholder="000000" maxlength="6" required>
+          </div>
+
+          <div class="form-group">
             <label class="form-label">New Password</label>
-            <input type="password" class="form-control" [(ngModel)]="newPassword" name="password"
+            <input type="password" class="form-control" [(ngModel)]="newPassword" name="newPassword"
                    placeholder="Min 6 characters" required minlength="6">
           </div>
 
@@ -103,11 +115,12 @@ import { ToastService } from '../../shared/services/toast.service';
   `]
 })
 export class ResetPasswordComponent implements OnInit {
+  email = '';
+  otp = '';
   newPassword = '';
   confirmPassword = '';
   isLoading = false;
   success = false;
-  private token = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -116,10 +129,8 @@ export class ResetPasswordComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.token = this.route.snapshot.queryParamMap.get('token') || '';
-    if (!this.token) {
-      this.toast.error('Invalid reset link. Please request a new one.');
-    }
+    // Check if email was passed in query params
+    this.email = this.route.snapshot.queryParamMap.get('email') || '';
   }
 
   resetPassword() {
@@ -128,14 +139,14 @@ export class ResetPasswordComponent implements OnInit {
       return;
     }
     this.isLoading = true;
-    this.authService.resetPassword(this.token, this.newPassword).subscribe({
+    this.authService.resetPassword(this.email, this.otp, this.newPassword).subscribe({
       next: () => {
         this.isLoading = false;
         this.success = true;
         this.toast.success('Password reset successful!');
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Reset failed. Link may have expired.');
+        this.toast.error(err.error?.message || 'Reset failed. Check your OTP.');
         this.isLoading = false;
       }
     });
