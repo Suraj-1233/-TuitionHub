@@ -271,6 +271,7 @@ export class LoginComponent implements OnInit {
         if (typeof google !== 'undefined') {
           google.accounts.id.initialize({
             client_id: environment.googleClientId,
+            use_fedcm_for_prompt: false,
             callback: (response: any) => this.handleGoogleResponse(response)
           });
         }
