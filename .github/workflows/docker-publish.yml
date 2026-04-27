@@ -115,8 +115,8 @@ jobs:
             # Create/Update the .env file with secrets
             echo "DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME" > .env
             echo "JWT_SECRET=$JWT_SECRET" >> .env
-            echo "RAZORPAY_KEY=$RAZORPAY_KEY" >> .env
-            echo "RAZORPAY_SECRET=$RAZORPAY_SECRET" >> .env
+            echo "RAZORPAY_KEY_ID=$RAZORPAY_KEY" >> .env
+            echo "RAZORPAY_KEY_SECRET=$RAZORPAY_SECRET" >> .env
             echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> .env
             echo "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET" >> .env
             

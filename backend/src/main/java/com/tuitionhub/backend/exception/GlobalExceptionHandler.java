@@ -35,8 +35,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
-        log.error("Unhandled exception", ex);
-        return error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+        log.error("Unhandled exception: {}", ex.getMessage(), ex);
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "Debug Error: " + ex.getMessage());
     }
 
     private ResponseEntity<Map<String, Object>> error(HttpStatus status, String message) {
