@@ -48,7 +48,8 @@ import { User } from '../../shared/models/models';
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let teacher of filteredTeachers" class="animate-fade">
+            <ng-container *ngFor="let teacher of filteredTeachers">
+            <tr class="animate-fade">
               <td>
                 <div class="user-cell">
                   <div class="user-avatar-box">{{ teacher.name.charAt(0) }}</div>
@@ -146,6 +147,7 @@ import { User } from '../../shared/models/models';
                 </div>
               </td>
             </tr>
+            </ng-container>
             <tr *ngIf="filteredTeachers.length === 0">
               <td colspan="5">
                 <div class="empty-table-state">

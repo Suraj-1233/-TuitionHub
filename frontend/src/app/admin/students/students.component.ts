@@ -28,7 +28,8 @@ import { User } from '../../shared/models/models';
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let student of filteredStudents" class="animate-fade">
+            <ng-container *ngFor="let student of filteredStudents">
+            <tr class="animate-fade">
               <td>
                 <div class="user-cell">
                   <div class="user-avatar-box student">{{ student.name.charAt(0) }}</div>
@@ -110,6 +111,7 @@ import { User } from '../../shared/models/models';
                 </div>
               </td>
             </tr>
+            </ng-container>
           </tbody>
         </table>
       </div>
