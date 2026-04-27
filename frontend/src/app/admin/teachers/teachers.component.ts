@@ -70,6 +70,17 @@ import { User } from '../../shared/models/models';
                  </div>
                </td>
               <td>
+                <div class="student-count-cell">
+                  <div class="student-count-badge" [ngClass]="getTeacherStudentCount(teacher.id) === 0 ? 'zero' : 'has-students'">
+                    {{ getTeacherStudentCount(teacher.id) }}
+                    {{ getTeacherStudentCount(teacher.id) === 1 ? 'Student' : 'Students' }}
+                  </div>
+                  <div class="text-xs text-secondary mt-1">
+                    {{ getTeacherBatchCount(teacher.id) }} Batches
+                  </div>
+                </div>
+              </td>
+              <td>
                 <div class="contact-cell">
                   <div class="phone-link">📱 {{ teacher.mobile }}</div>
                   <div class="email-text">✉️ {{ teacher.email }}</div>
@@ -86,6 +97,7 @@ import { User } from '../../shared/models/models';
               </td>
               <td class="text-right">
                 <div class="action-group">
+                  <button class="btn-view" (click)="toggleExpand(teacher.id)">{{ expandedTeacherId === teacher.id ? '▲ Hide' : '▼ View Details' }}</button>
                   <ng-container *ngIf="activeTab === 'pending'">
                     <button class="btn-icon-success" (click)="approve(teacher.id)" title="Approve">✅ Approve</button>
                     <button class="btn-icon-danger" (click)="reject(teacher.id)" title="Reject">❌ Reject</button>
@@ -102,6 +114,35 @@ import { User } from '../../shared/models/models';
                       (click)="activate(teacher.id)"
                     >Activate Account</button>
                   </ng-container>
+                </div>
+              </td>
+            </tr>
+            <!-- Expanded Detail Row -->
+            <tr *ngIf="expandedTeacherId === teacher.id" class="detail-row">
+              <td colspan="7" class="detail-panel">
+                <div class="detail-header">📊 {{ teacher.name }}'s Batches & Students</div>
+                <div *ngIf="getTeacherBatches(teacher.id).length === 0" class="text-secondary p-3">No batches created yet.</div>
+                <div *ngFor="let batch of getTeacherBatches(teacher.id)" class="batch-detail-card">
+                  <div class="batch-detail-top">
+                    <div>
+                      <strong>📚 {{ batch.name }}</strong>
+                      <span class="subject-mini">{{ batch.subject }}</span>
+                    </div>
+                    <div class="batch-meta">
+                      <span>🕒 {{ batch.timingFrom }} – {{ batch.timingTo }}</span>
+                      <span>📅 {{ batch.days }}</span>
+                      <span>💰 ₹{{ batch.monthlyFees }}/mo</span>
+                      <span class="student-mini-count">👤 {{ (batch.students || []).length }} Students</span>
+                    </div>
+                  </div>
+                  <div class="students-in-batch" *ngIf="(batch.students || []).length > 0">
+                    <div *ngFor="let s of batch.students" class="student-chip">
+                      <span class="chip-avatar">{{ s.name.charAt(0) }}</span>
+                      <span class="chip-name">{{ s.name }}</span>
+                      <span class="chip-country">{{ s.country || 'IN' }}</span>
+                    </div>
+                  </div>
+                  <div *ngIf="(batch.students || []).length === 0" class="text-xs text-secondary">No students enrolled yet.</div>
                 </div>
               </td>
             </tr>
@@ -167,6 +208,26 @@ import { User } from '../../shared/models/models';
     .status-pill.active { background: #DCFCE7; color: #166534; }
     .status-pill.inactive { background: #FEE2E2; color: #991B1B; }
 
+    .student-count-badge { display: inline-flex; align-items: center; padding: 0.3rem 0.9rem; border-radius: 100px; font-size: 0.75rem; font-weight: 800; }
+    .student-count-badge.has-students { background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0; }
+    .student-count-badge.zero { background: #F1F5F9; color: #94A3B8; border: 1px solid #E2E8F0; }
+    .student-count-cell { display: flex; flex-direction: column; }
+    .mt-1 { margin-top: 0.25rem; }
+    .btn-view { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; padding: 0.4rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
+    .btn-view:hover { background: #4338CA; color: white; }
+    .detail-row td { padding: 0 !important; }
+    .detail-panel { background: #F8FAFC; border-top: 2px solid #C7D2FE; padding: 1.5rem !important; }
+    .detail-header { font-size: 1rem; font-weight: 800; color: #312E81; margin-bottom: 1rem; }
+    .batch-detail-card { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; }
+    .batch-detail-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+    .subject-mini { background: #EEF2FF; color: #4338CA; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; margin-left: 0.5rem; }
+    .batch-meta { display: flex; gap: 1rem; font-size: 0.75rem; color: #64748B; font-weight: 600; flex-wrap: wrap; }
+    .student-mini-count { background: #DCFCE7; color: #166534; padding: 2px 8px; border-radius: 100px; font-weight: 700; }
+    .students-in-batch { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .student-chip { display: flex; align-items: center; gap: 0.4rem; background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 100px; padding: 0.3rem 0.75rem; font-size: 0.75rem; }
+    .chip-avatar { width: 20px; height: 20px; background: #6366F1; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.65rem; }
+    .chip-name { font-weight: 700; color: #334155; }
+    .chip-country { color: #94A3B8; font-size: 0.7rem; }
     .action-group { display: flex; gap: 0.5rem; justify-content: flex-end; }
     .btn-icon-success { background: #DCFCE7; color: #166534; border: none; padding: 0.5rem 0.8rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: var(--transition); }
     .btn-icon-danger { background: #FEE2E2; color: #991B1B; border: none; padding: 0.5rem 0.8rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: var(--transition); }
@@ -184,6 +245,12 @@ export class AdminTeachersComponent implements OnInit {
   pendingTeachers: User[] = [];
   approvedTeachers: User[] = [];
   filteredTeachers: User[] = [];
+  allBatches: any[] = [];
+  expandedTeacherId: number | null = null;
+
+  toggleExpand(id: number) {
+    this.expandedTeacherId = this.expandedTeacherId === id ? null : id;
+  }
 
   constructor(private adminService: AdminService, private toast: ToastService) {}
 
@@ -200,6 +267,7 @@ export class AdminTeachersComponent implements OnInit {
       this.approvedTeachers = t.filter(x => x.isApproved);
       if (this.activeTab === 'approved') this.filterTeachers();
     });
+    this.adminService.getAllBatches().subscribe(b => this.allBatches = b);
   }
 
   setTab(tab: string) {
@@ -214,6 +282,21 @@ export class AdminTeachersComponent implements OnInit {
       t.mobile.includes(this.searchQuery) ||
       t.subject?.toLowerCase().includes(this.searchQuery.toLowerCase())
     );
+  }
+
+  getTeacherBatches(teacherId: number) {
+    return this.allBatches.filter(b => b.teacher?.id === teacherId);
+  }
+
+  getTeacherBatchCount(teacherId: number) {
+    return this.getTeacherBatches(teacherId).length;
+  }
+
+  getTeacherStudentCount(teacherId: number) {
+    const batches = this.getTeacherBatches(teacherId);
+    const studentIds = new Set<number>();
+    batches.forEach(b => (b.students || []).forEach((s: any) => studentIds.add(s.id)));
+    return studentIds.size;
   }
 
   approve(id: number) {

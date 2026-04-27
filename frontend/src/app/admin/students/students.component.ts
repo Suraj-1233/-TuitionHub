@@ -50,15 +50,21 @@ import { User } from '../../shared/models/models';
                  </div>
                </td>
               <td>
-                <div class="assigned-batches-list" *ngIf="getAssignedBatches(student.id).length > 0">
-                  <div *ngFor="let batch of getAssignedBatches(student.id)" class="batch-assigned mb-2">
-                    <span class="batch-name">👨‍🏫 {{ batch.teacher?.name }}</span>
-                    <span class="teacher-name">📚 {{ batch.subject }}</span>
-                    <button class="btn-text-danger" (click)="unassign(batch.id, student.id)">Remove</button>
+                <div class="batches-summary">
+                  <div class="batch-count-badge" [ngClass]="getAssignedBatches(student.id).length === 0 ? 'zero' : 'has-batches'">
+                    {{ getAssignedBatches(student.id).length }}
+                    {{ getAssignedBatches(student.id).length === 1 ? 'Batch' : 'Batches' }}
                   </div>
-                </div>
-                <div *ngIf="getAssignedBatches(student.id).length === 0" class="text-sm text-secondary">
-                  No assignments yet
+                  <div class="assigned-batches-list" *ngIf="getAssignedBatches(student.id).length > 0">
+                    <div *ngFor="let batch of getAssignedBatches(student.id)" class="batch-assigned mb-2">
+                      <span class="batch-name">👨‍🏫 {{ batch.teacher?.name }}</span>
+                      <span class="teacher-name">📚 {{ batch.subject }}</span>
+                      <button class="btn-text-danger" (click)="unassign(batch.id, student.id)">Remove</button>
+                    </div>
+                  </div>
+                  <div *ngIf="getAssignedBatches(student.id).length === 0" class="text-sm text-secondary">
+                    Not enrolled yet
+                  </div>
                 </div>
               </td>
               <td>
@@ -68,6 +74,7 @@ import { User } from '../../shared/models/models';
               </td>
               <td class="text-right">
                 <div class="action-group">
+                  <button class="btn-view" (click)="toggleExpand(student.id)">{{ expandedStudentId === student.id ? '▲ Hide' : '▼ View Details' }}</button>
                   <button 
                     *ngIf="student.isActive"
                     class="btn-outline-danger" 
@@ -78,6 +85,28 @@ import { User } from '../../shared/models/models';
                     class="btn-primary-sm" 
                     (click)="activate(student.id)"
                   >Activate</button>
+                </div>
+              </td>
+            </tr>
+            <!-- Expanded Student Detail -->
+            <tr *ngIf="expandedStudentId === student.id" class="detail-row">
+              <td colspan="5" class="detail-panel">
+                <div class="detail-header">📊 {{ student.name }}'s Enrolled Batches</div>
+                <div *ngIf="getAssignedBatches(student.id).length === 0" class="text-secondary">Not enrolled in any batch yet.</div>
+                <div *ngFor="let batch of getAssignedBatches(student.id)" class="batch-detail-card">
+                  <div class="batch-detail-top">
+                    <div>
+                      <strong>📚 {{ batch.name }}</strong>
+                      <span class="subject-mini">{{ batch.subject }}</span>
+                    </div>
+                    <div class="batch-meta">
+                      <span>👨‍🏫 {{ batch.teacher?.name }}</span>
+                      <span>🕒 {{ batch.timingFrom }} – {{ batch.timingTo }}</span>
+                      <span>📅 {{ batch.days }}</span>
+                      <span>💰 ₹{{ batch.monthlyFees }}/mo</span>
+                      <span>🌍 {{ batch.timezone || 'Asia/Kolkata' }}</span>
+                    </div>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -109,23 +138,28 @@ import { User } from '../../shared/models/models';
     .class-tag { background: rgba(99, 102, 241, 0.1); color: var(--primary-color); padding: 2px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; }
     .board-text { display: block; font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px; }
 
+    .batch-count-badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem 0.9rem; border-radius: 100px; font-size: 0.75rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .batch-count-badge.has-batches { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; }
+    .batch-count-badge.zero { background: #F1F5F9; color: #94A3B8; border: 1px solid #E2E8F0; }
+    .count-label { font-size: 0.7rem; color: var(--text-secondary); font-weight: 400; }
+    .batches-summary { display: flex; flex-direction: column; }
     .batch-assigned { display: flex; flex-direction: column; gap: 2px; padding: 4px; background: #f8fafc; border-radius: 6px; }
     .mb-2 { margin-bottom: 0.5rem; }
     .mt-2 { margin-top: 0.5rem; }
     .batch-name { font-weight: 700; font-size: 0.875rem; color: var(--text-primary); }
     .teacher-name { font-size: 0.75rem; color: var(--text-secondary); }
     .btn-text-danger { background: none; border: none; color: var(--danger-color); font-size: 0.7rem; text-align: left; padding: 0; cursor: pointer; text-decoration: underline; margin-top: 2px; }
-
-    .assignment-control { display: flex; gap: 0.5rem; align-items: center; }
-    .assign-select { padding: 0.4rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.75rem; flex: 1; max-width: 150px; }
-    .btn-assign { background: var(--primary-color); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
-
-    .status-pill { font-size: 0.65rem; font-weight: 800; padding: 0.3rem 0.8rem; border-radius: 100px; text-transform: uppercase; }
-    .status-pill.active { background: #DCFCE7; color: #166534; }
-    .status-pill.inactive { background: #FEE2E2; color: #991B1B; }
-
     .action-group { display: flex; gap: 0.5rem; justify-content: flex-end; }
     .btn-primary-sm { background: var(--primary-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+    .btn-view { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; padding: 0.4rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
+    .btn-view:hover { background: #4338CA; color: white; }
+    .detail-row td { padding: 0 !important; }
+    .detail-panel { background: #F8FAFC; border-top: 2px solid #C7D2FE; padding: 1.5rem !important; }
+    .detail-header { font-size: 1rem; font-weight: 800; color: #312E81; margin-bottom: 1rem; }
+    .batch-detail-card { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; }
+    .batch-detail-top { display: flex; flex-direction: column; gap: 0.5rem; }
+    .subject-mini { background: #EEF2FF; color: #4338CA; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; margin-left: 0.5rem; }
+    .batch-meta { display: flex; gap: 1rem; font-size: 0.75rem; color: #64748B; font-weight: 600; flex-wrap: wrap; margin-top: 0.25rem; }
     .btn-outline-danger { background: transparent; border: 1px solid #FECACA; color: var(--danger-color); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
     .text-right { text-align: right; }
   `]
@@ -136,6 +170,11 @@ export class AdminStudentsComponent implements OnInit {
   teachers: User[] = [];
   filteredStudents: User[] = [];
   searchQuery = '';
+  expandedStudentId: number | null = null;
+
+  toggleExpand(id: number) {
+    this.expandedStudentId = this.expandedStudentId === id ? null : id;
+  }
 
   constructor(private adminService: AdminService, private toast: ToastService) {}
 
