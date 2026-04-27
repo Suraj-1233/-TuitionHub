@@ -97,7 +97,7 @@ import { User } from '../../shared/models/models';
               </td>
               <td class="text-right">
                 <div class="action-group">
-                  <button class="btn-view" (click)="toggleExpand(teacher.id)">{{ expandedTeacherId === teacher.id ? '▲ Hide' : '▼ View Details' }}</button>
+                  <button class="btn-view" (click)="toggleExpand(teacher)">{{ expandedTeacher?.id === teacher.id ? '▲ Hide' : '▼ View Details' }}</button>
                   <ng-container *ngIf="activeTab === 'pending'">
                     <button class="btn-icon-success" (click)="approve(teacher.id)" title="Approve">✅ Approve</button>
                     <button class="btn-icon-danger" (click)="reject(teacher.id)" title="Reject">❌ Reject</button>
@@ -118,11 +118,11 @@ import { User } from '../../shared/models/models';
               </td>
             </tr>
             <!-- Expanded Detail Row -->
-            <tr *ngIf="expandedTeacherId === teacher.id" class="detail-row">
+            <tr *ngIf="expandedTeacher && expandedTeacher.id === teacher.id" class="detail-row">
               <td colspan="7" class="detail-panel">
-                <div class="detail-header">📊 {{ teacher.name }}'s Batches & Students</div>
-                <div *ngIf="getTeacherBatches(teacher.id).length === 0" class="text-secondary p-3">No batches created yet.</div>
-                <div *ngFor="let batch of getTeacherBatches(teacher.id)" class="batch-detail-card">
+                <div class="detail-header">📊 {{ expandedTeacher.name }}'s Batches & Students</div>
+                <div *ngIf="getTeacherBatches(expandedTeacher.id).length === 0" class="text-secondary p-3">No batches created yet.</div>
+                <div *ngFor="let batch of getTeacherBatches(expandedTeacher.id)" class="batch-detail-card">
                   <div class="batch-detail-top">
                     <div>
                       <strong>📚 {{ batch.name }}</strong>
@@ -246,10 +246,10 @@ export class AdminTeachersComponent implements OnInit {
   approvedTeachers: User[] = [];
   filteredTeachers: User[] = [];
   allBatches: any[] = [];
-  expandedTeacherId: number | null = null;
+  expandedTeacher: User | null = null;
 
-  toggleExpand(id: number) {
-    this.expandedTeacherId = this.expandedTeacherId === id ? null : id;
+  toggleExpand(teacher: User) {
+    this.expandedTeacher = this.expandedTeacher?.id === teacher.id ? null : teacher;
   }
 
   constructor(private adminService: AdminService, private toast: ToastService) {}

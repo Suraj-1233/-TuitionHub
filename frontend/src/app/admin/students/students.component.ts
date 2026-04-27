@@ -74,7 +74,7 @@ import { User } from '../../shared/models/models';
               </td>
               <td class="text-right">
                 <div class="action-group">
-                  <button class="btn-view" (click)="toggleExpand(student.id)">{{ expandedStudentId === student.id ? '▲ Hide' : '▼ View Details' }}</button>
+                  <button class="btn-view" (click)="toggleExpand(student)">{{ expandedStudent?.id === student.id ? '▲ Hide' : '▼ View Details' }}</button>
                   <button 
                     *ngIf="student.isActive"
                     class="btn-outline-danger" 
@@ -89,11 +89,11 @@ import { User } from '../../shared/models/models';
               </td>
             </tr>
             <!-- Expanded Student Detail -->
-            <tr *ngIf="expandedStudentId === student.id" class="detail-row">
+            <tr *ngIf="expandedStudent && expandedStudent.id === student.id" class="detail-row">
               <td colspan="5" class="detail-panel">
-                <div class="detail-header">📊 {{ student.name }}'s Enrolled Batches</div>
-                <div *ngIf="getAssignedBatches(student.id).length === 0" class="text-secondary">Not enrolled in any batch yet.</div>
-                <div *ngFor="let batch of getAssignedBatches(student.id)" class="batch-detail-card">
+                <div class="detail-header">📊 {{ expandedStudent.name }}'s Enrolled Batches</div>
+                <div *ngIf="getAssignedBatches(expandedStudent.id).length === 0" class="text-secondary">Not enrolled in any batch yet.</div>
+                <div *ngFor="let batch of getAssignedBatches(expandedStudent.id)" class="batch-detail-card">
                   <div class="batch-detail-top">
                     <div>
                       <strong>📚 {{ batch.name }}</strong>
@@ -170,10 +170,10 @@ export class AdminStudentsComponent implements OnInit {
   teachers: User[] = [];
   filteredStudents: User[] = [];
   searchQuery = '';
-  expandedStudentId: number | null = null;
+  expandedStudent: User | null = null;
 
-  toggleExpand(id: number) {
-    this.expandedStudentId = this.expandedStudentId === id ? null : id;
+  toggleExpand(student: User) {
+    this.expandedStudent = this.expandedStudent?.id === student.id ? null : student;
   }
 
   constructor(private adminService: AdminService, private toast: ToastService) {}
