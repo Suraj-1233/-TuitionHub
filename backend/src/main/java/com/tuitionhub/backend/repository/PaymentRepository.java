@@ -16,7 +16,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findByStudent(User student);
     List<Payment> findByBatch(Batch batch);
     List<Payment> findByStatus(Payment.PaymentStatus status);
-    Optional<Payment> findByStudentAndBatchAndForMonth(User student, Batch batch, LocalDate forMonth);
+    List<Payment> findByStudentAndBatchAndForMonth(User student, Batch batch, LocalDate forMonth);
 
     @Query("SELECT p FROM Payment p WHERE p.batch.teacher.id = :teacherId")
     List<Payment> findByTeacherId(Long teacherId);

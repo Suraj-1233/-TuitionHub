@@ -47,13 +47,13 @@ public class PaymentService {
             Batch batch = batchRepository.findById(request.getBatchId())
                     .orElseThrow(() -> new ResourceNotFoundException("Batch not found"));
 
-            // Check if payment already exists for this month
-            paymentRepository.findByStudentAndBatchAndForMonth(student, batch, request.getForMonth())
-                    .ifPresent(p -> {
-                        if (p.getStatus() == Payment.PaymentStatus.PAID) {
-                            throw new BadRequestException("Payment already done for this month");
-                        }
-                    });
+            // Check if any payment already exists and is PAID for this month
+            List<Payment> existingPayments = paymentRepository.findByStudentAndBatchAndForMonth(student, batch, request.getForMonth());
+            for (Payment p : existingPayments) {
+                if (p.getStatus() == Payment.PaymentStatus.PAID) {
+                    throw new BadRequestException("Payment already done for this month");
+                }
+            }
 
             if (batch.getMonthlyFees() == null) {
                 throw new BadRequestException("Batch monthly fees not set");
