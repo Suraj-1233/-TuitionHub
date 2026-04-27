@@ -63,8 +63,8 @@ public class PaymentService {
             String orderId;
             String currency = (batch.getCurrency() != null && !batch.getCurrency().isEmpty()) ? batch.getCurrency() : "INR";
             try {
-                log.debug("Creating Razorpay order with KeyID: {}", razorpayKeyId);
-                RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+                log.info("Creating Razorpay order with KeyID: [{}]", razorpayKeyId.trim());
+                RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId.trim(), razorpayKeySecret.trim());
                 JSONObject orderRequest = new JSONObject();
                 // Ensure amount is at least 100 paise
                 int amountPaise = (int) (batch.getMonthlyFees() * 100);
