@@ -305,9 +305,8 @@ export class TeacherBatchDetailsComponent implements OnInit {
 
   getFileUrl(url: string): string {
     if (!url) return '#';
-    // If it's already a full URL, return as-is
+    // If it's already a full URL or a relative path that we can just use directly
     if (url.startsWith('http')) return url;
-    // Otherwise, prepend the backend base URL
-    return 'http://localhost:8080' + url;
+    return url;
   }
 }
