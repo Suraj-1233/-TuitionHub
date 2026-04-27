@@ -81,7 +81,13 @@
         <dependency>
             <groupId>com.razorpay</groupId>
             <artifactId>razorpay-java</artifactId>
-            <version>1.4.4</version>
+            <version>1.4.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
         </dependency>
 
         <!-- Lombok -->

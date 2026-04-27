@@ -43,63 +43,95 @@ public class PaymentService {
 
     @Transactional
     public PaymentDto.Response createPaymentOrder(PaymentDto.CreateOrderRequest request, User student) {
-        Batch batch = batchRepository.findById(request.getBatchId())
-                .orElseThrow(() -> new ResourceNotFoundException("Batch not found"));
-
-        // Check if payment already exists for this month
-        paymentRepository.findByStudentAndBatchAndForMonth(student, batch, request.getForMonth())
-                .ifPresent(p -> {
-                    if (p.getStatus() == Payment.PaymentStatus.PAID) {
-                        throw new BadRequestException("Payment already done for this month");
-                    }
-                });
-
-        // Create real Razorpay order via SDK
-        String orderId;
-        String currency = (batch.getCurrency() != null && !batch.getCurrency().isEmpty()) ? batch.getCurrency() : "INR";
         try {
-            RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
-            JSONObject orderRequest = new JSONObject();
-            orderRequest.put("amount", batch.getMonthlyFees().intValue() * 100); // smallest unit (paise for INR, cents for USD)
-            orderRequest.put("currency", currency);
-            orderRequest.put("receipt", "rcpt_" + System.currentTimeMillis());
-            Order razorpayOrder = razorpayClient.orders.create(orderRequest);
-            orderId = razorpayOrder.get("id");
-            log.info("Razorpay order created: {} in {}", orderId, currency);
-        } catch (RazorpayException e) {
-            log.error("Failed to create Razorpay order", e);
-            throw new BadRequestException("Payment gateway error. Please try again.");
+            Batch batch = batchRepository.findById(request.getBatchId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Batch not found"));
+
+            // Check if payment already exists for this month
+            paymentRepository.findByStudentAndBatchAndForMonth(student, batch, request.getForMonth())
+                    .ifPresent(p -> {
+                        if (p.getStatus() == Payment.PaymentStatus.PAID) {
+                            throw new BadRequestException("Payment already done for this month");
+                        }
+                    });
+
+            if (batch.getMonthlyFees() == null) {
+                throw new BadRequestException("Batch monthly fees not set");
+            }
+
+            // Create real Razorpay order via SDK
+            String orderId;
+            String currency = (batch.getCurrency() != null && !batch.getCurrency().isEmpty()) ? batch.getCurrency() : "INR";
+            try {
+                log.debug("Creating Razorpay order with KeyID: {}", razorpayKeyId);
+                RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+                JSONObject orderRequest = new JSONObject();
+                // Ensure amount is at least 100 paise
+                int amountPaise = (int) (batch.getMonthlyFees() * 100);
+                if (amountPaise < 100) {
+                    throw new BadRequestException("Amount must be at least 1 INR (100 paise)");
+                }
+                orderRequest.put("amount", amountPaise);
+                orderRequest.put("currency", currency);
+                orderRequest.put("receipt", "rcpt_" + System.currentTimeMillis());
+                
+                Order razorpayOrder = razorpayClient.orders.create(orderRequest);
+                orderId = razorpayOrder.get("id");
+                log.info("Razorpay order created: {} for batch {}", orderId, batch.getName());
+            } catch (RazorpayException e) {
+                log.error("Razorpay SDK Error: {}", e.getMessage(), e);
+                throw new BadRequestException("Razorpay Error: " + e.getMessage());
+            }
+
+            Payment payment = Payment.builder()
+                    .student(student)
+                    .batch(batch)
+                    .amount(batch.getMonthlyFees())
+                    .forMonth(request.getForMonth())
+                    .status(Payment.PaymentStatus.PENDING)
+                    .razorpayOrderId(orderId)
+                    .build();
+
+            payment = paymentRepository.save(payment);
+            return mapToResponse(payment);
+        } catch (BadRequestException | ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error in createPaymentOrder: {}", e.getMessage(), e);
+            throw new RuntimeException("An internal error occurred while processing payment: " + e.getMessage());
         }
-
-        Payment payment = Payment.builder()
-                .student(student)
-                .batch(batch)
-                .amount(batch.getMonthlyFees())
-                .forMonth(request.getForMonth())
-                .status(Payment.PaymentStatus.PENDING)
-                .razorpayOrderId(orderId)
-                .build();
-
-        payment = paymentRepository.save(payment);
-        return mapToResponse(payment);
     }
 
     @Transactional
     public PaymentDto.Response verifyAndUpdatePayment(PaymentDto.VerifyRequest request) {
-        Payment payment = paymentRepository.findById(request.getPaymentId())
-                .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
+        try {
+            Payment payment = paymentRepository.findById(request.getPaymentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
 
-        // Verify Razorpay signature
-        if (verifySignature(request.getRazorpayOrderId(), request.getRazorpayPaymentId(), request.getRazorpaySignature())) {
-            payment.setStatus(Payment.PaymentStatus.PAID);
-            payment.setRazorpayPaymentId(request.getRazorpayPaymentId());
-            payment.setRazorpaySignature(request.getRazorpaySignature());
-            payment.setPaidAt(LocalDateTime.now());
-        } else {
-            payment.setStatus(Payment.PaymentStatus.FAILED);
+            log.info("Verifying payment {} for Order ID: {}", request.getPaymentId(), request.getRazorpayOrderId());
+            
+            // Verify Razorpay signature
+            boolean isValid = verifySignature(request.getRazorpayOrderId(), request.getRazorpayPaymentId(), request.getRazorpaySignature());
+            
+            if (isValid) {
+                log.info("Payment signature verified successfully for ID: {}", request.getPaymentId());
+                payment.setStatus(Payment.PaymentStatus.PAID);
+                payment.setRazorpayPaymentId(request.getRazorpayPaymentId());
+                payment.setRazorpaySignature(request.getRazorpaySignature());
+                payment.setPaidAt(LocalDateTime.now());
+            } else {
+                log.error("Signature verification FAILED for payment ID: {}", request.getPaymentId());
+                payment.setStatus(Payment.PaymentStatus.FAILED);
+                // We still save the IDs for record keeping even if it failed verification
+                payment.setRazorpayPaymentId(request.getRazorpayPaymentId());
+                payment.setRazorpaySignature(request.getRazorpaySignature());
+            }
+
+            return mapToResponse(paymentRepository.save(payment));
+        } catch (Exception e) {
+            log.error("Error in verifyAndUpdatePayment: {}", e.getMessage(), e);
+            throw new BadRequestException("Verification failed: " + e.getMessage());
         }
-
-        return mapToResponse(paymentRepository.save(payment));
     }
 
     public List<PaymentDto.Response> getStudentPayments(User student) {
@@ -118,6 +150,10 @@ public class PaymentService {
     }
 
     private boolean verifySignature(String orderId, String paymentId, String signature) {
+        if (orderId == null || paymentId == null || signature == null) {
+            log.warn("Missing parameters for signature verification");
+            return false;
+        }
         try {
             String data = orderId + "|" + paymentId;
             Mac mac = Mac.getInstance("HmacSHA256");
@@ -125,13 +161,22 @@ public class PaymentService {
                     razorpayKeySecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             mac.init(secretKeySpec);
             byte[] hash = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 hexString.append(String.format("%02x", b));
             }
-            return hexString.toString().equals(signature);
+            
+            String generatedSignature = hexString.toString();
+            boolean matches = generatedSignature.equals(signature);
+            
+            if (!matches) {
+                log.debug("Signature mismatch! Expected: {}, Received: {}", generatedSignature, signature);
+            }
+            
+            return matches;
         } catch (Exception e) {
-            log.error("Signature verification failed", e);
+            log.error("Signature calculation error: {}", e.getMessage());
             return false;
         }
     }
