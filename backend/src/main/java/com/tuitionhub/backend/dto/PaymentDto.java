@@ -29,6 +29,7 @@ public class PaymentDto {
         private String status;
         private String razorpayOrderId;
         private String razorpayPaymentId;
+        private String razorpayKeyId;
         private String paidAt;
     }
 }

@@ -44,28 +44,31 @@ declare var Razorpay: any;
         <table class="premium-table w-full">
           <thead>
             <tr>
-              <th style="width: 20%">Date</th>
-              <th style="width: 35%">Course / Batch</th>
-              <th style="width: 15%">Month</th>
+              <th style="width: 15%">Date & Time</th>
+              <th style="width: 25%">Course / Batch</th>
+              <th style="width: 25%">Reference (ID)</th>
               <th style="width: 15%">Amount</th>
-              <th style="width: 15%">Status</th>
+              <th style="width: 20%">Status</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let p of payments" class="hover-row">
+            <tr *ngFor="let p of payments" class="hover-row cursor-pointer" (click)="selectedPayment = p">
               <td>
                 <div class="date-cell">
-                   <span class="d-main">{{ p.paidAt ? (p.paidAt | date:'mediumDate') : 'N/A' }}</span>
-                   <span class="d-sub text-xs text-secondary">{{ p.paidAt ? (p.paidAt | date:'shortTime') : '' }}</span>
+                   <span class="d-main">{{ p.paidAt ? (p.paidAt | date:'dd MMM yyyy') : 'N/A' }}</span>
+                   <span class="d-sub text-xs text-secondary">{{ p.paidAt ? (p.paidAt | date:'hh:mm a') : '' }}</span>
                 </div>
               </td>
               <td>
                 <div class="batch-cell">
                   <span class="b-name font-bold">{{ p.batchName }}</span>
+                  <div class="text-xs text-secondary">{{ p.forMonth }}</div>
                 </div>
               </td>
-              <td><span class="month-cell font-medium">{{ p.forMonth }}</span></td>
-              <td><span class="amount-cell font-bold">₹{{ p.amount }}</span></td>
+              <td>
+                <code class="text-xs bg-slate-100 p-1 rounded">{{ p.razorpayPaymentId || '---' }}</code>
+              </td>
+              <td><span class="amount-cell font-bold text-primary">₹{{ p.amount }}</span></td>
               <td>
                 <span class="status-pill" [ngClass]="{
                   'paid': p.status === 'PAID',
@@ -84,6 +87,57 @@ declare var Razorpay: any;
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Transaction Details Modal -->
+      <div class="modal-overlay" *ngIf="selectedPayment" (click)="selectedPayment = null">
+        <div class="modal-content animate-pop" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3 class="m-0">Transaction Receipt</h3>
+            <button class="btn-close" (click)="selectedPayment = null">&times;</button>
+          </div>
+          <div class="receipt-body">
+            <div class="receipt-item">
+              <label>Status</label>
+              <span class="status-pill" [ngClass]="selectedPayment.status.toLowerCase()">{{ selectedPayment.status }}</span>
+            </div>
+            <div class="receipt-divider"></div>
+            <div class="receipt-item">
+              <label>Amount Paid</label>
+              <div class="receipt-amount">₹{{ selectedPayment.amount }}</div>
+            </div>
+            <div class="receipt-grid">
+              <div class="receipt-item">
+                <label>Date</label>
+                <span>{{ selectedPayment.paidAt ? (selectedPayment.paidAt | date:'medium') : 'N/A' }}</span>
+              </div>
+              <div class="receipt-item">
+                <label>Batch</label>
+                <span>{{ selectedPayment.batchName }}</span>
+              </div>
+              <div class="receipt-item">
+                <label>Billing Month</label>
+                <span>{{ selectedPayment.forMonth }}</span>
+              </div>
+              <div class="receipt-item">
+                <label>Student</label>
+                <span>{{ selectedPayment.studentName }}</span>
+              </div>
+            </div>
+            <div class="receipt-divider"></div>
+            <div class="receipt-item">
+              <label>Payment Reference (ID)</label>
+              <code class="ref-code">{{ selectedPayment.razorpayPaymentId || 'N/A' }}</code>
+            </div>
+            <div class="receipt-item">
+              <label>Order ID</label>
+              <code class="ref-code">{{ selectedPayment.razorpayOrderId || 'N/A' }}</code>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-print" (click)="window.print()">Print Receipt</button>
+          </div>
+        </div>
       </div>
     </app-dashboard-layout>
   `,
@@ -131,6 +185,38 @@ declare var Razorpay: any;
     .status-pill.pending { background: #FEF3C7; color: #92400E; }
     .status-pill.failed { background: #FEE2E2; color: #991B1B; }
 
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .modal-content {
+      background: white; width: 90%; max-width: 450px; border-radius: 1.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden;
+    }
+    .modal-header {
+      padding: 1.5rem; border-bottom: 1px solid #F1F5F9;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .btn-close { background: none; border: none; font-size: 1.5rem; color: #64748B; cursor: pointer; }
+    
+    .receipt-body { padding: 2rem; }
+    .receipt-item { margin-bottom: 1.25rem; }
+    .receipt-item label { display: block; font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .receipt-item span { font-weight: 600; color: #1E293B; }
+    .receipt-amount { font-size: 2.5rem; font-weight: 800; color: #4F46E5; }
+    .receipt-divider { height: 1px; background: #F1F5F9; margin: 1.5rem 0; border-style: dashed; border-width: 1px 0 0 0; }
+    .receipt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .ref-code { background: #F8FAFC; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.8rem; color: #475569; display: block; border: 1px solid #E2E8F0; }
+    
+    .modal-footer { padding: 1.5rem; background: #F8FAFC; text-align: center; }
+    .btn-print { 
+      background: white; border: 1px solid #E2E8F0; padding: 0.5rem 1.5rem; 
+      border-radius: 0.75rem; font-weight: 600; color: #475569; cursor: pointer;
+    }
+    .btn-print:hover { background: #F1F5F9; }
+
     .grid { display: grid; }
     .gap-6 { gap: 1.5rem; }
     @media (min-width: 768px) { .md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); } }
@@ -141,6 +227,8 @@ export class StudentPaymentsComponent implements OnInit {
   payments: Payment[] = [];
   myBatches: Batch[] = [];
   isProcessing = false;
+  selectedPayment: any = null;
+  window = window;
 
   get currentMonth() {
     return new Date().toISOString().slice(0, 7); // YYYY-MM
