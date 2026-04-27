@@ -16,13 +16,14 @@ import { User } from '../../shared/models/models';
         <h1 class="page-title">Student Onboarding & Management</h1>
         </div>
 
-      <div class="card glass p-0 overflow-hidden animate-fade">
+      <div class="card glass p-0 animate-fade">
+        <div class="table-responsive" style="overflow-x: auto; width: 100%;">
         <table class="premium-table">
           <thead>
             <tr>
                <th>Student</th>
                <th>Academic Info & Timezone</th>
-               <th>Assigned Mentors</th>
+               <th>Batches Enrolled <span class="count-label">(count)</span></th>
                <th>Status</th>
                <th class="text-right">Actions</th>
             </tr>
@@ -114,6 +115,7 @@ import { User } from '../../shared/models/models';
             </ng-container>
           </tbody>
         </table>
+        </div>
       </div>
     </app-dashboard-layout>
   `,

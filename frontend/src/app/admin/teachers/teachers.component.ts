@@ -35,13 +35,15 @@ import { User } from '../../shared/models/models';
         <button class="tab-btn" [class.active]="activeTab === 'approved'" (click)="setTab('approved')">Active Educators</button>
       </div>
 
-      <div class="card glass p-0 overflow-hidden animate-fade">
+      <div class="card glass p-0 animate-fade">
+        <div class="table-responsive" style="overflow-x: auto; width: 100%;">
         <table class="premium-table">
           <thead>
             <tr>
                <th>Educator</th>
                <th>Expertise & City</th>
                <th>Timezone</th>
+               <th>Students 👥</th>
                <th>Contact Info</th>
                <th>Status</th>
                <th class="text-right">Manage</th>
@@ -158,6 +160,7 @@ import { User } from '../../shared/models/models';
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
     </app-dashboard-layout>
   `,
