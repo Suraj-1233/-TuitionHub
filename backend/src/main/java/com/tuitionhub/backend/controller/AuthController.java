@@ -37,16 +37,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.register(request));
     }
 
-    // ==================== GOOGLE LOGIN ====================
-
-    @PostMapping("/google-login")
-    public ResponseEntity<AuthDto.AuthResponse> googleLogin(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
-        String name = body.get("name");
-        String role = body.getOrDefault("role", "STUDENT");
-        log.info("Google login for: {} as {}", email, role);
-        return ResponseEntity.ok(authService.googleLogin(email, name, role));
-    }
+    // Google Login Removed
 
     // ==================== FORGOT & RESET PASSWORD ====================
 
@@ -60,9 +51,10 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> body) {
-        String token = body.get("token");
+        String email = body.get("email");
+        String otp = body.get("otp");
         String newPassword = body.get("password");
-        authService.resetPassword(token, newPassword);
+        authService.resetPasswordWithOtp(email, otp, newPassword);
         return ResponseEntity.ok(Map.of("message", "Password reset successful. You can now login."));
     }
 

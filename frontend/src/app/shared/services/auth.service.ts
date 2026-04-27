@@ -30,24 +30,10 @@ export class AuthService {
   // ==================== REGISTRATION ====================
 
   register(data: any): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, data).pipe(
-      tap(res => {
-        this.storeAuth(res);
-        this.saveUserTimezone();
-      })
-    );
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, data);
   }
 
-  // ==================== GOOGLE LOGIN ====================
-
-  googleLogin(email: string, name: string, role: string = 'STUDENT'): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/google-login`, { email, name, role }).pipe(
-      tap(res => {
-        this.storeAuth(res);
-        this.saveUserTimezone();
-      })
-    );
-  }
+  // Google Login Removed
 
   // ==================== FORGOT PASSWORD ====================
 
@@ -55,8 +41,8 @@ export class AuthService {
     return this.http.post<{ message: string }>(`${this.apiUrl}/auth/forgot-password`, { email });
   }
 
-  resetPassword(token: string, password: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/reset-password`, { token, password });
+  resetPassword(email: string, otp: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/reset-password`, { email, otp, password });
   }
 
   // ==================== LEGACY OTP (kept for backward compat) ====================

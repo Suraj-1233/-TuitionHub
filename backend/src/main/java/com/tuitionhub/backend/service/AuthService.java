@@ -52,7 +52,6 @@ public class AuthService {
     // ==================== REGISTRATION ====================
 
     public AuthDto.AuthResponse register(AuthDto.RegisterRequest request) {
-        // Check if email already exists and is active
         if (userRepository.existsByEmail(request.getEmail())) {
             User existing = userRepository.findByEmail(request.getEmail()).get();
             if (existing.getIsActive()) {
@@ -60,12 +59,13 @@ public class AuthService {
             }
         }
 
-        // Validate password
         if (request.getPassword() == null || request.getPassword().length() < 6) {
             throw new BadRequestException("Password must be at least 6 characters.");
         }
 
         boolean isTeacher = request.getRole() == Role.TEACHER;
+        String otp = generateOtp();
+        String encodedOtp = passwordEncoder.encode(otp);
 
         User user = User.builder()
                 .email(request.getEmail())
@@ -73,91 +73,22 @@ public class AuthService {
                 .mobile(request.getMobile())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
-                .studentClass(request.getStudentClass())
-                .board(request.getBoard())
-                .subject(request.getSubject())
-                .qualification(request.getQualification())
-                .bio(request.getBio())
-                .fees(request.getFees())
-                .timingFrom(request.getTimingFrom())
-                .timingTo(request.getTimingTo())
-                .availableDays(request.getAvailableDays())
-                .city(request.getCity())
-                .country(request.getCountry())
-                .timezone(request.getTimezone() != null ? request.getTimezone() : "Asia/Kolkata")
-                .isActive(true)
+                .isActive(false) // Mandatory verification
                 .isApproved(!isTeacher)
+                .otp(encodedOtp)
+                .otpExpiry(LocalDateTime.now().plusMinutes(10))
                 .build();
 
         userRepository.save(user);
 
-        // If parent is registering, link to child if email provided
-        if (request.getRole() == Role.PARENT) {
-            if (request.getChildEmail() == null || request.getChildEmail().isEmpty()) {
-                throw new BadRequestException("Child's email address is required for parent registration.");
-            }
-            
-            User student = userRepository.findByEmail(request.getChildEmail())
-                .orElseThrow(() -> new BadRequestException("No student found with email: " + request.getChildEmail()));
+        // Send OTP for verification
+        otpService.sendOtp(user.getEmail(), otp);
+        log.info("Registration OTP for {}: {}", user.getEmail(), otp);
 
-            if (student.getRole() != Role.STUDENT) {
-                throw new BadRequestException("The email provided does not belong to a student.");
-            }
-
-            student.setParent(user);
-            userRepository.save(student);
-            log.info("Linked parent {} to student {}", user.getEmail(), student.getEmail());
-        }
-
-        if (isTeacher) {
-            log.info("Teacher {} registered. Awaiting admin approval.", user.getEmail());
-            // Return a response but with isApproved = false
-            String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole().name(), user.getId());
-            return new AuthDto.AuthResponse(token, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), false);
-        }
-
-        String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole().name(), user.getId());
-        return new AuthDto.AuthResponse(token, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), user.getIsApproved());
+        return new AuthDto.AuthResponse(null, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), false);
     }
 
-    // ==================== GOOGLE LOGIN ====================
-
-    public AuthDto.AuthResponse googleLogin(String googleEmail, String googleName, String role) {
-        User user = userRepository.findByEmail(googleEmail).orElse(null);
-
-        if (user == null) {
-            // Auto-register via Google
-            Role userRole = role != null ? Role.valueOf(role.toUpperCase()) : Role.STUDENT;
-            boolean isTeacher = userRole == Role.TEACHER;
-
-            user = User.builder()
-                    .email(googleEmail)
-                    .name(googleName)
-                    .password(passwordEncoder.encode(UUID.randomUUID().toString())) // random password for Google users
-                    .role(userRole)
-                    .isActive(true)
-                    .isApproved(!isTeacher)
-                    .build();
-            userRepository.save(user);
-            log.info("New Google user registered: {} as {}", googleEmail, userRole);
-
-            if (isTeacher) {
-                String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole().name(), user.getId());
-                return new AuthDto.AuthResponse(token, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), false);
-            }
-        }
-
-        if (!user.getIsActive()) {
-            throw new BadRequestException("Your account is deactivated.");
-        }
-
-        if (user.getRole() == Role.TEACHER && !user.getIsApproved()) {
-            throw new BadRequestException("Your teacher account is pending admin approval.");
-        }
-
-        String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole().name(), user.getId());
-        return new AuthDto.AuthResponse(token, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), user.getIsApproved());
-    }
+    // Google Login Removed
 
     // ==================== FORGOT PASSWORD ====================
 
@@ -165,27 +96,27 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException("No account found with this email."));
 
-        String resetToken = UUID.randomUUID().toString();
-        user.setResetToken(resetToken);
-        user.setResetTokenExpiry(LocalDateTime.now().plusHours(1)); // link valid for 1 hour
+        String otp = generateOtp();
+        String encodedOtp = passwordEncoder.encode(otp);
+        
+        user.setOtp(encodedOtp);
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
         userRepository.save(user);
 
-        // Build reset link
-        String resetLink = "http://localhost:4200/auth/reset-password?token=" + resetToken;
-        log.info("Password reset link for {}: {}", email, resetLink);
-
-        // Send email (mock in dev, real in prod)
-        otpService.sendOtp(email, "Click to reset your password: " + resetLink);
+        otpService.sendOtp(email, "Your password reset OTP is: " + otp);
+        log.info("Password reset OTP for {}: {}", email, otp);
     }
 
-    public void resetPassword(String token, String newPassword) {
-        User user = userRepository.findAll().stream()
-                .filter(u -> token.equals(u.getResetToken()))
-                .findFirst()
-                .orElseThrow(() -> new BadRequestException("Invalid or expired reset link."));
+    public void resetPasswordWithOtp(String email, String otp, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("User not found"));
 
-        if (user.getResetTokenExpiry() == null || LocalDateTime.now().isAfter(user.getResetTokenExpiry())) {
-            throw new BadRequestException("Reset link has expired. Please request a new one.");
+        if (user.getOtp() == null || user.getOtpExpiry() == null || LocalDateTime.now().isAfter(user.getOtpExpiry())) {
+            throw new BadRequestException("OTP expired. Please request a new one.");
+        }
+
+        if (!passwordEncoder.matches(otp, user.getOtp())) {
+            throw new BadRequestException("Invalid OTP");
         }
 
         if (newPassword == null || newPassword.length() < 6) {
@@ -193,10 +124,10 @@ public class AuthService {
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
-        user.setResetToken(null);
-        user.setResetTokenExpiry(null);
+        user.setOtp(null);
+        user.setOtpExpiry(null);
         userRepository.save(user);
-        log.info("Password reset successful for: {}", user.getEmail());
+        log.info("Password reset successful with OTP for: {}", user.getEmail());
     }
 
     // ==================== LEGACY OTP (kept for backward compat) ====================

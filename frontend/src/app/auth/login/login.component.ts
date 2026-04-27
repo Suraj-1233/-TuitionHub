@@ -23,16 +23,7 @@ declare const google: any;
           <p class="subtitle">Welcome back! Sign in to continue.</p>
         </div>
 
-        <!-- Google Sign-In Button -->
-        <button class="btn-google" (click)="loginWithGoogle()" [disabled]="isLoading">
-          <svg width="20" height="20" viewBox="0 0 48 48">
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-          </svg>
-          Continue with Google
-        </button>
+        <!-- Google Login Removed -->
 
         <div class="divider">
           <span>or sign in with email</span>
@@ -56,15 +47,32 @@ declare const google: any;
           </div>
         </form>
 
-        <!-- Email Sent Confirmation -->
-        <div *ngIf="mode === 'forgot-sent'" class="text-center animate-fade">
-          <div class="success-icon">✅</div>
-          <h3 class="mb-2">Check Your Email</h3>
-          <p class="text-sm text-secondary mb-4">
-            We sent a password reset link to <strong>{{ email }}</strong>.
-            <br>Check your inbox (and spam folder).
-          </p>
-          <button class="btn btn-outline btn-block" (click)="mode = 'login'">← Back to Login</button>
+        <!-- Forgot Password OTP & New Password Mode -->
+        <div *ngIf="mode === 'forgot-sent'" class="animate-fade">
+          <div class="text-center mb-6">
+            <h3 class="font-bold text-xl">Reset Your Password</h3>
+            <p class="text-sm text-secondary">Enter the OTP sent to <strong>{{ email }}</strong> and your new password.</p>
+          </div>
+
+          <form (ngSubmit)="resetPassword()" #resetForm="ngForm">
+            <div class="form-group">
+              <label class="form-label">6-Digit OTP</label>
+              <input type="text" class="form-control text-center text-xl tracking-widest" [(ngModel)]="otp" name="otp"
+                     placeholder="000000" maxlength="6" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-control" [(ngModel)]="password" name="password"
+                     placeholder="At least 6 characters" minlength="6" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" [disabled]="resetForm.invalid || isLoading">
+              {{ isLoading ? 'Resetting...' : '🔓 Reset Password' }}
+            </button>
+          </form>
+          
+          <div class="text-center mt-4">
+            <a href="javascript:void(0)" (click)="mode = 'login'" class="text-primary text-sm">← Back to Login</a>
+          </div>
         </div>
 
         <!-- Normal Login Form -->
@@ -123,16 +131,7 @@ declare const google: any;
     .logo-text { font-size: 1.75rem; font-weight: 900; color: #1E293B; margin: 0; }
     .subtitle { color: #64748B; font-size: 0.875rem; margin-top: 0.25rem; }
 
-    .btn-google {
-      width: 100%;
-      display: flex; align-items: center; justify-content: center; gap: 0.75rem;
-      padding: 0.85rem; border-radius: 12px;
-      border: 1px solid #E2E8F0;
-      background: white; color: #334155;
-      font-weight: 700; font-size: 0.9375rem;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .btn-google:hover { background: #F8FAFC; border-color: #CBD5E1; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    /* Google Login Removed */
 
     .divider {
       display: flex; align-items: center; gap: 1rem;
@@ -181,17 +180,17 @@ declare const google: any;
 export class LoginComponent implements OnInit {
   email = '';
   password = '';
+  otp = '';
   isLoading = false;
   mode: 'login' | 'forgot' | 'forgot-sent' = 'login';
 
-  constructor(private authService: AuthService, private router: Router, private toast: ToastService) {}
+  constructor(private authService: AuthService, private router: Router, private toast: ToastService) { }
 
   ngOnInit() {
     if (this.authService.isLoggedIn()) {
       const role = this.authService.getRole();
       if (role) this.authService.navigateByRole(role);
     }
-    this.loadGoogleScript();
   }
 
   loginWithEmail() {
@@ -214,35 +213,7 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  loginWithGoogle() {
-    // Use Google Identity Services popup
-    if (typeof google !== 'undefined' && google.accounts) {
-      google.accounts.id.prompt();
-    } else {
-      // Fallback: simulate Google login for dev
-      const email = prompt('Enter Google email (dev mode):');
-      const name = prompt('Enter your name:');
-      if (email && name) {
-        this.isLoading = true;
-        this.authService.googleLogin(email, name).subscribe({
-          next: (res) => {
-            this.isLoading = false;
-            if (res.role === 'TEACHER' && !res.isApproved) {
-              this.toast.warning('Teacher account pending admin approval.');
-              this.authService.logout();
-              return;
-            }
-            this.toast.success('Google login successful!');
-            this.authService.navigateByRole(res.role);
-          },
-          error: (err) => {
-            this.toast.error(err.error?.message || 'Google login failed');
-            this.isLoading = false;
-          }
-        });
-      }
-    }
-  }
+  // Google Login Removed
 
   forgotPassword() {
     this.isLoading = true;
@@ -250,55 +221,29 @@ export class LoginComponent implements OnInit {
       next: () => {
         this.isLoading = false;
         this.mode = 'forgot-sent';
-        this.toast.success('Reset link sent to your email!');
+        this.toast.success('OTP sent to your email!');
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Could not send reset link.');
+        this.toast.error(err.error?.message || 'Could not send OTP.');
         this.isLoading = false;
       }
     });
   }
 
-  private loadGoogleScript() {
-    // Load Google Identity Services script
-    if (typeof document !== 'undefined' && !document.getElementById('google-gsi')) {
-      const script = document.createElement('script');
-      script.id = 'google-gsi';
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        if (typeof google !== 'undefined') {
-          google.accounts.id.initialize({
-            client_id: environment.googleClientId,
-            use_fedcm_for_prompt: false,
-            callback: (response: any) => this.handleGoogleResponse(response)
-          });
-        }
-      };
-      document.head.appendChild(script);
-    }
-  }
-
-  private handleGoogleResponse(response: any) {
-    // Decode the JWT from Google
-    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+  resetPassword() {
     this.isLoading = true;
-    this.authService.googleLogin(payload.email, payload.name).subscribe({
-      next: (res) => {
+    this.authService.resetPassword(this.email, this.otp, this.password).subscribe({
+      next: () => {
         this.isLoading = false;
-        if (res.role === 'TEACHER' && !res.isApproved) {
-          this.toast.warning('Teacher account pending admin approval.');
-          this.authService.logout();
-          return;
-        }
-        this.toast.success('Google login successful!');
-        this.authService.navigateByRole(res.role);
+        this.mode = 'login';
+        this.toast.success('Password reset successful! Please login with your new password.');
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Google login failed');
+        this.toast.error(err.error?.message || 'Reset failed. Check your OTP.');
         this.isLoading = false;
       }
     });
   }
+
+  // Google script removed
 }

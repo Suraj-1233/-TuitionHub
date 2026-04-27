@@ -20,20 +20,44 @@ import { ToastService } from '../../shared/services/toast.service';
           <p class="subtitle">Create an account to get started</p>
         </div>
 
-        <!-- Success: Teacher Pending -->
+        <!-- Step 2: OTP Verification -->
+        <div *ngIf="isVerifying" class="animate-fade">
+          <div class="text-center mb-6">
+            <div class="success-icon">📧</div>
+            <h3 class="font-bold text-xl">Verify Your Email</h3>
+            <p class="text-sm text-secondary">We sent an OTP to <strong>{{ formData.email }}</strong>. Please enter it below to activate your account.</p>
+          </div>
+
+          <form (ngSubmit)="verifyOtp()" #otpForm="ngForm">
+            <div class="form-group">
+              <label class="form-label">6-Digit OTP</label>
+              <input type="text" class="form-control text-center text-xl tracking-widest" [(ngModel)]="otpValue" name="otp"
+                     placeholder="000000" maxlength="6" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" [disabled]="otpForm.invalid || isLoading">
+              {{ isLoading ? 'Verifying...' : '✅ Verify & Activate' }}
+            </button>
+          </form>
+          
+          <div class="text-center mt-6">
+            <p class="text-xs text-secondary">Didn't receive code? <a href="javascript:void(0)" (click)="register()" class="text-primary font-bold">Resend OTP</a></p>
+          </div>
+        </div>
+
+        <!-- Success: Teacher Pending (After Verification) -->
         <div *ngIf="teacherPending" class="text-center animate-fade">
           <div class="pending-icon">⏳</div>
-          <h3 class="mb-2">Registration Successful!</h3>
+          <h3 class="mb-2">Email Verified!</h3>
           <p class="text-sm text-secondary mb-4">
-            Your <strong>Teacher</strong> account has been created. 
-            <br>Our admin team will review and approve your profile shortly.
-            <br><br>You'll be able to login once approved.
+            Your <strong>Teacher</strong> account is now verified. 
+            <br>However, it still requires <strong>admin approval</strong> before you can login.
+            <br><br>We'll notify you once approved.
           </p>
           <button class="btn btn-primary btn-block" routerLink="/auth/login">← Go to Login</button>
         </div>
 
-        <!-- Registration Form -->
-        <form *ngIf="!teacherPending" (ngSubmit)="register()" #regForm="ngForm">
+        <!-- Step 1: Registration Form -->
+        <form *ngIf="!teacherPending && !isVerifying" (ngSubmit)="register()" #regForm="ngForm">
           <!-- Role Selection -->
           <div class="role-selector mb-4">
             <button type="button" class="role-btn" [class.active]="formData.role === 'STUDENT'" (click)="formData.role = 'STUDENT'">
@@ -144,7 +168,7 @@ import { ToastService } from '../../shared/services/toast.service';
           </button>
         </form>
 
-        <div class="text-center mt-4 text-sm" *ngIf="!teacherPending">
+        <div class="text-center mt-4 text-sm" *ngIf="!teacherPending && !isVerifying">
           Already have an account? <a routerLink="/auth/login" class="text-primary font-bold">Login here</a>
         </div>
       </div>
@@ -236,7 +260,9 @@ import { ToastService } from '../../shared/services/toast.service';
 })
 export class RegisterComponent implements OnInit {
   isLoading = false;
+  isVerifying = false;
   teacherPending = false;
+  otpValue = '';
 
   formData: any = {
     role: 'STUDENT',
@@ -297,18 +323,34 @@ export class RegisterComponent implements OnInit {
   register() {
     this.isLoading = true;
     this.authService.register(this.formData).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.isVerifying = true;
+        this.toast.success('OTP sent to your email. Please verify.');
+      },
+      error: (err) => {
+        this.toast.error(err.error?.message || 'Registration failed. Please try again.');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  verifyOtp() {
+    this.isLoading = true;
+    this.authService.verifyOtp(this.formData.email, this.otpValue).subscribe({
       next: (res) => {
         this.isLoading = false;
         if (res.role === 'TEACHER' && !res.isApproved) {
+          this.isVerifying = false;
           this.teacherPending = true;
           this.authService.logout();
           return;
         }
-        this.toast.success('Registration successful! Welcome to TuitionHub!');
+        this.toast.success('Account verified successfully! Welcome to TuitionHub!');
         this.authService.navigateByRole(res.role);
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Registration failed. Please try again.');
+        this.toast.error(err.error?.message || 'Verification failed. Invalid OTP.');
         this.isLoading = false;
       }
     });

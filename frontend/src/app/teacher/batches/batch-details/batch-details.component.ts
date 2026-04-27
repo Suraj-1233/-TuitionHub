@@ -5,11 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { DashboardLayoutComponent } from '../../../shared/components/layout/dashboard-layout.component';
 import { BatchService } from '../../../shared/services/batch.service';
 import { MaterialService, StudyMaterial } from '../../../shared/services/material.service';
-import { AssignmentService, Assignment, Submission } from '../../../shared/services/assignment.service';
-import { ToastService } from '../../../shared/services/toast.service';
 import { Batch, User } from '../../../shared/models/models';
-
+import { AttendanceService, Attendance } from '../../../shared/services/attendance.service';
 import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
+import { ToastService } from 'src/app/shared/services/toast.service';
+import { Assignment, AssignmentService } from 'src/app/shared/services/assignment.service';
 
 @Component({
   selector: 'app-teacher-batch-details',
@@ -41,6 +41,9 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
             </button>
             <button class="tab-btn" [class.active]="activeTab === 'assignments'" (click)="activeTab = 'assignments'">
               📝 Assignments
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 'attendance'" (click)="activeTab = 'attendance'">
+              ✅ Attendance
             </button>
             <button class="tab-btn" [class.active]="activeTab === 'schedule'" (click)="activeTab = 'schedule'">
               🕒 Schedule
@@ -136,6 +139,54 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
            </div>
         </div>
 
+        <!-- Attendance Tab -->
+        <div *ngIf="activeTab === 'attendance'" class="animate-slide">
+          <div class="card glass mb-6 p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="card-title">Mark Attendance</h3>
+              <input type="date" class="form-control w-auto" [(ngModel)]="attendanceDate" (change)="loadAttendance()">
+            </div>
+
+            <div class="attendance-table-container">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="text-secondary text-sm border-b border-gray-100">
+                    <th class="pb-4 font-semibold">Student Name</th>
+                    <th class="pb-4 font-semibold">Status</th>
+                    <th class="pb-4 font-semibold text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let student of batch.students" class="border-b border-gray-50">
+                    <td class="py-4">
+                      <div class="font-bold text-slate-800">{{ student.name }}</div>
+                      <div class="text-xs text-slate-500">{{ student.email }}</div>
+                    </td>
+                    <td class="py-4">
+                      <span class="status-pill" [class]="getAttendanceStatus(student.id!)">
+                        {{ getAttendanceStatusLabel(student.id!) }}
+                      </span>
+                    </td>
+                    <td class="py-4">
+                      <div class="flex justify-center gap-2">
+                        <button class="btn btn-sm btn-success" (click)="markStudentAttendance(student, 'PRESENT')">Present</button>
+                        <button class="btn btn-sm btn-danger" (click)="markStudentAttendance(student, 'ABSENT')">Absent</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div *ngIf="!batch.students?.length" class="empty-state">No students in this batch.</div>
+            </div>
+            
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+              <p class="text-sm text-blue-700">
+                💡 <strong>Note:</strong> Marking a student as <strong>Absent</strong> will automatically send an email alert to the student and their parents.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <!-- Schedule Tab -->
         <div *ngIf="activeTab === 'schedule'" class="animate-slide">
            <!-- Schedule content ... -->
@@ -193,7 +244,26 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
     .info-row { display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem; }
     .info-row .label { font-weight: 600; color: var(--text-secondary); }
     .info-row .value { font-weight: 700; color: var(--text-primary); }
+    .info-row .value { font-weight: 700; color: var(--text-primary); }
     .empty-state { text-align: center; padding: 3rem; color: var(--text-secondary); font-style: italic; }
+
+    .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .status-pill.present { background: #DCFCE7; color: #15803D; }
+    .status-pill.absent { background: #FEE2E2; color: #B91C1C; }
+    .status-pill.none { background: #F1F5F9; color: #64748B; }
+    
+    .btn-success { background: #22C55E; color: white; border: none; }
+    .btn-danger { background: #EF4444; color: white; border: none; }
+    .btn-success:hover { background: #16A34A; }
+    .btn-danger:hover { background: #DC2626; }
+    .btn-sm { padding: 0.25rem 0.75rem; font-size: 0.8rem; border-radius: 6px; cursor: pointer; }
+    
+    .border-b { border-bottom-width: 1px; }
+    .border-gray-100 { border-color: #F1F5F9; }
+    .border-gray-50 { border-color: #F8FAFC; }
+    .bg-blue-50 { background-color: #EFF6FF; }
+    .text-blue-700 { color: #1D4ED8; }
+    .border-blue-100 { border-color: #DBEAFE; }
   `]
 })
 export class TeacherBatchDetailsComponent implements OnInit {
@@ -203,9 +273,12 @@ export class TeacherBatchDetailsComponent implements OnInit {
   selectedFileName = '';
   selectedFile: File | null = null;
   isUploading = false;
-  
+
   materials: StudyMaterial[] = [];
   assignments: Assignment[] = [];
+  attendanceRecords: Attendance[] = [];
+  attendanceDate: string = new Date().toISOString().split('T')[0];
+
   newMaterial: StudyMaterial = { title: '', type: 'PDF', url: '' };
   newAssignment: Assignment = { title: '', dueDate: '', description: '', maxMarks: 100 };
 
@@ -214,8 +287,9 @@ export class TeacherBatchDetailsComponent implements OnInit {
     private batchService: BatchService,
     private materialService: MaterialService,
     private assignmentService: AssignmentService,
+    private attendanceService: AttendanceService,
     private toast: ToastService
-  ) {}
+  ) { }
 
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -224,6 +298,7 @@ export class TeacherBatchDetailsComponent implements OnInit {
         this.batch = b;
         this.loadMaterials();
         this.loadAssignments();
+        this.loadAttendance();
       });
     }
   }
@@ -244,7 +319,7 @@ export class TeacherBatchDetailsComponent implements OnInit {
 
   uploadMaterial() {
     if (!this.selectedFile || !this.newMaterial.title) return;
-    
+
     this.isUploading = true;
     this.materialService.uploadFile(this.selectedFile).subscribe({
       next: (res) => {
@@ -282,7 +357,7 @@ export class TeacherBatchDetailsComponent implements OnInit {
 
   createAssignment() {
     if (!this.newAssignment.title) return;
-    
+
     // Ensure the date is sent in ISO format with local timezone info
     // HTML datetime-local provides YYYY-MM-DDTHH:mm, we need to make sure backend gets the full point in time
     const payload = { ...this.newAssignment };
@@ -308,5 +383,42 @@ export class TeacherBatchDetailsComponent implements OnInit {
     // If it's already a full URL or a relative path that we can just use directly
     if (url.startsWith('http')) return url;
     return url;
+  }
+
+  loadAttendance() {
+    if (this.batch) {
+      this.attendanceService.getBatchAttendance(this.batch.id, this.attendanceDate).subscribe(records => {
+        this.attendanceRecords = records;
+      });
+    }
+  }
+
+  markStudentAttendance(student: User, status: 'PRESENT' | 'ABSENT' | 'LATE') {
+    if (!this.batch) return;
+
+    const record: Attendance = {
+      batchId: this.batch.id,
+      studentId: student.id!,
+      attendanceDate: this.attendanceDate,
+      status: status
+    };
+
+    this.attendanceService.markAttendance(record).subscribe({
+      next: () => {
+        this.toast.success(`Attendance marked as ${status} for ${student.name}`);
+        this.loadAttendance();
+      },
+      error: () => this.toast.error('Failed to mark attendance')
+    });
+  }
+
+  getAttendanceStatus(studentId: number): string {
+    const record = this.attendanceRecords.find(r => r.studentId === studentId);
+    return record ? record.status.toLowerCase() : 'none';
+  }
+
+  getAttendanceStatusLabel(studentId: number): string {
+    const record = this.attendanceRecords.find(r => r.studentId === studentId);
+    return record ? record.status : 'NOT MARKED';
   }
 }

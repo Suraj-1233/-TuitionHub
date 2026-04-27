@@ -12,6 +12,8 @@ import java.util.List;
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     List<Attendance> findByBatchAndAttendanceDate(Batch batch, LocalDate date);
+    List<Attendance> findByBatchIdAndAttendanceDate(Long batchId, LocalDate date);
     List<Attendance> findByStudentAndBatch(User student, Batch batch);
+    List<Attendance> findByStudentId(Long studentId);
     boolean existsByStudentAndBatchAndAttendanceDate(User student, Batch batch, LocalDate date);
 }

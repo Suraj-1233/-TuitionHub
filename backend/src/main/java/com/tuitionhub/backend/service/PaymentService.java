@@ -34,6 +34,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final BatchRepository batchRepository;
+    private final EmailService emailService;
 
     @Value("${app.razorpay.key-id}")
     private String razorpayKeyId;
@@ -119,6 +120,10 @@ public class PaymentService {
                 payment.setRazorpayPaymentId(request.getRazorpayPaymentId());
                 payment.setRazorpaySignature(request.getRazorpaySignature());
                 payment.setPaidAt(LocalDateTime.now());
+                
+                // Send Email Confirmation
+                sendPaymentConfirmationEmail(payment);
+                
             } else {
                 log.error("Signature verification FAILED for payment ID: {}", request.getPaymentId());
                 payment.setStatus(Payment.PaymentStatus.FAILED);
@@ -132,6 +137,49 @@ public class PaymentService {
             log.error("Error in verifyAndUpdatePayment: {}", e.getMessage(), e);
             throw new BadRequestException("Verification failed: " + e.getMessage());
         }
+    }
+
+    private void sendPaymentConfirmationEmail(Payment payment) {
+        String to = payment.getStudent().getEmail();
+        if (to == null || to.isEmpty()) return;
+
+        String subject = "Payment Confirmation - " + payment.getBatch().getName();
+        String htmlContent = String.format("""
+            <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                    <h2 style="color: #4CAF50;">Payment Successful!</h2>
+                    <p>Hello <strong>%s</strong>,</p>
+                    <p>Your payment for the batch <strong>%s</strong> has been received successfully.</p>
+                    <table style="width: 100%%; border-collapse: collapse; margin: 20px 0;">
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Amount:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee;">INR %s</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>For Month:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee;">%s</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Transaction ID:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee;">%s</td>
+                        </tr>
+                    </table>
+                    <p>Thank you for choosing TuitionHub.</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 0.8em; color: #777;">This is an automated email. Please do not reply.</p>
+                </div>
+            </body>
+            </html>
+            """, 
+            payment.getStudent().getName(), 
+            payment.getBatch().getName(), 
+            payment.getAmount(),
+            payment.getForMonth() != null ? payment.getForMonth().format(DateTimeFormatter.ofPattern("MMMM yyyy")) : "N/A",
+            payment.getRazorpayPaymentId()
+        );
+
+        emailService.sendHtmlEmail(to, subject, htmlContent);
     }
 
     public List<PaymentDto.Response> getStudentPayments(User student) {
