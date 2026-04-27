@@ -115,9 +115,17 @@ public class DataInitializer implements CommandLineRunner {
         createTeacherIfNotExist("amit@tuitionhub.com", "Amit Singh", "English", "MA English", "Spoken English & Literature");
 
         // Add Dummy Batches
-        createBatchIfNotExist("Physics Advance 101", "Suresh Raina", "Physics", "12", 2000.0);
-        createBatchIfNotExist("Biology Basics", "Sanya Malhotra", "Biology", "10", 1200.0);
-        createBatchIfNotExist("Spoken English", "Amit Singh", "English", "All", 1000.0);
+        createBatchIfNotExist("Physics Advance 101", "Suresh Raina", "Physics", "12", 100.0);
+        createBatchIfNotExist("Biology Basics", "Sanya Malhotra", "Biology", "10", 100.0);
+        createBatchIfNotExist("Spoken English", "Amit Singh", "English", "All", 100.0);
+
+        // One-time fix: Ensure all existing batches have at least 100 INR fee for Razorpay testing
+        batchRepository.findAll().forEach(batch -> {
+            if (batch.getMonthlyFees() == null || batch.getMonthlyFees() < 100.0) {
+                batch.setMonthlyFees(100.0);
+                batchRepository.save(batch);
+            }
+        });
     }
 
     private void createTeacherIfNotExist(String email, String name, String subject, String qual, String bio) {
