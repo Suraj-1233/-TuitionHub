@@ -45,6 +45,7 @@ public class BatchDto {
         private Boolean isTimeChangeProposed;
         private TeacherSummary teacher;
         private Boolean isActive;
+        private String currency; // INR, USD, GBP, etc.
     }
 
     @Data

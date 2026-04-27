@@ -192,10 +192,11 @@ export class StudentPaymentsComponent implements OnInit {
   }
 
   openRazorpay(order: Payment) {
+    const currency = (order as any).currency || 'INR';
     const options = {
       key: environment.razorpayKey,
-      amount: order.amount * 100,
-      currency: 'INR',
+      amount: order.amount * (currency === 'INR' ? 100 : 100), // Razorpay always needs smallest unit
+      currency: currency,
       name: 'TuitionHub',
       description: 'Fee Payment - ' + order.forMonth,
       order_id: order.razorpayOrderId,

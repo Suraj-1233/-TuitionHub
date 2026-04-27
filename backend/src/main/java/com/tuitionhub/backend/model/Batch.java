@@ -38,6 +38,9 @@ public class Batch {
     @Column(nullable = false)
     private Double monthlyFees;
 
+    @Builder.Default
+    private String currency = "INR"; // INR, USD, GBP, EUR, CAD, AUD
+
     // Timing
     private String timingFrom;        // "06:00 PM"
     private String timingTo;          // "07:00 PM"

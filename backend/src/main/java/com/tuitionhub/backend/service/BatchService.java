@@ -107,8 +107,14 @@ public class BatchService {
 
         if (approve) {
             req.setStatus(BatchJoinRequest.RequestStatus.APPROVED);
-            req.getBatch().getStudents().add(req.getStudent());
-            batchRepository.save(req.getBatch());
+            User student = req.getStudent();
+            Batch batch = req.getBatch();
+            batch.getStudents().add(student);
+            // Auto-set batch currency from student's registered currency
+            if (student.getCurrency() != null && !student.getCurrency().isEmpty()) {
+                batch.setCurrency(student.getCurrency());
+            }
+            batchRepository.save(batch);
         } else {
             req.setStatus(BatchJoinRequest.RequestStatus.REJECTED);
         }
@@ -186,6 +192,7 @@ public class BatchService {
         res.setProposedByRole(batch.getProposedByRole());
         res.setIsTimeChangeProposed(batch.getIsTimeChangeProposed());
         res.setIsActive(batch.getIsActive());
+        res.setCurrency(batch.getCurrency() != null ? batch.getCurrency() : "INR");
 
         BatchDto.TeacherSummary ts = new BatchDto.TeacherSummary();
         ts.setId(batch.getTeacher().getId());

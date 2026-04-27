@@ -14,6 +14,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.razorpay.Order;
+import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
+import org.json.JSONObject;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
@@ -50,8 +54,22 @@ public class PaymentService {
                     }
                 });
 
-        // Generate mock Razorpay order id (replace with real Razorpay SDK call)
-        String orderId = "order_" + System.currentTimeMillis();
+        // Create real Razorpay order via SDK
+        String orderId;
+        String currency = (batch.getCurrency() != null && !batch.getCurrency().isEmpty()) ? batch.getCurrency() : "INR";
+        try {
+            RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
+            JSONObject orderRequest = new JSONObject();
+            orderRequest.put("amount", batch.getMonthlyFees().intValue() * 100); // smallest unit (paise for INR, cents for USD)
+            orderRequest.put("currency", currency);
+            orderRequest.put("receipt", "rcpt_" + System.currentTimeMillis());
+            Order razorpayOrder = razorpayClient.orders.create(orderRequest);
+            orderId = razorpayOrder.get("id");
+            log.info("Razorpay order created: {} in {}", orderId, currency);
+        } catch (RazorpayException e) {
+            log.error("Failed to create Razorpay order", e);
+            throw new BadRequestException("Payment gateway error. Please try again.");
+        }
 
         Payment payment = Payment.builder()
                 .student(student)
