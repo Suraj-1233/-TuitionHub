@@ -123,29 +123,55 @@ import { User } from '../../shared/models/models';
             <!-- Expanded Detail Row -->
             <tr *ngIf="expandedTeacher && expandedTeacher.id === teacher.id" class="detail-row">
               <td colspan="7" class="detail-panel">
-                <div class="detail-header">📊 {{ expandedTeacher.name }}'s Batches & Students</div>
-                <div *ngIf="getTeacherBatches(expandedTeacher.id).length === 0" class="text-secondary p-3">No batches created yet.</div>
-                <div *ngFor="let batch of getTeacherBatches(expandedTeacher.id)" class="batch-detail-card">
-                  <div class="batch-detail-top">
-                    <div>
-                      <strong>📚 {{ batch.name }}</strong>
-                      <span class="subject-mini">{{ batch.subject }}</span>
+                <div class="detail-header">
+                  <span class="icon-wrap">📋</span> {{ expandedTeacher.name }}'s Batches & Students
+                </div>
+                <div *ngIf="getTeacherBatches(expandedTeacher.id).length === 0" class="empty-state-mini">
+                  No batches created yet.
+                </div>
+                <div class="batch-grid" *ngIf="getTeacherBatches(expandedTeacher.id).length > 0">
+                  <div *ngFor="let batch of getTeacherBatches(expandedTeacher.id)" class="batch-premium-card">
+                    <div class="batch-premium-top">
+                      <div class="batch-title-group">
+                        <div class="batch-name">{{ batch.name }}</div>
+                        <span class="subject-pill">{{ batch.subject }}</span>
+                      </div>
+                      <div class="batch-price">₹{{ batch.monthlyFees }}<span>/mo</span></div>
                     </div>
-                    <div class="batch-meta">
-                      <span>🕒 {{ batch.timingFrom }} – {{ batch.timingTo }}</span>
-                      <span>📅 {{ batch.days }}</span>
-                      <span>💰 ₹{{ batch.monthlyFees }}/mo</span>
-                      <span class="student-mini-count">👤 {{ (batch.students || []).length }} Students</span>
+                    
+                    <div class="batch-info-grid">
+                      <div class="info-item">
+                        <span class="info-icon">🕒</span>
+                        <div>
+                          <div class="info-label">Timing</div>
+                          <div class="info-value">{{ batch.timingFrom }} - {{ batch.timingTo }}</div>
+                        </div>
+                      </div>
+                      <div class="info-item">
+                        <span class="info-icon">📅</span>
+                        <div>
+                          <div class="info-label">Days</div>
+                          <div class="info-value">{{ batch.days }}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="batch-students-section">
+                      <div class="section-title">
+                        Enrolled Students <span class="badge">{{ (batch.students || []).length }}</span>
+                      </div>
+                      <div class="students-wrap" *ngIf="(batch.students || []).length > 0">
+                        <div *ngFor="let s of batch.students" class="student-pill">
+                          <div class="sp-avatar">{{ s.name.charAt(0) }}</div>
+                          <div class="sp-name">{{ s.name }}</div>
+                          <div class="sp-country" *ngIf="s.country">{{ s.country }}</div>
+                        </div>
+                      </div>
+                      <div *ngIf="(batch.students || []).length === 0" class="no-students-text">
+                        No students enrolled.
+                      </div>
                     </div>
                   </div>
-                  <div class="students-in-batch" *ngIf="(batch.students || []).length > 0">
-                    <div *ngFor="let s of batch.students" class="student-chip">
-                      <span class="chip-avatar">{{ s.name.charAt(0) }}</span>
-                      <span class="chip-name">{{ s.name }}</span>
-                      <span class="chip-country">{{ s.country || 'IN' }}</span>
-                    </div>
-                  </div>
-                  <div *ngIf="(batch.students || []).length === 0" class="text-xs text-secondary">No students enrolled yet.</div>
                 </div>
               </td>
             </tr>
@@ -218,21 +244,41 @@ import { User } from '../../shared/models/models';
     .student-count-badge.zero { background: #F1F5F9; color: #94A3B8; border: 1px solid #E2E8F0; }
     .student-count-cell { display: flex; flex-direction: column; }
     .mt-1 { margin-top: 0.25rem; }
-    .btn-view { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; padding: 0.4rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
-    .btn-view:hover { background: #4338CA; color: white; }
-    .detail-row td { padding: 0 !important; }
-    .detail-panel { background: #F8FAFC; border-top: 2px solid #C7D2FE; padding: 1.5rem !important; }
-    .detail-header { font-size: 1rem; font-weight: 800; color: #312E81; margin-bottom: 1rem; }
-    .batch-detail-card { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; }
-    .batch-detail-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
-    .subject-mini { background: #EEF2FF; color: #4338CA; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; margin-left: 0.5rem; }
-    .batch-meta { display: flex; gap: 1rem; font-size: 0.75rem; color: #64748B; font-weight: 600; flex-wrap: wrap; }
-    .student-mini-count { background: #DCFCE7; color: #166534; padding: 2px 8px; border-radius: 100px; font-weight: 700; }
-    .students-in-batch { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .student-chip { display: flex; align-items: center; gap: 0.4rem; background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 100px; padding: 0.3rem 0.75rem; font-size: 0.75rem; }
-    .chip-avatar { width: 20px; height: 20px; background: #6366F1; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.65rem; }
-    .chip-name { font-weight: 700; color: #334155; }
-    .chip-country { color: #94A3B8; font-size: 0.7rem; }
+    .btn-view { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; padding: 0.45rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem; }
+    .btn-view:hover { background: #4338CA; color: white; transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(67, 56, 202, 0.2); }
+    .detail-row td { padding: 0 !important; border-bottom: 2px solid #E2E8F0; }
+    .detail-panel { background: #F8FAFC; box-shadow: inset 0 4px 6px -4px rgba(0,0,0,0.05); padding: 2rem !important; }
+    .detail-header { font-size: 1.125rem; font-weight: 800; color: #1E293B; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+    .icon-wrap { background: white; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .empty-state-mini { padding: 2rem; text-align: center; color: #64748B; background: white; border-radius: 12px; border: 1px dashed #CBD5E1; }
+    
+    .batch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.5rem; }
+    .batch-premium-card { background: white; border-radius: 16px; padding: 1.5rem; border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); transition: all 0.3s ease; position: relative; overflow: hidden; }
+    .batch-premium-card:hover { transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.08); border-color: #C7D2FE; }
+    .batch-premium-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(to bottom, #6366F1, #8B5CF6); }
+    
+    .batch-premium-top { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px dashed #E2E8F0; padding-bottom: 1rem; margin-bottom: 1rem; }
+    .batch-title-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .batch-name { font-size: 1.125rem; font-weight: 800; color: #0F172A; }
+    .subject-pill { background: #EEF2FF; color: #4338CA; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 6px; width: fit-content; text-transform: uppercase; letter-spacing: 0.05em; }
+    .batch-price { font-size: 1.25rem; font-weight: 800; color: #10B981; text-align: right; }
+    .batch-price span { font-size: 0.75rem; color: #64748B; font-weight: 600; display: block; }
+    
+    .batch-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; background: #F8FAFC; padding: 1rem; border-radius: 12px; }
+    .info-item { display: flex; align-items: center; gap: 0.75rem; }
+    .info-icon { font-size: 1.25rem; }
+    .info-label { font-size: 0.65rem; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .info-value { font-size: 0.875rem; color: #334155; font-weight: 700; }
+    
+    .batch-students-section { margin-top: 1rem; }
+    .section-title { font-size: 0.75rem; font-weight: 700; color: #475569; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .section-title .badge { background: #E2E8F0; color: #475569; padding: 0.1rem 0.5rem; border-radius: 100px; font-size: 0.7rem; }
+    .students-wrap { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .student-pill { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1px solid #E2E8F0; padding: 0.25rem 0.75rem 0.25rem 0.25rem; border-radius: 100px; font-size: 0.8rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    .sp-avatar { width: 24px; height: 24px; background: #F1F5F9; color: #64748B; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.65rem; }
+    .sp-name { font-weight: 600; color: #334155; }
+    .sp-country { font-size: 0.65rem; color: #94A3B8; font-weight: 700; background: #F1F5F9; padding: 2px 6px; border-radius: 4px; }
+    .no-students-text { font-size: 0.8rem; color: #94A3B8; font-style: italic; }
     .action-group { display: flex; gap: 0.5rem; justify-content: flex-end; }
     .btn-icon-success { background: #DCFCE7; color: #166534; border: none; padding: 0.5rem 0.8rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: var(--transition); }
     .btn-icon-danger { background: #FEE2E2; color: #991B1B; border: none; padding: 0.5rem 0.8rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: var(--transition); }
