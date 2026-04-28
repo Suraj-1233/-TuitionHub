@@ -29,6 +29,7 @@ public class DataInitializer implements CommandLineRunner {
                     .role(Role.ADMIN)
                     .isActive(true)
                     .isApproved(true)
+                    .referralCode("TUI-ADMIN")
                     .build();
             userRepository.save(admin);
             log.info("✅ Admin created: email=admin@tuitionhub.com, password=admin123");
@@ -44,6 +45,7 @@ public class DataInitializer implements CommandLineRunner {
                     .role(Role.SUPER_ADMIN)
                     .isActive(true)
                     .isApproved(true)
+                    .referralCode("TUI-SUPER")
                     .build();
             userRepository.save(superAdmin);
             log.info("✅ Super Admin created: super@tuitionhub.com (Password: super123)");

@@ -6,6 +6,7 @@ export interface AuthResponse {
   email: string;
   isApproved: boolean;
   timezone?: string;
+  referralCode?: string;
 }
 
 export interface User {
@@ -30,6 +31,7 @@ export interface User {
   currency?: string;
   isActive: boolean;
   isApproved: boolean;
+  referralCode?: string;
 }
 
 export interface Batch {
@@ -87,6 +89,12 @@ export interface Payment {
   payerContact?: string;
   gatewayFee?: number;
   gatewayTax?: number;
+
+  // Error Details
+  errorCode?: string;
+  errorDescription?: string;
+  errorReason?: string;
+  errorStep?: string;
 }
 
 export interface BatchJoinRequest {

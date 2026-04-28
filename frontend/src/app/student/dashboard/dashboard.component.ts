@@ -142,7 +142,7 @@ import { FormsModule } from '@angular/forms';
               <div class="batch-icon">🎓</div>
               <div class="batch-info">
                 <div class="batch-name">{{ batch.name }}</div>
-                <div class="teacher-tag">Mentor: {{ batch.teacher?.name }}</div>
+                <div class="teacher-tag">Mentor: {{ batch.teacher.name }}</div>
               </div>
             </div>
           </div>

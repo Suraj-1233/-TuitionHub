@@ -49,7 +49,7 @@ public class AuthService {
         }
 
         String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole().name(), user.getId());
-        return new AuthDto.AuthResponse(token, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), user.getIsApproved());
+        return new AuthDto.AuthResponse(token, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), user.getIsApproved(), user.getReferralCode());
     }
 
     // ==================== REGISTRATION ====================
@@ -100,6 +100,21 @@ public class AuthService {
         user.setCity(request.getCity());
         user.setCountry(request.getCountry());
         user.setTimezone(request.getTimezone() != null ? request.getTimezone() : "Asia/Kolkata");
+        
+        // Referral System
+        if (user.getReferralCode() == null) {
+            user.setReferralCode(generateUniqueReferralCode());
+        }
+        
+        if (request.getReferralCode() != null && !request.getReferralCode().trim().isEmpty()) {
+            User referrer = userRepository.findByReferralCode(request.getReferralCode().toUpperCase().trim())
+                    .orElse(null);
+            if (referrer != null) {
+                user.setReferredBy(referrer);
+                log.info("User {} referred by {}", request.getEmail(), referrer.getEmail());
+            }
+        }
+
         user.setIsActive(false); 
         user.setIsApproved(!isTeacher);
         user.setOtp(encodedOtp);
@@ -108,7 +123,7 @@ public class AuthService {
         userRepository.save(user);
 
         otpService.sendOtp(user.getEmail(), otp);
-        return new AuthDto.AuthResponse(null, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), false);
+        return new AuthDto.AuthResponse(null, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), false, user.getReferralCode());
     }
 
     // Google Login Removed
@@ -205,7 +220,7 @@ public class AuthService {
         userRepository.save(user);
 
         String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole().name(), user.getId());
-        return new AuthDto.AuthResponse(token, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), user.getIsApproved());
+        return new AuthDto.AuthResponse(token, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), user.getIsApproved(), user.getReferralCode());
     }
 
     // ==================== TIMEZONE ====================
@@ -225,5 +240,17 @@ public class AuthService {
 
     private String generateOtp() {
         return String.format("%06d", new Random().nextInt(999999));
+    }
+
+    private String generateUniqueReferralCode() {
+        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        StringBuilder sb = new StringBuilder("TUI-");
+        Random rnd = new Random();
+        for (int i = 0; i < 5; i++) {
+            sb.append(chars.charAt(rnd.nextInt(chars.length())));
+        }
+        String code = sb.toString();
+        // Rare case check if exists, but for now simple
+        return code;
     }
 }

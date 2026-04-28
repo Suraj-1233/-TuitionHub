@@ -23,7 +23,7 @@ import { Assignment, AssignmentService } from 'src/app/shared/services/assignmen
             <h1 class="page-title">{{ batch.name }}</h1>
             <p class="subtitle">{{ batch.subject }} • Class {{ batch.targetClass }}</p>
             <div class="student-pill" *ngIf="batch.students?.length">
-              👤 Student: <strong>{{ batch.students![0]?.name }}</strong>
+              👤 Student: <strong>{{ batch.students![0].name }}</strong>
             </div>
           </div>
           <div class="flex gap-2">
@@ -202,7 +202,7 @@ import { Assignment, AssignmentService } from 'src/app/shared/services/assignmen
             <div class="card glass" *ngIf="batch.students?.length && batch.students![0]?.timezone && batch.students![0]?.timezone !== (batch.timezone || 'Asia/Kolkata')">
               <div class="card-header"><h3 class="card-title">🌍 Student's Local Time</h3></div>
               <div class="p-6">
-                <div class="info-row"><span class="label">Student Timezone:</span><span class="value">{{ batch.students![0]?.timezone }}</span></div>
+                <div class="info-row"><span class="label">Student Timezone:</span><span class="value">{{ batch.students![0].timezone }}</span></div>
                 <p class="text-sm text-secondary">The student sees class times converted to their local timezone automatically.</p>
               </div>
             </div>

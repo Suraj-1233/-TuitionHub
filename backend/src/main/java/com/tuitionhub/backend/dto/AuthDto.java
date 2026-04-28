@@ -29,6 +29,7 @@ public class AuthDto {
         private String city;
         private String country;
         private String timezone;
+        private String referralCode;
     }
 
     @Data
@@ -57,14 +58,16 @@ public class AuthDto {
         private String name;
         private String email;
         private Boolean isApproved;
+        private String referralCode;
 
-        public AuthResponse(String token, String role, Long userId, String name, String email, Boolean isApproved) {
+        public AuthResponse(String token, String role, Long userId, String name, String email, Boolean isApproved, String referralCode) {
             this.token = token;
             this.role = role;
             this.userId = userId;
             this.name = name;
             this.email = email;
             this.isApproved = isApproved;
+            this.referralCode = referralCode;
         }
     }
 }

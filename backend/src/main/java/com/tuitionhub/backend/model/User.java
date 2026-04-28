@@ -55,6 +55,15 @@ public class User {
 
     // Common
     private String profilePhoto;
+
+    // Referral System
+    @Column(unique = true)
+    private String referralCode;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "referred_by_id")
+    private User referredBy;
+
     private String city;
     private String country;
 
