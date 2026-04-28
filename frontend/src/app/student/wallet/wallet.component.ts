@@ -265,16 +265,67 @@ export class WalletComponent implements OnInit {
     }
 
     const user = this.authService.getCurrentUser();
-    if (user) {
-      this.paymentService.topupWallet(user.userId, this.topupAmount).subscribe({
-        next: () => {
-          this.toastService.success('Topup successful! (Simulated)');
-          this.showTopupModal = false;
-          this.topupAmount = 0;
-          this.loadData();
-        },
-        error: () => this.toastService.error('Topup failed')
+    if (!user) return;
+
+    // 1. Create order on backend
+    this.paymentService.createTopupOrder(this.topupAmount).subscribe({
+      next: (order: any) => {
+        this.openRazorpayCheckout(order, user);
+      },
+      error: (err) => this.toastService.error(err.error?.message || 'Failed to create topup order')
+    });
+  }
+
+  openRazorpayCheckout(order: any, user: any) {
+    // Fetch key first
+    this.authService.getProfile().subscribe(() => { // Dummy call to ensure auth
+      this.paymentService.getRazorpayKey().subscribe((config: any) => {
+        const options = {
+          key: config.keyId,
+          amount: order.amount * 100,
+          currency: 'INR',
+          name: 'TuitionHub Wallet',
+          description: 'Wallet Topup',
+          order_id: order.razorpayOrderId,
+          handler: (response: any) => {
+            this.verifyTopup(response, order.id);
+          },
+          prefill: {
+            name: user.name,
+            email: user.email
+          },
+          theme: {
+            color: '#6366f1'
+          },
+          modal: {
+            ondismiss: () => {
+              this.toastService.info('Topup cancelled');
+            }
+          }
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
       });
-    }
+    });
+  }
+
+  verifyTopup(razorpayResponse: any, paymentId: number) {
+    const verifyRequest = {
+      paymentId: paymentId,
+      razorpayOrderId: razorpayResponse.razorpay_order_id,
+      razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+      razorpaySignature: razorpayResponse.razorpay_signature
+    };
+
+    this.paymentService.verifyTopup(verifyRequest).subscribe({
+      next: () => {
+        this.toastService.success('Wallet updated successfully!');
+        this.showTopupModal = false;
+        this.topupAmount = 0;
+        this.loadData();
+      },
+      error: () => this.toastService.error('Verification failed. Please contact support.')
+    });
   }
 }

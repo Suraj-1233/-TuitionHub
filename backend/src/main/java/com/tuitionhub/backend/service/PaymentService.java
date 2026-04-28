@@ -35,6 +35,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final BatchRepository batchRepository;
     private final EmailService emailService;
+    private final WalletService walletService;
 
     @Value("${app.razorpay.key-id}")
     private String razorpayKeyId;
@@ -106,6 +107,57 @@ public class PaymentService {
             log.error("Unexpected error in createPaymentOrder: {}", e.getMessage(), e);
             throw new RuntimeException("An internal error occurred while processing payment: " + e.getMessage());
         }
+    }
+
+    @Transactional
+    public PaymentDto.Response createTopupOrder(Double amount, User student) {
+        try {
+            if (amount < 1) {
+                throw new BadRequestException("Amount must be at least 1 INR");
+            }
+
+            // Create real Razorpay order via SDK
+            String orderId;
+            try {
+                RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId.trim(), razorpayKeySecret.trim());
+                JSONObject orderRequest = new JSONObject();
+                int amountPaise = (int) (amount * 100);
+                orderRequest.put("amount", amountPaise);
+                orderRequest.put("currency", "INR");
+                orderRequest.put("receipt", "topup_" + System.currentTimeMillis());
+                
+                Order razorpayOrder = razorpayClient.orders.create(orderRequest);
+                orderId = razorpayOrder.get("id");
+                log.info("Razorpay topup order created: {} for student {}", orderId, student.getEmail());
+            } catch (RazorpayException e) {
+                log.error("Razorpay SDK Error during topup: {}", e.getMessage());
+                throw new BadRequestException("Razorpay Error: " + e.getMessage());
+            }
+
+            Payment payment = Payment.builder()
+                    .student(student)
+                    .amount(amount)
+                    .status(Payment.PaymentStatus.PENDING)
+                    .razorpayOrderId(orderId)
+                    .paymentMethod("TOPUP")
+                    .build();
+
+            payment = paymentRepository.save(payment);
+            return mapToResponse(payment);
+        } catch (Exception e) {
+            log.error("Error creating topup order: {}", e.getMessage());
+            throw new BadRequestException("Topup order failed: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public PaymentDto.Response verifyTopup(PaymentDto.VerifyRequest request, User student) {
+        PaymentDto.Response response = verifyAndUpdatePayment(request);
+        if ("PAID".equals(response.getStatus())) {
+            // Update wallet balance
+            walletService.addMoneyToWallet(student, response.getAmount(), "Razorpay Topup: " + response.getRazorpayPaymentId(), "TOPUP");
+        }
+        return response;
     }
 
     @Transactional
@@ -335,5 +387,9 @@ public class PaymentService {
         res.setErrorStep(p.getErrorStep());
         
         return res;
+    }
+
+    public String getRazorpayKeyId() {
+        return razorpayKeyId;
     }
 }

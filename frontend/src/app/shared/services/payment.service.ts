@@ -54,6 +54,14 @@ export class PaymentService {
     return this.http.post(`${this.apiUrl}/wallet/topup`, { userId, amount });
   }
 
+  createTopupOrder(amount: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/student/wallet/topup/create-order?amount=${amount}`, {});
+  }
+
+  verifyTopup(request: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/student/wallet/topup/verify`, request);
+  }
+
   // Session Methods
   bookSession(request: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/sessions/book`, request);
@@ -61,6 +69,10 @@ export class PaymentService {
 
   payForSession(sessionId: number, method: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/sessions/${sessionId}/pay`, { method });
+  }
+
+  getRazorpayKey(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/config/razorpay-key`);
   }
 
   confirmGateway(sessionId: number, ref: string, amount: number): Observable<any> {

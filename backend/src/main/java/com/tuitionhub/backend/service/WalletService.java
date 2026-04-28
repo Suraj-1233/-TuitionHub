@@ -69,6 +69,32 @@ public class WalletService {
     }
 
     @Transactional
+    public void addMoneyToWallet(User user, Double amount, String description, String source) {
+        Wallet wallet = getOrCreateWallet(user.getId());
+        wallet.setBalance(wallet.getBalance() + amount);
+        walletRepository.save(wallet);
+
+        WalletTransaction.TransactionSource txSource;
+        try {
+            txSource = WalletTransaction.TransactionSource.valueOf(source.toUpperCase());
+        } catch (Exception e) {
+            txSource = WalletTransaction.TransactionSource.TOPUP;
+        }
+
+        WalletTransaction transaction = WalletTransaction.builder()
+                .wallet(wallet)
+                .amount(amount)
+                .type(WalletTransaction.TransactionType.CREDIT)
+                .source(txSource)
+                .description(description)
+                .isWithdrawable(true) // Topups are withdrawable real money
+                .build();
+        
+        transactionRepository.save(transaction);
+        log.info("Wallet topup: Credited {} to user {}", amount, user.getEmail());
+    }
+
+    @Transactional
     public void deductBalance(Long userId, Double amount, String description, String referenceId) {
         Wallet wallet = getWalletByUserId(userId);
 

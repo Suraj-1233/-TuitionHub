@@ -31,6 +31,22 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.verifyAndUpdatePayment(request));
     }
 
+    @PostMapping("/api/student/wallet/topup/create-order")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<PaymentDto.Response> createTopupOrder(
+            @RequestParam Double amount,
+            @AuthenticationPrincipal User student) {
+        return ResponseEntity.ok(paymentService.createTopupOrder(amount, student));
+    }
+
+    @PostMapping("/api/student/wallet/topup/verify")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<PaymentDto.Response> verifyTopup(
+            @RequestBody PaymentDto.VerifyRequest request,
+            @AuthenticationPrincipal User student) {
+        return ResponseEntity.ok(paymentService.verifyTopup(request, student));
+    }
+
     @PostMapping("/api/student/payments/notify-failure")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<Void> notifyFailure(@RequestBody PaymentDto.FailureRequest request) {
@@ -62,5 +78,10 @@ public class PaymentController {
             @PathVariable Long id,
             @RequestParam(required = false) String remark) {
         return ResponseEntity.ok(paymentService.markAsPaid(id, remark));
+    }
+
+    @GetMapping("/api/config/razorpay-key")
+    public ResponseEntity<java.util.Map<String, String>> getRazorpayKey() {
+        return ResponseEntity.ok(java.util.Map.of("keyId", paymentService.getRazorpayKeyId()));
     }
 }
