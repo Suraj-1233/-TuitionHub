@@ -46,7 +46,15 @@ import { ToastService } from '../../shared/services/toast.service';
             <div class="card-content">
               <span class="label">Referral Earnings</span>
               <h2 class="amount">{{ wallet?.currency }} {{ totalReferralEarnings.toFixed(2) }}</h2>
-              <p class="hint">Earn more by inviting friends!</p>
+              
+              <div class="referral-code-section">
+                <span class="code-label">Your Referral Code</span>
+                <div class="code-display">
+                  <code>{{ referralCode }}</code>
+                  <button class="copy-icon-btn" (click)="copyReferralCode()" title="Copy Code">📋</button>
+                </div>
+                <p class="hint">Share this code to earn rewards!</p>
+              </div>
             </div>
           </div>
         </div>
@@ -178,6 +186,14 @@ import { ToastService } from '../../shared/services/toast.service';
     .font-bold { font-weight: 700; color: #1e293b; }
     .empty-state { text-align: center; padding: 3rem; color: #94a3b8; }
 
+    .referral-code-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9; }
+    .code-label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
+    .code-display { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 0.75rem 1rem; border-radius: 12px; border: 1px dashed #cbd5e1; }
+    .code-display code { font-family: 'Monaco', monospace; font-size: 1.1rem; font-weight: 800; color: #6366f1; }
+    .copy-icon-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; transition: transform 0.2s; }
+    .copy-icon-btn:hover { transform: scale(1.2); }
+    .hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; }
+
     /* Modal Styles */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
     .modal-content { background: white; padding: 2.5rem; border-radius: 24px; width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); animation: slideUp 0.3s ease-out; }
@@ -199,6 +215,7 @@ export class WalletComponent implements OnInit {
   wallet: any;
   transactions: any[] = [];
   totalReferralEarnings = 0;
+  referralCode = '';
   showTopupModal = false;
   topupAmount: number = 0;
 
@@ -215,6 +232,7 @@ export class WalletComponent implements OnInit {
   loadData() {
     const user = this.authService.getCurrentUser();
     if (user) {
+      this.referralCode = user.referralCode || '';
       this.paymentService.getWalletBalance(user.userId).subscribe(w => this.wallet = w);
       this.paymentService.getWalletTransactions(user.userId).subscribe(txs => {
         this.transactions = txs;
@@ -223,6 +241,11 @@ export class WalletComponent implements OnInit {
           .reduce((sum, t) => sum + t.amount, 0);
       });
     }
+  }
+
+  copyReferralCode() {
+    navigator.clipboard.writeText(this.referralCode);
+    this.toastService.success('Referral code copied!');
   }
 
   handleTopup() {
