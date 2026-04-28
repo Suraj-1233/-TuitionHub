@@ -48,4 +48,20 @@ public class StudentController {
         User student = userRepository.findByEmail(email).orElseThrow();
         return ResponseEntity.ok(requestRepository.findByStudent(student));
     }
+
+    @GetMapping("/referrals")
+    public ResponseEntity<List<Map<String, Object>>> getReferrals(@RequestHeader("Authorization") String token) {
+        String email = tokenProvider.getEmailFromToken(token.substring(7));
+        User student = userRepository.findByEmail(email).orElseThrow();
+        
+        List<Map<String, Object>> referrals = userRepository.findByReferredBy(student).stream()
+            .map(u -> Map.<String, Object>of(
+                "name", u.getName(),
+                "role", u.getRole().name(),
+                "joinedAt", u.getCreatedAt() != null ? u.getCreatedAt().toString() : "N/A",
+                "isApproved", u.getIsApproved()
+            )).toList();
+            
+        return ResponseEntity.ok(referrals);
+    }
 }

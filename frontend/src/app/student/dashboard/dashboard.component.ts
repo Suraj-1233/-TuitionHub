@@ -147,6 +147,26 @@ import { FormsModule } from '@angular/forms';
             </div>
           </div>
         </div>
+
+        <!-- Referrals Section -->
+        <div class="card glass">
+          <div class="card-header">
+            <h2 class="card-title">My Referrals 🎁</h2>
+          </div>
+          <div *ngIf="referrals.length === 0" class="empty-state">
+            <div class="empty-icon">🤝</div>
+            <p>No referrals yet. Invite your friends to join!</p>
+          </div>
+          <div class="referral-list">
+            <div *ngFor="let ref of referrals" class="ref-item animate-fade">
+              <div class="ref-avatar">{{ ref.name.charAt(0) }}</div>
+              <div class="ref-details">
+                <div class="ref-name">{{ ref.name }}</div>
+                <div class="ref-meta">Joined as {{ ref.role }} • {{ ref.joinedAt | date:'mediumDate' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </app-dashboard-layout>
   `,
@@ -215,6 +235,12 @@ import { FormsModule } from '@angular/forms';
     .batch-name { font-weight: 800; color: #1E293B; }
     .teacher-tag { font-size: 0.8rem; color: #64748B; }
 
+    .referral-list { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem; }
+    .ref-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0; }
+    .ref-avatar { width: 36px; height: 36px; background: #E0F2FE; color: #0369A1; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.875rem; }
+    .ref-name { font-weight: 700; color: #1E293B; font-size: 0.875rem; }
+    .ref-meta { font-size: 0.7rem; color: #64748B; }
+
     .empty-state { text-align: center; padding: 4rem 2rem; color: #64748B; }
     .empty-icon { font-size: 3.5rem; margin-bottom: 1.5rem; opacity: 0.5; }
     
@@ -232,6 +258,7 @@ export class StudentDashboardComponent implements OnInit {
   isLoading = false;
   requestData = { subjects: '', startTime: '', endTime: '', notes: '' };
   paymentCount = 0;
+  referrals: any[] = [];
 
   constructor(
     private authService: AuthService,
@@ -253,6 +280,10 @@ export class StudentDashboardComponent implements OnInit {
     // Fetch payments count (Placeholder logic until backend summary API is ready)
     this.studentService.getPayments().subscribe(p => {
       this.paymentCount = p.length;
+    });
+
+    this.studentService.getReferrals().subscribe(ref => {
+      this.referrals = ref;
     });
   }
 

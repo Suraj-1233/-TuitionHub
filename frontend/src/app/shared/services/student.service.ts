@@ -20,4 +20,8 @@ export class StudentService {
   getPayments(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/student/my-payments`);
   }
+
+  getReferrals(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/student/referrals`);
+  }
 }
