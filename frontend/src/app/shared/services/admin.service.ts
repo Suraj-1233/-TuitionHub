@@ -74,6 +74,10 @@ export class AdminService {
     return this.http.post(`${this.apiUrl}/admin/subjects`, subject);
   }
 
+  deleteSubject(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/admin/subjects/${id}`);
+  }
+
   // Wallet & Session Management
   adjustWallet(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/admin/wallet/adjust`, data);

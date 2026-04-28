@@ -148,7 +148,7 @@ export class AdminSubjectsComponent implements OnInit {
         this.loadSubjects();
         this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.toast.error(err.error?.message || 'Error adding subject');
         this.isLoading = false;
       }

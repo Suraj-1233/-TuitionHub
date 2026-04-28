@@ -43,7 +43,7 @@ import { ToastService } from '../../shared/services/toast.service';
       <div class="revenue-summary animate-fade" *ngIf="filteredPayments.length > 0">
         <div class="rev-card">
           <span class="rev-label">Total Volume (Filtered)</span>
-          <span class="rev-value">{{ getCurrencySymbol(filteredPayments[0]?.currency) }}{{ totalFilteredRevenue }}</span>
+          <span class="rev-value">{{ getCurrencySymbol(filteredPayments[0].currency) }}{{ totalFilteredRevenue }}</span>
         </div>
       </div>
 
@@ -369,7 +369,7 @@ export class AdminPaymentsComponent implements OnInit {
         this.toast.success(`Payment #${payment.id} marked as PAID`);
         this.loadPayments();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.toast.error(err.error?.message || 'Update failed');
       }
     });

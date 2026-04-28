@@ -37,6 +37,10 @@ export class PaymentService {
     return this.http.get<Payment[]>(`${this.apiUrl}/admin/payments`);
   }
 
+  markAsPaid(paymentId: number, remark: string): Observable<Payment> {
+    return this.http.post<Payment>(`${this.apiUrl}/admin/payments/${paymentId}/mark-as-paid?remark=${remark}`, {});
+  }
+
   // Wallet Methods
   getWalletBalance(userId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/wallet/balance?userId=${userId}`);
