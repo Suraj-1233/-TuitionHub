@@ -123,7 +123,7 @@ export class StudentBatchDetailsComponent implements OnInit {
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
-      this.batchService.getBatch(id).subscribe(b => {
+      this.batchService.getBatch(id).subscribe((b: Batch) => {
         this.batch = b;
         this.loadMaterials();
         this.loadAssignments();
@@ -159,7 +159,7 @@ export class StudentBatchDetailsComponent implements OnInit {
   }
   proposeReschedule() {
     if (!this.newProposedTime || !this.batch) return;
-    this.batchService.proposeReschedule(this.batch.id, this.newProposedTime).subscribe(b => {
+    this.batchService.proposeReschedule(this.batch.id, this.newProposedTime).subscribe((b: Batch) => {
       this.batch = b;
       this.toast.success('Requested');
       this.newProposedTime = '';
@@ -167,7 +167,7 @@ export class StudentBatchDetailsComponent implements OnInit {
   }
   respondToReschedule(accept: boolean) {
     if (!this.batch) return;
-    this.batchService.respondToReschedule(this.batch.id, accept).subscribe(b => {
+    this.batchService.respondToReschedule(this.batch.id, accept).subscribe((b: Batch) => {
       this.batch = b;
       this.toast.info(accept ? 'Accepted' : 'Rejected');
     });

@@ -172,7 +172,7 @@ export class TeacherClassesComponent implements OnInit {
   }
 
   loadClasses() {
-    this.batchService.getTeacherBatches().subscribe(c => this.myClasses = c);
+    this.batchService.getTeacherBatches().subscribe((c: Class[]) => this.myClasses = c);
   }
 
   createClass() {

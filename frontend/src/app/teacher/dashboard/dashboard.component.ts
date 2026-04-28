@@ -214,8 +214,8 @@ export class TeacherDashboardComponent implements OnInit {
   }
 
   loadData() {
-    this.batchService.getTeacherBatches().subscribe(b => this.myBatches = b);
-    this.batchService.getPendingRequests().subscribe(r => this.pendingRequests = r);
+    this.batchService.getTeacherBatches().subscribe((b: Batch[]) => this.myBatches = b);
+    this.batchService.getPendingRequests().subscribe((r: BatchJoinRequest[]) => this.pendingRequests = r);
   }
 
   respondRequest(id: number, approve: boolean) {

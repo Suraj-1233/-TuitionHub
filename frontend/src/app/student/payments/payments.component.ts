@@ -188,11 +188,11 @@ export class StudentPaymentsComponent implements OnInit {
   loadData() {
     const user = this.authService.getCurrentUser();
     if (user) {
-      this.paymentService.getStudentSessions(user.userId).subscribe(s => {
+      this.paymentService.getStudentSessions(user.userId).subscribe((s: any[]) => {
         this.sessions = s.sort((a: any, b: any) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
         this.unpaidSessions = s.filter((session: any) => !session.isPaid && session.status !== 'CANCELLED');
       });
-      this.paymentService.getWalletBalance(user.userId).subscribe(w => this.walletBalance = w.balance);
+      this.paymentService.getWalletBalance(user.userId).subscribe((w: any) => this.walletBalance = w.balance);
     }
   }
 

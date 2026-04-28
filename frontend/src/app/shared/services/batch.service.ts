@@ -49,6 +49,14 @@ export class BatchService {
     );
   }
 
+  proposeReschedule(batchId: number, newTiming: string): Observable<Class> {
+    return this.http.post<Class>(`${this.apiUrl}/batches/${batchId}/propose-reschedule`, { newTiming });
+  }
+
+  respondToReschedule(batchId: number, accept: boolean): Observable<Class> {
+    return this.http.post<Class>(`${this.apiUrl}/batches/${batchId}/respond-reschedule?accept=${accept}`, {});
+  }
+
   // Legacy/Cleanup (Maintaining aliases for existing components)
   createBatch(data: any): Observable<Class> { return this.createClass(data); }
   getTeacherBatches(): Observable<Class[]> { return this.getTeacherClasses(); }
