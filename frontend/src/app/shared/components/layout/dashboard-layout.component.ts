@@ -9,13 +9,13 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, RouterModule],
   template: `
     <div class="dashboard-layout">
-      <aside class="sidebar glass">
+      <aside class="sidebar">
         <div class="sidebar-brand">
           <div class="logo-box">TH</div>
           <span class="brand-name">TuitionHub</span>
         </div>
 
-        <div class="sidebar-clocks glass">
+        <div class="sidebar-clocks">
           <div class="clock-item">
             <span class="clock-label">📍 Your Time ({{ userTimezoneName }})</span>
             <span class="clock-value">{{ localTime }}</span>
@@ -67,7 +67,8 @@ import { AuthService } from '../../services/auth.service';
       position: sticky;
       top: 0;
       height: 100vh;
-      border-right: 1px solid var(--border-color);
+      background: white;
+      border-right: 1px solid #E2E8F0;
     }
     .sidebar-brand {
       display: flex;
@@ -88,7 +89,7 @@ import { AuthService } from '../../services/auth.service';
       font-weight: 800;
       box-shadow: var(--shadow-md);
     }
-    .brand-name { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
+    .brand-name { font-size: 1.25rem; font-weight: 700; color: #1E293B; }
     
     .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
     .nav-link {
@@ -97,24 +98,25 @@ import { AuthService } from '../../services/auth.service';
       gap: 1rem;
       padding: 0.875rem 1rem;
       border-radius: 0.75rem;
-      color: var(--text-secondary);
+      color: #64748B;
       text-decoration: none;
       font-weight: 500;
       transition: var(--transition);
     }
-    .nav-link:hover { background: rgba(99, 102, 241, 0.05); color: var(--primary-color); }
+    .nav-link:hover { background: #F8FAFC; color: #6366F1; }
     .nav-link.active {
-      background: var(--gradient-primary);
+      background: #6366F1;
       color: white;
-      box-shadow: var(--shadow-md);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
     .nav-icon { font-size: 1.25rem; }
-
+ 
     .sidebar-clocks {
       margin-bottom: 2rem;
       padding: 1rem;
       border-radius: 1rem;
-      background: rgba(255, 255, 255, 0.4);
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;

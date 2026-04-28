@@ -31,6 +31,13 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.verifyAndUpdatePayment(request));
     }
 
+    @PostMapping("/api/student/payments/{id}/fail")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<Void> notifyFailure(@PathVariable Long id) {
+        paymentService.markAsFailed(id);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/api/student/payments")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<PaymentDto.Response>> getMyPayments(@AuthenticationPrincipal User student) {
@@ -47,5 +54,13 @@ public class PaymentController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PaymentDto.Response>> getAllPayments() {
         return ResponseEntity.ok(paymentService.getAllPayments());
+    }
+
+    @PostMapping("/api/admin/payments/{id}/mark-as-paid")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PaymentDto.Response> markAsPaid(
+            @PathVariable Long id,
+            @RequestParam(required = false) String remark) {
+        return ResponseEntity.ok(paymentService.markAsPaid(id, remark));
     }
 }

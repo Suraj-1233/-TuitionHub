@@ -48,11 +48,16 @@ public class PaymentService {
             Batch batch = batchRepository.findById(request.getBatchId())
                     .orElseThrow(() -> new ResourceNotFoundException("Batch not found"));
 
-            // Check if any payment already exists and is PAID for this month
+            // Check if any payment already exists for this month
             List<Payment> existingPayments = paymentRepository.findByStudentAndBatchAndForMonth(student, batch, request.getForMonth());
             for (Payment p : existingPayments) {
                 if (p.getStatus() == Payment.PaymentStatus.PAID) {
                     throw new BadRequestException("Payment already done for this month");
+                }
+                if (p.getStatus() == Payment.PaymentStatus.PENDING) {
+                    // Reuse existing pending order
+                    log.info("Reusing existing PENDING payment: {}", p.getId());
+                    return mapToResponse(p);
                 }
             }
 
@@ -226,6 +231,39 @@ public class PaymentService {
         } catch (Exception e) {
             log.error("Signature calculation error: {}", e.getMessage());
             return false;
+        }
+    }
+
+    @Transactional
+    public PaymentDto.Response markAsPaid(Long paymentId, String adminRemark) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
+
+        if (payment.getStatus() == Payment.PaymentStatus.PAID) {
+            throw new BadRequestException("Payment is already in PAID status.");
+        }
+
+        log.info("Admin manually marking payment {} as PAID. Remark: {}", paymentId, adminRemark);
+        payment.setStatus(Payment.PaymentStatus.PAID);
+        payment.setPaidAt(LocalDateTime.now());
+        payment.setRazorpayPaymentId("MANUAL_BY_ADMIN"); // Mark as manual
+        
+        Payment saved = paymentRepository.save(payment);
+        
+        // Send Email Confirmation
+        sendPaymentConfirmationEmail(saved);
+        
+        return mapToResponse(saved);
+    }
+
+    @Transactional
+    public void markAsFailed(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
+        if (payment.getStatus() == Payment.PaymentStatus.PENDING) {
+            payment.setStatus(Payment.PaymentStatus.FAILED);
+            paymentRepository.save(payment);
+            log.info("Payment {} marked as FAILED via notification", paymentId);
         }
     }
 

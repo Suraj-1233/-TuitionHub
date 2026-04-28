@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DashboardLayoutComponent } from '../../shared/components/layout/dashboard-layout.component';
 import { PaymentService } from '../../shared/services/payment.service';
 import { Payment } from '../../shared/models/models';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-admin-payments',
@@ -56,6 +57,7 @@ import { Payment } from '../../shared/models/models';
               <th>Amount</th>
               <th>Status</th>
               <th>Gateway Ref</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -92,6 +94,15 @@ import { Payment } from '../../shared/models/models';
                   <code>{{ p.razorpayPaymentId || '---' }}</code>
                 </div>
               </td>
+              <td>
+                <button 
+                  *ngIf="p.status !== 'PAID'"
+                  class="btn-action primary"
+                  (click)="manualMarkAsPaid(p)"
+                >
+                  Confirm Paid
+                </button>
+              </td>
             </tr>
             <tr *ngIf="filteredPayments.length === 0">
               <td colspan="6">
@@ -120,14 +131,16 @@ import { Payment } from '../../shared/models/models';
     .filter-box select { padding: 0.75rem 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); background: white; font-size: 0.875rem; font-weight: 600; color: var(--text-primary); cursor: pointer; }
 
     .revenue-summary { margin-bottom: 2rem; }
-    .rev-card { background: #F8FAFC; border: 1px solid var(--border-color); padding: 1rem 1.5rem; border-radius: 14px; display: flex; flex-direction: column; width: fit-content; }
-    .rev-label { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
-    .rev-value { font-size: 1.5rem; font-weight: 800; color: var(--secondary-color); }
+    .rev-card { background: white; border: 1px solid #E2E8F0; padding: 1rem 1.5rem; border-radius: 14px; display: flex; flex-direction: column; width: fit-content; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .rev-label { font-size: 0.75rem; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; }
+    .rev-value { font-size: 1.5rem; font-weight: 800; color: #1E293B; }
+
+    .card.glass { background: white !important; backdrop-filter: none !important; border: 1px solid #E2E8F0 !important; }
 
     .premium-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-    .premium-table th { padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; background: #F8FAFC; border-bottom: 1px solid var(--border-color); }
-    .premium-table td { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-    .premium-table tr:hover { background: rgba(248, 250, 252, 0.5); }
+    .premium-table th { padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
+    .premium-table td { padding: 1.25rem 1.5rem; border-bottom: 1px solid #F1F5F9; vertical-align: middle; }
+    .premium-table tr:hover { background: #F8FAFC; }
 
     .date-cell { display: flex; flex-direction: column; }
     .d-main { font-weight: 700; color: var(--text-primary); font-size: 0.875rem; }
@@ -149,6 +162,24 @@ import { Payment } from '../../shared/models/models';
 
     .empty-table-state { text-align: center; padding: 4rem; color: var(--text-secondary); }
     .empty-table-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+
+    .btn-action {
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-action.primary {
+      background: #EEF2FF;
+      color: #6366F1;
+    }
+    .btn-action.primary:hover {
+      background: #6366F1;
+      color: white;
+    }
   `]
 })
 export class AdminPaymentsComponent implements OnInit {
@@ -157,9 +188,16 @@ export class AdminPaymentsComponent implements OnInit {
   searchQuery = '';
   selectedStatus = '';
 
-  constructor(private paymentService: PaymentService) {}
+  constructor(
+    private paymentService: PaymentService,
+    private toast: ToastService
+  ) {}
 
   ngOnInit() {
+    this.loadPayments();
+  }
+
+  loadPayments() {
     this.paymentService.getAllPayments().subscribe(p => {
       this.payments = p;
       this.filterPayments();
@@ -179,5 +217,20 @@ export class AdminPaymentsComponent implements OnInit {
     return this.filteredPayments
       .filter(p => p.status === 'PAID')
       .reduce((acc, p) => acc + p.amount, 0);
+  }
+
+  manualMarkAsPaid(payment: Payment) {
+    const remark = prompt('Enter payment remark (optional):', 'Cash payment received');
+    if (remark === null) return; // Cancelled
+
+    this.paymentService.markAsPaid(payment.id, remark).subscribe({
+      next: () => {
+        this.toast.success(`Payment #${payment.id} marked as PAID`);
+        this.loadPayments();
+      },
+      error: (err) => {
+        this.toast.error(err.error?.message || 'Update failed');
+      }
+    });
   }
 }

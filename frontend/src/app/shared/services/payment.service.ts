@@ -37,4 +37,12 @@ export class PaymentService {
   getAllPayments(): Observable<Payment[]> {
     return this.http.get<Payment[]>(`${this.apiUrl}/admin/payments`);
   }
+
+  markAsPaid(paymentId: number, remark: string): Observable<Payment> {
+    return this.http.post<Payment>(`${this.apiUrl}/admin/payments/${paymentId}/mark-as-paid?remark=${remark}`, {});
+  }
+
+  notifyFailure(paymentId: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/student/payments/${paymentId}/fail`, {});
+  }
 }

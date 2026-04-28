@@ -31,12 +31,12 @@
 .animate-slide { animation: slideUp 0.4s ease-out; }
 .animate-scale { animation: scaleIn 0.3s ease-out; }
 
-/* Glassmorphism */
+/* Solid Theme (Replacing Glassmorphism) */
 .glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 /* Dark mode palette (optional but modern) */
@@ -155,21 +155,21 @@ body {
 
 .form-control {
   width: 100%;
-  padding: 0.625rem 0.875rem;
+  padding: 0.75rem 1rem;
   font-size: 0.875rem;
+  font-weight: 500;
   line-height: 1.5;
-  color: var(--text-primary);
-  background-color: var(--surface-color);
-  background-clip: padding-box;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  color: #1E293B;
+  background-color: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  transition: all 0.2s ease;
 }
 
 .form-control:focus {
   outline: 0;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+  border-color: #6366F1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
 
 .error-text {

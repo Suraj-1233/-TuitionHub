@@ -303,6 +303,9 @@ export class StudentPaymentsComponent implements OnInit {
       const rzp = new Razorpay(options);
       rzp.on('payment.failed', (response: any) => {
         this.toast.error('Payment Failed! ' + response.error.description);
+        this.paymentService.notifyFailure(order.id).subscribe(() => {
+          this.loadPayments();
+        });
         this.isProcessing = false;
       });
       rzp.open();
