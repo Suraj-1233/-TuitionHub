@@ -11,6 +11,7 @@ import com.tuitionhub.backend.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +29,7 @@ public class DataInitializer implements CommandLineRunner {
     private final SessionRepository sessionRepository;
     private final PasswordEncoder passwordEncoder;
     private final WalletService walletService;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public void run(String... args) {
@@ -56,6 +58,15 @@ public class DataInitializer implements CommandLineRunner {
                 log.info("🎁 Generated missing referral code for: {}", user.getEmail());
             }
         });
+
+        // 5. Database Fix: Ensure payments.batch_id is nullable for top-ups
+        try {
+            log.info("🛠️ Applying database schema fix for payments table...");
+            jdbcTemplate.execute("ALTER TABLE payments MODIFY batch_id BIGINT NULL");
+            log.info("✅ Database schema fix applied.");
+        } catch (Exception e) {
+            log.warn("⚠️ Could not apply database fix (it might already be applied): {}", e.getMessage());
+        }
 
         log.info("✅ Data Initialization Complete.");
     }
