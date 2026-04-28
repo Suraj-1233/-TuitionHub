@@ -126,6 +126,9 @@ public class PaymentService {
                 payment.setRazorpaySignature(request.getRazorpaySignature());
                 payment.setPaidAt(LocalDateTime.now());
                 
+                // Fetch full details from Razorpay API
+                fetchAndPopulateExtraDetails(payment);
+
                 // Send Email Confirmation
                 sendPaymentConfirmationEmail(payment);
                 
@@ -202,6 +205,33 @@ public class PaymentService {
                 .stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
+    private void fetchAndPopulateExtraDetails(Payment payment) {
+        try {
+            RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId.trim(), razorpayKeySecret.trim());
+            com.razorpay.Payment rpPayment = razorpayClient.payments.fetch(payment.getRazorpayPaymentId());
+            
+            payment.setPaymentMethod(rpPayment.get("method"));
+            payment.setBankName(rpPayment.get("bank"));
+            payment.setCardNetwork(rpPayment.get("card_network"));
+            payment.setWalletName(rpPayment.get("wallet"));
+            payment.setUpiVpa(rpPayment.get("vpa"));
+            payment.setPayerEmail(rpPayment.get("email"));
+            payment.setPayerContact(rpPayment.get("contact"));
+            
+            // Note: Fees and Tax are available only after some delay or using payment.fetch_fees
+            if (rpPayment.has("fee")) {
+                payment.setGatewayFee(Double.valueOf(rpPayment.get("fee").toString()) / 100.0);
+            }
+            if (rpPayment.has("tax")) {
+                payment.setGatewayTax(Double.valueOf(rpPayment.get("tax").toString()) / 100.0);
+            }
+            
+            log.info("Fetched extra details for payment {}: method={}", payment.getId(), payment.getPaymentMethod());
+        } catch (Exception e) {
+            log.warn("Failed to fetch extra details from Razorpay for payment {}: {}", payment.getId(), e.getMessage());
+        }
+    }
+
     private boolean verifySignature(String orderId, String paymentId, String signature) {
         if (orderId == null || paymentId == null || signature == null) {
             log.warn("Missing parameters for signature verification");
@@ -257,14 +287,20 @@ public class PaymentService {
     }
 
     @Transactional
-    public void markAsFailed(Long paymentId) {
-        Payment payment = paymentRepository.findById(paymentId)
+    public void handlePaymentFailure(PaymentDto.FailureRequest request) {
+        Payment payment = paymentRepository.findById(request.getPaymentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
-        if (payment.getStatus() == Payment.PaymentStatus.PENDING) {
-            payment.setStatus(Payment.PaymentStatus.FAILED);
-            paymentRepository.save(payment);
-            log.info("Payment {} marked as FAILED via notification", paymentId);
-        }
+        
+        log.warn("Payment failed for ID: {}. Error: {}, Reason: {}", 
+                request.getPaymentId(), request.getErrorDescription(), request.getErrorReason());
+        
+        payment.setStatus(Payment.PaymentStatus.FAILED);
+        payment.setErrorCode(request.getErrorCode());
+        payment.setErrorDescription(request.getErrorDescription());
+        payment.setErrorReason(request.getErrorReason());
+        payment.setErrorStep(request.getErrorStep());
+        
+        paymentRepository.save(payment);
     }
 
     private PaymentDto.Response mapToResponse(Payment p) {
@@ -280,6 +316,24 @@ public class PaymentService {
         res.setRazorpayOrderId(p.getRazorpayOrderId());
         res.setRazorpayPaymentId(p.getRazorpayPaymentId());
         res.setPaidAt(p.getPaidAt() != null ? p.getPaidAt().toString() : null);
+        
+        // Extra Details
+        res.setPaymentMethod(p.getPaymentMethod());
+        res.setBankName(p.getBankName());
+        res.setCardNetwork(p.getCardNetwork());
+        res.setWalletName(p.getWalletName());
+        res.setUpiVpa(p.getUpiVpa());
+        res.setPayerEmail(p.getPayerEmail());
+        res.setPayerContact(p.getPayerContact());
+        res.setGatewayFee(p.getGatewayFee());
+        res.setGatewayTax(p.getGatewayTax());
+        
+        // Error Details
+        res.setErrorCode(p.getErrorCode());
+        res.setErrorDescription(p.getErrorDescription());
+        res.setErrorReason(p.getErrorReason());
+        res.setErrorStep(p.getErrorStep());
+        
         return res;
     }
 }

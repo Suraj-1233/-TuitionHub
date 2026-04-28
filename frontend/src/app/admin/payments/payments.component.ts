@@ -95,15 +95,112 @@ import { ToastService } from '../../shared/services/toast.service';
                 </div>
               </td>
               <td>
-                <button 
-                  *ngIf="p.status !== 'PAID'"
-                  class="btn-action primary"
-                  (click)="manualMarkAsPaid(p)"
-                >
-                  Confirm Paid
-                </button>
+                <div class="action-group">
+                  <button class="btn-action primary" (click)="selectedPayment = p">
+                    View Details
+                  </button>
+                  <button 
+                    *ngIf="p.status !== 'PAID'"
+                    class="btn-action success"
+                    (click)="manualMarkAsPaid(p)"
+                  >
+                    Confirm Paid
+                  </button>
+                </div>
               </td>
             </tr>
+
+            <!-- Payment Details Modal -->
+            <div class="modal-overlay" *ngIf="selectedPayment" (click)="selectedPayment = null">
+              <div class="modal-content glass animate-pop" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                  <div class="header-left">
+                    <div class="modal-icon">💸</div>
+                    <div>
+                      <h3>Transaction Details</h3>
+                      <p>Reference: {{ selectedPayment.razorpayPaymentId || 'N/A' }}</p>
+                    </div>
+                  </div>
+                  <button class="close-btn" (click)="selectedPayment = null">×</button>
+                </div>
+
+                <div class="modal-body">
+                  <div class="detail-grid">
+                    <div class="detail-section">
+                      <h4 class="section-title">Order Information</h4>
+                      <div class="info-row">
+                        <span class="label">Student</span>
+                        <span class="value">{{ selectedPayment.studentName }}</span>
+                      </div>
+                      <div class="info-row">
+                        <span class="label">Batch / Course</span>
+                        <span class="value">{{ selectedPayment.batchName }}</span>
+                      </div>
+                      <div class="info-row">
+                        <span class="label">For Month</span>
+                        <span class="value">{{ selectedPayment.forMonth }}</span>
+                      </div>
+                      <div class="info-row">
+                        <span class="label">Status</span>
+                        <span class="status-pill" [ngClass]="selectedPayment.status.toLowerCase()">{{ selectedPayment.status }}</span>
+                      </div>
+                      <!-- Failure Reason -->
+                      <div class="error-notice mt-4" *ngIf="selectedPayment.status === 'FAILED'">
+                        <h5 class="text-danger mb-1">Failure Reason</h5>
+                        <p class="text-xs m-0"><strong>Code:</strong> {{ selectedPayment.errorCode || 'N/A' }}</p>
+                        <p class="text-xs m-0"><strong>Message:</strong> {{ selectedPayment.errorDescription || 'User cancelled or gateway issue' }}</p>
+                      </div>
+                    </div>
+
+                    <div class="detail-section">
+                      <h4 class="section-title">Payment Information</h4>
+                      <div class="info-row">
+                        <span class="label">Method</span>
+                        <span class="value text-capitalize">{{ selectedPayment.paymentMethod || '---' }}</span>
+                      </div>
+                      <div class="info-row" *ngIf="selectedPayment.bankName">
+                        <span class="label">Bank / Network</span>
+                        <span class="value">{{ selectedPayment.bankName }} {{ selectedPayment.cardNetwork || '' }}</span>
+                      </div>
+                      <div class="info-row" *ngIf="selectedPayment.upiVpa">
+                        <span class="label">UPI ID</span>
+                        <span class="value">{{ selectedPayment.upiVpa }}</span>
+                      </div>
+                      <div class="info-row" *ngIf="selectedPayment.walletName">
+                        <span class="label">Wallet</span>
+                        <span class="value">{{ selectedPayment.walletName }}</span>
+                      </div>
+                      <div class="info-row">
+                        <span class="label">Payer Contact</span>
+                        <span class="value">{{ selectedPayment.payerEmail || '---' }}</span>
+                      </div>
+                    </div>
+
+                    <div class="detail-section total-section">
+                      <h4 class="section-title">Financial Breakdown</h4>
+                      <div class="info-row">
+                        <span class="label">Gross Amount</span>
+                        <span class="value">{{ getCurrencySymbol(selectedPayment.currency) }}{{ selectedPayment.amount }}</span>
+                      </div>
+                      <div class="info-row text-danger" *ngIf="selectedPayment.gatewayFee">
+                        <span class="label">Gateway Fee</span>
+                        <span class="value">- {{ getCurrencySymbol(selectedPayment.currency) }}{{ selectedPayment.gatewayFee }}</span>
+                      </div>
+                      <div class="info-row text-danger" *ngIf="selectedPayment.gatewayTax">
+                        <span class="label">GST / Tax</span>
+                        <span class="value">- {{ getCurrencySymbol(selectedPayment.currency) }}{{ selectedPayment.gatewayTax }}</span>
+                      </div>
+                      <div class="info-row grand-total mt-4 pt-4 border-t">
+                        <span class="label">Net Revenue</span>
+                        <span class="value success-text">
+                          {{ getCurrencySymbol(selectedPayment.currency) }}{{ (selectedPayment.amount - (selectedPayment.gatewayFee || 0) - (selectedPayment.gatewayTax || 0)) | number:'1.2-2' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <tr *ngIf="filteredPayments.length === 0">
               <td colspan="6">
                 <div class="empty-table-state">
@@ -172,13 +269,44 @@ import { ToastService } from '../../shared/services/toast.service';
       cursor: pointer;
       transition: all 0.2s;
     }
-    .btn-action.primary {
-      background: #EEF2FF;
-      color: #6366F1;
-    }
-    .btn-action.primary:hover {
-      background: #6366F1;
-      color: white;
+    .btn-action.primary { background: #EEF2FF; color: #6366F1; }
+    .btn-action.primary:hover { background: #6366F1; color: white; }
+    .btn-action.success { background: #DCFCE7; color: #166534; }
+    .btn-action.success:hover { background: #166534; color: white; }
+    
+    .action-group { display: flex; gap: 0.5rem; }
+    .text-capitalize { text-transform: capitalize; }
+
+    /* Modal Styles */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+    .modal-content { background: white; width: 100%; max-width: 800px; max-height: 90vh; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow-y: auto; position: relative; }
+    .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .modal-icon { width: 44px; height: 44px; background: #EEF2FF; color: #6366F1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+    .modal-header h3 { font-size: 1.25rem; font-weight: 800; color: #0F172A; margin: 0; }
+    .modal-header p { font-size: 0.75rem; color: #64748B; margin: 4px 0 0; font-family: monospace; }
+    .close-btn { background: #F1F5F9; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.25rem; color: #64748B; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .close-btn:hover { background: #E2E8F0; color: #0F172A; transform: rotate(90deg); }
+
+    .modal-body { padding: 2rem; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .detail-section { display: flex; flex-direction: column; gap: 1rem; }
+    .total-section { grid-column: span 2; background: #F8FAFC; padding: 1.5rem; border-radius: 16px; margin-top: 1rem; }
+    .section-title { font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; border-bottom: 1px solid #E2E8F0; padding-bottom: 0.5rem; }
+    
+    .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; }
+    .info-row .label { color: #64748B; font-weight: 500; }
+    .info-row .value { color: #0F172A; font-weight: 700; }
+    
+    .grand-total { font-size: 1.125rem; }
+    .success-text { color: #10B981; }
+    .text-danger { color: #EF4444; }
+    .border-t { border-top: 1px solid #E2E8F0; }
+    .pt-4 { padding-top: 1rem; }
+    
+    @media (max-width: 640px) {
+      .detail-grid { grid-template-columns: 1fr; }
+      .total-section { grid-column: span 1; }
     }
   `]
 })
@@ -187,6 +315,7 @@ export class AdminPaymentsComponent implements OnInit {
   filteredPayments: Payment[] = [];
   searchQuery = '';
   selectedStatus = '';
+  selectedPayment: Payment | null = null;
 
   getCurrencySymbol(currency?: string): string {
     if (!currency) return '₹';

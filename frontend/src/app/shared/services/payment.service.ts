@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 export class PaymentService {
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   createOrder(batchId: number, forMonth: string): Observable<Payment> {
     return this.http.post<Payment>(`${this.apiUrl}/student/payments/create-order`, {
@@ -17,13 +17,12 @@ export class PaymentService {
     });
   }
 
-  verifyPayment(data: {
-    paymentId: number;
-    razorpayOrderId: string;
-    razorpayPaymentId: string;
-    razorpaySignature: string;
-  }): Observable<Payment> {
-    return this.http.post<Payment>(`${this.apiUrl}/student/payments/verify`, data);
+  verifyPayment(request: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/student/payments/verify`, request);
+  }
+
+  notifyFailure(request: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/student/payments/notify-failure`, request);
   }
 
   getStudentPayments(): Observable<Payment[]> {
@@ -42,7 +41,5 @@ export class PaymentService {
     return this.http.post<Payment>(`${this.apiUrl}/admin/payments/${paymentId}/mark-as-paid?remark=${remark}`, {});
   }
 
-  notifyFailure(paymentId: number): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/student/payments/${paymentId}/fail`, {});
-  }
+
 }

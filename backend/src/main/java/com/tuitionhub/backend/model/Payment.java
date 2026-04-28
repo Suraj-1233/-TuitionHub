@@ -41,6 +41,23 @@ public class Payment {
     private String razorpayPaymentId;
     private String razorpaySignature;
 
+    // Extra Details from Razorpay
+    private String paymentMethod;      // e.g. upi, card, netbanking
+    private String bankName;           // e.g. HDFC, ICICI
+    private String cardNetwork;        // e.g. Visa, Mastercard
+    private String walletName;         // e.g. AmazonPay
+    private String upiVpa;             // e.g. user@okaxis
+    private String payerEmail;
+    private String payerContact;
+    private Double gatewayFee;
+    private Double gatewayTax;
+
+    // Error Details for FAILED status
+    private String errorCode;
+    private String errorDescription;
+    private String errorReason;
+    private String errorStep;
+
     private String transactionNote;
 
     @CreationTimestamp

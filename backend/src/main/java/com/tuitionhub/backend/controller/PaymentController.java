@@ -31,10 +31,10 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.verifyAndUpdatePayment(request));
     }
 
-    @PostMapping("/api/student/payments/{id}/fail")
+    @PostMapping("/api/student/payments/notify-failure")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<Void> notifyFailure(@PathVariable Long id) {
-        paymentService.markAsFailed(id);
+    public ResponseEntity<Void> notifyFailure(@RequestBody PaymentDto.FailureRequest request) {
+        paymentService.handlePaymentFailure(request);
         return ResponseEntity.ok().build();
     }
 

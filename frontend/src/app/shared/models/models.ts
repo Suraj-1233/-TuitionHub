@@ -76,6 +76,17 @@ export interface Payment {
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
   paidAt?: string;
+
+  // Extra Details
+  paymentMethod?: string;
+  bankName?: string;
+  cardNetwork?: string;
+  walletName?: string;
+  upiVpa?: string;
+  payerEmail?: string;
+  payerContact?: string;
+  gatewayFee?: number;
+  gatewayTax?: number;
 }
 
 export interface BatchJoinRequest {
