@@ -12,13 +12,19 @@ import io.github.cdimascio.dotenv.Dotenv;
 @EnableAsync
 public class TuitionHubApplication {
     public static void main(String[] args) {
-        Dotenv dotenv = Dotenv.configure()
-                .directory("../") // Look in the root directory
-                .ignoreIfMissing()
-                .load();
+        // Try to load from current directory first, then parent
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+        if (dotenv.get("MAIL_USERNAME") == null) {
+            dotenv = Dotenv.configure().directory("../").ignoreIfMissing().load();
+        }
         
-        dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
+        dotenv.entries().forEach(entry -> {
+            if (System.getProperty(entry.getKey()) == null) {
+                System.setProperty(entry.getKey(), entry.getValue());
+            }
+        });
         
+        System.out.println("📬 Mail Config Check: " + System.getProperty("MAIL_USERNAME"));
         SpringApplication.run(TuitionHubApplication.class, args);
     }
 }

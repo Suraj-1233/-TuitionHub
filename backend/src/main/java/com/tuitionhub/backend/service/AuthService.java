@@ -61,9 +61,14 @@ public class AuthService {
             if (user.getIsActive()) {
                 throw new BadRequestException("An account with this email already exists. Please login instead.");
             }
-            // If user exists but is not active, we will reuse the record and update it
             log.info("Updating unverified account for: {}", request.getEmail());
         } else {
+            // Check if mobile is already used by another ACTIVE user
+            if (request.getMobile() != null && !request.getMobile().trim().isEmpty()) {
+                if (userRepository.existsByMobile(request.getMobile())) {
+                    throw new BadRequestException("This mobile number is already registered with another account.");
+                }
+            }
             user = new User();
         }
 
