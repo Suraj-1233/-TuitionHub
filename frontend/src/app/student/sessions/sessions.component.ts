@@ -154,18 +154,18 @@ import { ToastService } from '../../shared/services/toast.service';
     .details .teacher { margin: 0.25rem 0; color: #64748b; font-size: 0.875rem; }
     .details .time { margin: 0; color: #94a3b8; font-size: 0.875rem; }
 
-    .paid-badge { background: #ecfdf5; color: #059669; padding: 0.5rem 1rem; border-radius: 99px; font-weight: 700; font-size: 0.875rem; text-align: center; }
-    .paid-actions-group { display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-end; }
-    .action-buttons { display: flex; gap: 0.5rem; }
+    .paid-badge { background: #ecfdf5; color: #059669; padding: 0.5rem 1rem; border-radius: 99px; font-weight: 700; font-size: 0.875rem; text-align: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+    .paid-actions-group { display: flex; flex-direction: column; gap: 1rem; align-items: flex-end; }
+    .action-buttons { display: flex; gap: 0.75rem; }
     
-    .join-meet-btn { background: #10b981; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 700; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; }
-    .join-meet-btn:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+    .join-meet-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.875rem; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+    .join-meet-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
     
-    .material-btn { background: #6366f1; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 700; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; }
-    .material-btn:hover { background: #4f46e5; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+    .material-btn { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.875rem; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+    .material-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
 
-    .feedback-btn { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
-    .feedback-btn:hover { background: #f1f5f9; color: #1e293b; }
+    .feedback-btn { background: #fffbeb; color: #b45309; border: 1px solid #fef3c7; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem; }
+    .feedback-btn:hover { background: #fef3c7; transform: scale(1.05); }
     .unpaid-info { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
     .amount { font-weight: 800; color: #1e293b; font-size: 1.125rem; }
     .pay-btn { background: #6366f1; color: white; border: none; padding: 0.5rem 1.25rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
