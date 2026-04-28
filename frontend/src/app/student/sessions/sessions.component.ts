@@ -16,21 +16,24 @@ import { ToastService } from '../../shared/services/toast.service';
     <app-dashboard-layout role="STUDENT">
       <div class="sessions-container">
         <header class="header">
-          <h1>My Bookings</h1>
-          <p>Upcoming and past tutoring sessions</p>
+          <h1>My Classes</h1>
+          <p>Upcoming and past 1-on-1 tutoring sessions</p>
         </header>
 
         <div class="sessions-list">
           <div class="session-card" *ngFor="let session of sessions">
-            <div class="session-info">
-              <div class="date-badge">
-                <span class="month">{{ session.startTime | date:'MMM' }}</span>
-                <span class="day">{{ session.startTime | date:'dd' }}</span>
+            <div class="class-card-header">
+              <div class="subject-icon-box">
+                <span class="icon">{{ session.batch?.subject?.icon || '📚' }}</span>
               </div>
-              <div class="details">
-                <h3>{{ session.batch?.name || 'Individual Session' }}</h3>
-                <p class="teacher">with {{ session.teacher.name }}</p>
-                <p class="time">🕒 {{ session.startTime | date:'shortTime' }} - {{ session.endTime | date:'shortTime' }}</p>
+              <div class="class-details">
+                <span class="badge">1-on-1 Class</span>
+                <h3>{{ session.batch?.subject?.name || 'Tutoring Session' }}</h3>
+                <p class="instructor">with <strong>{{ session.teacher.name }}</strong></p>
+                <div class="schedule-info">
+                  <span>📅 {{ session.startTime | date:'EEEE, MMM dd' }}</span>
+                  <span>🕒 {{ session.startTime | date:'shortTime' }} - {{ session.endTime | date:'shortTime' }}</span>
+                </div>
               </div>
             </div>
 
@@ -127,34 +130,50 @@ import { ToastService } from '../../shared/services/toast.service';
     .sessions-list { display: flex; flex-direction: column; gap: 1rem; }
     .session-card {
       background: white;
-      border-radius: 16px;
-      padding: 1.5rem;
+      border-radius: 24px;
+      padding: 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
       border: 1px solid #f1f5f9;
-      transition: transform 0.2s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
     }
-    .session-card:hover { transform: scale(1.01); }
-
-    .session-info { display: flex; gap: 1.5rem; align-items: center; }
-    .date-badge {
+    .session-card::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; background: #6366f1; }
+    .session-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+ 
+    .class-card-header { display: flex; gap: 1.5rem; align-items: flex-start; }
+    .subject-icon-box {
+      width: 70px;
+      height: 70px;
       background: #f8fafc;
-      border-radius: 12px;
-      padding: 0.75rem;
+      border-radius: 18px;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      min-width: 60px;
-      border: 1px solid #e2e8f0;
+      justify-content: center;
+      font-size: 2rem;
+      border: 2px solid #e2e8f0;
     }
-    .date-badge .month { font-size: 0.75rem; font-weight: 700; color: #6366f1; text-transform: uppercase; }
-    .date-badge .day { font-size: 1.5rem; font-weight: 800; color: #1e293b; }
-
-    .details h3 { margin: 0; font-size: 1.125rem; color: #1e293b; }
-    .details .teacher { margin: 0.25rem 0; color: #64748b; font-size: 0.875rem; }
-    .details .time { margin: 0; color: #94a3b8; font-size: 0.875rem; }
+    
+    .class-details .badge {
+      background: #e0e7ff;
+      color: #4338ca;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 0.25rem 0.75rem;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .class-details h3 { margin: 0.5rem 0; font-size: 1.5rem; font-weight: 800; color: #1e293b; }
+    .class-details .instructor { margin: 0; color: #64748b; font-size: 0.95rem; }
+    .class-details .instructor strong { color: #1e293b; }
+    
+    .schedule-info { display: flex; gap: 1rem; margin-top: 0.75rem; color: #94a3b8; font-size: 0.85rem; font-weight: 600; }
+    .schedule-info span { display: flex; align-items: center; gap: 0.4rem; }
 
     .paid-badge { background: #ecfdf5; color: #059669; padding: 0.5rem 1rem; border-radius: 99px; font-weight: 700; font-size: 0.875rem; text-align: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
     .paid-info-group { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; margin-top: 0.5rem; }
