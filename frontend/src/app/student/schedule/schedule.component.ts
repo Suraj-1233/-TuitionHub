@@ -1,11 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardLayoutComponent } from '../../shared/components/layout/dashboard-layout.component';
-import { BatchService } from '../../shared/services/batch.service';
 import { PaymentService } from '../../shared/services/payment.service';
 import { TimezoneService } from '../../shared/services/timezone.service';
 import { AuthService } from '../../shared/services/auth.service';
-import { Batch } from '../../shared/models/models';
 
 @Component({
   selector: 'app-student-schedule',
@@ -168,29 +166,12 @@ export class StudentScheduleComponent implements OnInit {
     return this.tzService.convertTime(time, sourceTz || 'Asia/Kolkata');
   }
 
-  isLive(batch: Batch): boolean {
-    // Demo logic: If within current hour slot
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentAmPm = currentHour >= 12 ? 'PM' : 'AM';
-    const displayHour = currentHour % 12 || 12;
-    const currentHourStr = (displayHour < 10 ? '0' : '') + displayHour + ':00 ' + currentAmPm;
-    
-    return batch.timingFrom.includes(currentHourStr.substring(0, 2)) && batch.timingFrom.includes(currentAmPm);
-  }
-
   handleItemClick(item: any) {
-    if (item.isSession) {
-      if (!item.isPaid) {
-        // Redirect to sessions page to pay
-        window.location.href = '/student/sessions';
-      } else {
-        alert('Launching 1-on-1 Session...');
-      }
+    if (!item.isPaid) {
+      // Redirect to sessions page to pay
+      window.location.href = '/student/sessions';
     } else {
-      if (item.liveClassLink) {
-        window.open(item.liveClassLink, '_blank');
-      }
+      alert('Launching 1-on-1 Session...');
     }
   }
 
