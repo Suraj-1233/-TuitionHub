@@ -1,363 +1,238 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { DashboardLayoutComponent } from '../../shared/components/layout/dashboard-layout.component';
 import { PaymentService } from '../../shared/services/payment.service';
-import { Payment, Batch } from '../../shared/models/models';
-import { BatchService } from '../../shared/services/batch.service';
-import { FormsModule } from '@angular/forms';
-import { environment } from '../../../environments/environment';
+import { AuthService } from '../../shared/services/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
-
-declare var Razorpay: any;
 
 @Component({
   selector: 'app-student-payments',
   standalone: true,
-  imports: [CommonModule, DashboardLayoutComponent, FormsModule],
+  imports: [CommonModule, FormsModule, DashboardLayoutComponent],
   template: `
     <app-dashboard-layout role="STUDENT">
-      <div class="page-header animate-slide">
-        <h1 class="page-title">Fee Payments</h1>
-        <p class="subtitle text-secondary">Manage your course fees and view transaction history.</p>
-      </div>
-
-      <!-- Due Payments Section -->
-      <h2 class="section-title mt-4 mb-4">💳 Due Payments</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 animate-fade">
-        <div *ngFor="let batch of pendingBatches" class="due-card shadow-sm">
-          <div class="due-info">
-            <div class="batch-name">{{ batch.name }}</div>
-            <div class="due-month">{{ currentMonthName }} Fees</div>
-            <div class="amount text-primary">{{ getCurrencySymbol(batch.currency) }}{{ batch.monthlyFees }}</div>
+      <div class="payments-wrapper animate-slide">
+        <header class="page-header">
+          <div>
+            <h1 class="page-title">Fees & Payments 💳</h1>
+            <p class="subtitle text-secondary">Manage your session fees and transaction history.</p>
           </div>
-          <button class="btn-pay" (click)="payForBatch(batch)" [disabled]="isProcessing">
-            {{ isProcessing ? '...' : 'Pay Now' }}
-          </button>
-        </div>
-        <div *ngIf="pendingBatches.length === 0" class="card glass p-6 text-center text-success w-full" style="grid-column: 1/-1">
-          ✨ Excellent! All your fees are currently up to date.
-        </div>
-      </div>
-
-      <h2 class="section-title mb-4">📜 Payment History</h2>
-      <div class="card glass p-0 overflow-hidden shadow-sm animate-fade">
-        <table class="premium-table w-full">
-          <thead>
-            <tr>
-              <th style="width: 15%">Date & Time</th>
-              <th style="width: 25%">Course / Batch</th>
-              <th style="width: 25%">Reference (ID)</th>
-              <th style="width: 15%">Amount</th>
-              <th style="width: 20%">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let p of payments" class="hover-row cursor-pointer" (click)="selectedPayment = p">
-              <td>
-                <div class="date-cell">
-                   <span class="d-main">{{ p.paidAt ? (p.paidAt | date:'dd MMM yyyy') : 'N/A' }}</span>
-                   <span class="d-sub text-xs text-secondary">{{ p.paidAt ? (p.paidAt | date:'hh:mm a') : '' }}</span>
-                </div>
-              </td>
-              <td>
-                <div class="batch-cell">
-                  <span class="b-name font-bold">{{ p.batchName }}</span>
-                  <div class="text-xs text-secondary">{{ p.forMonth }}</div>
-                </div>
-              </td>
-              <td>
-                <code class="text-xs bg-slate-100 p-1 rounded">{{ p.razorpayPaymentId || '---' }}</code>
-              </td>
-              <td><span class="amount-cell font-bold text-primary">{{ getCurrencySymbol(p.currency) }}{{ p.amount }}</span></td>
-              <td>
-                <span class="status-pill" [ngClass]="{
-                  'paid': p.status === 'PAID',
-                  'pending': p.status === 'PENDING',
-                  'failed': p.status === 'FAILED'
-                }">{{ p.status }}</span>
-              </td>
-            </tr>
-            <tr *ngIf="payments.length === 0">
-              <td colspan="5" class="p-12 text-center text-secondary">
-                <div class="empty-state">
-                  <span class="icon" style="font-size: 2rem">📭</span>
-                  <p class="mt-2">No payment history found yet.</p>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Transaction Details Modal -->
-      <div class="modal-overlay" *ngIf="selectedPayment" (click)="selectedPayment = null">
-        <div class="modal-content animate-pop" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3 class="m-0">Transaction Receipt</h3>
-            <button class="btn-close" (click)="selectedPayment = null">&times;</button>
+          <div class="wallet-summary glass">
+            <span class="label">Wallet Balance</span>
+            <span class="balance">₹{{ walletBalance.toFixed(2) }}</span>
           </div>
-          <div class="receipt-body">
-            <div class="receipt-item">
-              <label>Status</label>
-              <span class="status-pill" [ngClass]="selectedPayment.status.toLowerCase()">{{ selectedPayment.status }}</span>
-            </div>
-            <div class="receipt-divider"></div>
-            <div class="receipt-item">
-              <label>Amount Paid</label>
-              <div class="receipt-amount">{{ getCurrencySymbol(selectedPayment.currency) }}{{ selectedPayment.amount }}</div>
-            </div>
-            <div class="receipt-grid">
-              <div class="receipt-item">
-                <label>Date</label>
-                <span>{{ selectedPayment.paidAt ? (selectedPayment.paidAt | date:'medium') : 'N/A' }}</span>
+        </header>
+
+        <!-- Unpaid Sessions (Due Payments) -->
+        <section class="due-section mt-4">
+          <h2 class="section-title">💸 Pending Payments</h2>
+          <div class="due-grid">
+            <div *ngFor="let session of unpaidSessions" class="due-card glass animate-fade">
+              <div class="due-info">
+                <div class="subject-tag">{{ session.batch?.subject?.name || 'General' }}</div>
+                <h3>1-on-1 with {{ session.teacher?.name }}</h3>
+                <p class="time">📅 {{ session.startTime | date:'MMM dd, yyyy' }} at {{ session.startTime | date:'shortTime' }}</p>
+                <div class="amount">₹{{ session.amount }}</div>
               </div>
-              <div class="receipt-item">
-                <label>Batch</label>
-                <span>{{ selectedPayment.batchName }}</span>
-              </div>
-              <div class="receipt-item">
-                <label>Billing Month</label>
-                <span>{{ selectedPayment.forMonth }}</span>
-              </div>
-              <div class="receipt-item">
-                <label>Student</label>
-                <span>{{ selectedPayment.studentName }}</span>
-              </div>
+              <button class="btn-pay" (click)="openPaymentModal(session)">Pay Now</button>
             </div>
-            <div class="receipt-divider"></div>
-            <div class="receipt-item">
-              <label>Payment Reference (ID)</label>
-              <code class="ref-code">{{ selectedPayment.razorpayPaymentId || 'N/A' }}</code>
-            </div>
-            <div class="receipt-item">
-              <label>Order ID</label>
-              <code class="ref-code">{{ selectedPayment.razorpayOrderId || 'N/A' }}</code>
+            <div *ngIf="unpaidSessions.length === 0" class="empty-due glass">
+              <span class="icon">🎉</span>
+              <p>Great! No pending payments for now.</p>
             </div>
           </div>
-          <div class="modal-footer">
-            <button class="btn-print" (click)="window.print()">Print Receipt</button>
+        </section>
+
+        <!-- Transaction History -->
+        <section class="history-section mt-5">
+          <h2 class="section-title">📜 Payment History</h2>
+          <div class="table-container glass">
+            <table class="premium-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Session/Teacher</th>
+                  <th>Reference</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let session of sessions" class="hover-row">
+                  <td>{{ session.startTime | date:'dd MMM, yyyy' }}</td>
+                  <td>
+                    <strong>{{ session.batch?.subject?.name || 'Tutoring' }}</strong>
+                    <div class="text-xs text-secondary">with {{ session.teacher?.name }}</div>
+                  </td>
+                  <td><code>{{ session.paymentReference || '---' }}</code></td>
+                  <td><strong>₹{{ session.amount }}</strong></td>
+                  <td>
+                    <span class="status-pill" [class.paid]="session.isPaid">
+                      {{ session.isPaid ? 'PAID' : 'PENDING' }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Payment Options Modal -->
+        <div class="modal-overlay" *ngIf="selectedSession" (click)="selectedSession = null">
+          <div class="modal-content animate-pop" (click)="$event.stopPropagation()">
+            <h2>Complete Payment</h2>
+            <p>Session Fee: <strong>₹{{ selectedSession.amount }}</strong></p>
+            
+            <div class="payment-methods">
+              <div class="method-card" [class.disabled]="walletBalance < selectedSession.amount" (click)="payViaWallet(selectedSession)">
+                <div class="method-info">
+                  <strong>Full Wallet Payment</strong>
+                  <span>Use ₹{{ selectedSession.amount }} from wallet</span>
+                </div>
+                <span class="icon">👛</span>
+              </div>
+
+              <div class="method-card outline" *ngIf="walletBalance > 0 && walletBalance < selectedSession.amount" (click)="payPartial(selectedSession)">
+                <div class="method-info">
+                  <strong>Wallet + Gateway</strong>
+                  <span>Use ₹{{ walletBalance.toFixed(2) }} from wallet & pay rest via Gateway</span>
+                </div>
+                <span class="icon">🌓</span>
+              </div>
+
+              <div class="method-card primary" (click)="payViaGateway(selectedSession)">
+                <div class="method-info">
+                  <strong>Direct Payment Gateway</strong>
+                  <span>Pay full ₹{{ selectedSession.amount }} via Cards/UPI</span>
+                </div>
+                <span class="icon">💳</span>
+              </div>
+            </div>
+
+            <button class="cancel-link" (click)="selectedSession = null">Cancel</button>
           </div>
         </div>
       </div>
     </app-dashboard-layout>
   `,
   styles: [`
-    .page-header { margin-bottom: 2rem; }
-    .page-title { font-size: 1.75rem; font-weight: 800; color: #1E293B; margin: 0; }
-    .subtitle { font-size: 0.875rem; color: #64748B; }
-    .section-title { font-size: 1.125rem; font-weight: 700; color: #334155; }
-
-    .due-card {
-      background: white; border-radius: 1rem; padding: 1.5rem;
-      display: flex; justify-content: space-between; align-items: center;
-      border: 1px solid #E2E8F0; transition: all 0.3s ease;
-    }
-    .due-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
-    .due-info .batch-name { font-weight: 700; color: #1E293B; }
-    .due-info .due-month { font-size: 0.75rem; color: #64748B; text-transform: uppercase; letter-spacing: 0.025em; }
-    .due-info .amount { font-size: 1.25rem; font-weight: 800; margin-top: 0.25rem; }
+    .payments-wrapper { padding: 1.5rem; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+    .page-title { font-size: 2rem; font-weight: 800; color: #1e293b; margin: 0; }
     
-    .btn-pay {
-      background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
-      color: white; border: none; padding: 0.6rem 1.25rem;
-      border-radius: 0.75rem; font-weight: 700; cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-pay:hover:not(:disabled) { transform: scale(1.05); filter: brightness(1.1); }
-    
-    /* Premium Table Styles */
-    .premium-table { width: 100%; border-collapse: collapse; background: white; }
-    .premium-table th { 
-      text-align: left; padding: 1rem 1.5rem; background: #F8FAFC;
-      color: #64748B; font-size: 0.75rem; font-weight: 700; 
-      text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #E2E8F0;
-    }
-    .premium-table td { padding: 1.25rem 1.5rem; border-bottom: 1px solid #F1F5F9; vertical-align: middle; }
-    .hover-row:hover { background-color: #F8FAFC; }
+    .wallet-summary { padding: 1rem 2rem; border-radius: 20px; text-align: right; border: 2px solid #e0e7ff; background: #fdfeff; }
+    .wallet-summary .label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .wallet-summary .balance { font-size: 1.5rem; font-weight: 800; color: #6366f1; }
 
-    .date-cell { display: flex; flex-direction: column; }
-    .d-main { font-size: 0.875rem; font-weight: 600; color: #1E293B; }
-    .status-pill {
-      font-size: 0.7rem; font-weight: 800; padding: 0.35rem 0.75rem;
-      border-radius: 100px; text-transform: uppercase; display: inline-block;
-    }
-    .status-pill.paid { background: #DCFCE7; color: #166534; }
-    .status-pill.pending { background: #FEF3C7; color: #92400E; }
-    .status-pill.failed { background: #FEE2E2; color: #991B1B; }
-
-    /* Modal Styles */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center; z-index: 1000;
-    }
-    .modal-content {
-      background: white; width: 90%; max-width: 450px; border-radius: 1.5rem;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden;
-    }
-    .modal-header {
-      padding: 1.5rem; border-bottom: 1px solid #F1F5F9;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .btn-close { background: none; border: none; font-size: 1.5rem; color: #64748B; cursor: pointer; }
+    .section-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem; color: #334155; }
     
-    .receipt-body { padding: 2rem; }
-    .receipt-item { margin-bottom: 1.25rem; }
-    .receipt-item label { display: block; font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase; margin-bottom: 0.25rem; }
-    .receipt-item span { font-weight: 600; color: #1E293B; }
-    .receipt-amount { font-size: 2.5rem; font-weight: 800; color: #4F46E5; }
-    .receipt-divider { height: 1px; background: #F1F5F9; margin: 1.5rem 0; border-style: dashed; border-width: 1px 0 0 0; }
-    .receipt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .ref-code { background: #F8FAFC; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.8rem; color: #475569; display: block; border: 1px solid #E2E8F0; }
+    .due-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+    .due-card { padding: 1.5rem; border-radius: 20px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: white; transition: all 0.3s; }
+    .due-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.06); }
     
-    .modal-footer { padding: 1.5rem; background: #F8FAFC; text-align: center; }
-    .btn-print { 
-      background: white; border: 1px solid #E2E8F0; padding: 0.5rem 1.5rem; 
-      border-radius: 0.75rem; font-weight: 600; color: #475569; cursor: pointer;
-    }
-    .btn-print:hover { background: #F1F5F9; }
+    .subject-tag { font-size: 0.65rem; font-weight: 800; background: #e0e7ff; color: #4338ca; padding: 0.25rem 0.75rem; border-radius: 99px; display: inline-block; margin-bottom: 0.5rem; }
+    .due-info h3 { margin: 0; font-size: 1.1rem; color: #1e293b; }
+    .due-info .time { font-size: 0.85rem; color: #64748b; margin: 0.25rem 0; }
+    .due-info .amount { font-size: 1.25rem; font-weight: 800; color: #6366f1; }
+    
+    .btn-pay { background: #6366f1; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .btn-pay:hover { background: #4f46e5; transform: scale(1.05); }
 
-    .grid { display: grid; }
-    .gap-6 { gap: 1.5rem; }
-    @media (min-width: 768px) { .md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 1024px) { .lg\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); } }
+    .empty-due { grid-column: 1/-1; padding: 3rem; text-align: center; color: #10b981; border-radius: 24px; border: 2px dashed #bbf7d0; }
+    .empty-due .icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
+
+    .table-container { background: white; border-radius: 24px; border: 1px solid #f1f5f9; overflow: hidden; }
+    .premium-table { width: 100%; border-collapse: collapse; }
+    .premium-table th { background: #f8fafc; padding: 1.25rem; text-align: left; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #e2e8f0; }
+    .premium-table td { padding: 1.25rem; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+    .hover-row:hover { background: #f8fafc; }
+    
+    .status-pill { font-size: 0.7rem; font-weight: 800; padding: 0.3rem 0.75rem; border-radius: 99px; background: #f1f5f9; color: #94a3b8; }
+    .status-pill.paid { background: #ecfdf5; color: #10b981; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: white; padding: 2.5rem; border-radius: 28px; width: 450px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.15); }
+    .payment-methods { display: flex; flex-direction: column; gap: 1rem; margin: 2rem 0; }
+    .method-card { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-radius: 16px; border: 2px solid #f1f5f9; cursor: pointer; transition: 0.2s; text-align: left; }
+    .method-card:hover:not(.disabled) { border-color: #6366f1; background: #f5f7ff; }
+    .method-card.disabled { opacity: 0.5; cursor: not-allowed; }
+    .method-card.outline { border-color: #6366f1; color: #6366f1; }
+    .method-card.outline:hover { background: #f5f7ff; }
+    .method-card.primary { background: #6366f1; border-color: #6366f1; color: white; }
+    .method-card.primary span { color: white; }
+    .method-card .icon { font-size: 1.5rem; }
+    .method-info strong { display: block; }
+    .method-info span { font-size: 0.8rem; }
+    
+    .cancel-link { background: none; border: none; color: #94a3b8; font-weight: 600; cursor: pointer; }
   `]
 })
 export class StudentPaymentsComponent implements OnInit {
-  payments: Payment[] = [];
-  myBatches: Batch[] = [];
-  isProcessing = false;
-  selectedPayment: any = null;
-  window = window;
-
-  getCurrencySymbol(currency?: string): string {
-    if (!currency) return '₹';
-    switch (currency.toUpperCase()) {
-      case 'USD': return '$';
-      case 'GBP': return '£';
-      case 'EUR': return '€';
-      case 'CAD': return 'C$';
-      case 'AUD': return 'A$';
-      default: return '₹';
-    }
-  }
-
-  get currentMonth() {
-    return new Date().toISOString().slice(0, 7); // YYYY-MM
-  }
-
-  get currentMonthName() {
-    return new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
-  }
-
-  get pendingBatches() {
-    // Current month identifier
-    const targetMonth = this.currentMonth;
-
-    // Find batches that don't have a successful payment for this month
-    return this.myBatches.filter(batch => {
-      const hasPaid = this.payments.some(p =>
-        p.batchName === batch.name &&
-        (p.forMonth.includes(targetMonth) || p.forMonth === this.currentMonthName) &&
-        p.status === 'PAID'
-      );
-      return !hasPaid;
-    });
-  }
+  sessions: any[] = [];
+  unpaidSessions: any[] = [];
+  walletBalance = 0;
+  selectedSession: any = null;
 
   constructor(
-    private paymentService: PaymentService, 
-    private batchService: BatchService,
+    private paymentService: PaymentService,
+    private authService: AuthService,
     private toast: ToastService
   ) {}
 
   ngOnInit() {
-    this.loadPayments();
-    this.batchService.getMyBatches().subscribe(b => this.myBatches = b);
+    this.loadData();
   }
 
-  loadPayments() {
-    this.paymentService.getStudentPayments().subscribe(p => this.payments = p);
-  }
-
-  payForBatch(batch: Batch) {
-    this.isProcessing = true;
-    this.paymentService.createOrder(batch.id!, this.currentMonth + '-01').subscribe({
-      next: (order) => this.openRazorpay(order),
-      error: (err) => {
-        alert(err.error?.message || 'Error creating payment order');
-        this.isProcessing = false;
-      }
-    });
-  }
-
-  openRazorpay(order: Payment) {
-    const currency = (order as any).currency || 'INR';
-    const options = {
-      key: environment.razorpayKey,
-      amount: order.amount * (currency === 'INR' ? 100 : 100), // Razorpay always needs smallest unit
-      currency: currency,
-      name: 'TuitionHub',
-      description: 'Fee Payment - ' + order.forMonth,
-      order_id: order.razorpayOrderId,
-      handler: (response: any) => {
-        this.verifyPayment(order.id, response);
-      },
-      prefill: {
-        name: order.studentName,
-      },
-      theme: {
-        color: '#4F46E5'
-      }
-    };
-
-    if (environment.production) {
-      const rzp = new Razorpay(options);
-      rzp.on('payment.failed', (res: any) => {
-        this.toast.error('Payment Failed: ' + res.error.description);
-        this.paymentService.notifyFailure({
-          paymentId: order.id,
-          errorCode: res.error.code,
-          errorDescription: res.error.description,
-          errorReason: res.error.reason,
-          errorStep: res.error.step,
-          errorSource: res.error.source
-        }).subscribe(() => this.loadPayments());
-        this.isProcessing = false;
+  loadData() {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.paymentService.getStudentSessions(user.userId).subscribe(s => {
+        this.sessions = s.sort((a: any, b: any) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+        this.unpaidSessions = s.filter((session: any) => !session.isPaid && session.status !== 'CANCELLED');
       });
-      rzp.open();
-    } else {
-      // In Dev mode, we can still simulate or use test keys
-      console.log('Production mode is OFF. Simulating payment for dev.');
-      setTimeout(() => {
-        this.verifyPayment(order.id, {
-          razorpay_order_id: order.razorpayOrderId,
-          razorpay_payment_id: 'pay_dev_mock_' + Date.now(),
-          razorpay_signature: 'dev_mock_sig'
-        });
-      }, 1000);
+      this.paymentService.getWalletBalance(user.userId).subscribe(w => this.walletBalance = w.balance);
     }
   }
 
-  verifyPayment(paymentId: number, rzpData: any) {
-    this.paymentService.verifyPayment({
-      paymentId,
-      razorpayOrderId: rzpData.razorpay_order_id,
-      razorpayPaymentId: rzpData.razorpay_payment_id,
-      razorpaySignature: rzpData.razorpay_signature || 'mock'
-    }).subscribe({
+  openPaymentModal(session: any) {
+    this.selectedSession = session;
+  }
+
+  payViaWallet(session: any) {
+    if (this.walletBalance < session.amount) return;
+    
+    this.paymentService.payForSession(session.id, 'WALLET').subscribe({
       next: () => {
-        alert('Payment Successful!');
-        this.loadPayments();
-        this.isProcessing = false;
+        this.toast.success('Paid successfully via Wallet!');
+        this.selectedSession = null;
+        this.loadData();
       },
-      error: () => {
-        // Since backend strictly verifies signature, mock will fail in backend unless we mock backend too.
-        // For this UI demo, we will just reload to see status (it might be failed)
-        alert('Payment verification failed (Mock mode). Check backend logs.');
-        this.loadPayments();
-        this.isProcessing = false;
-      }
+      error: (err: any) => this.toast.error(err.error?.message || 'Wallet payment failed')
+    });
+  }
+
+  payViaGateway(session: any) {
+    this.toast.info('Redirecting to Payment Gateway...');
+    setTimeout(() => {
+      this.paymentService.confirmGateway(session.id, 'REF_' + Math.random().toString(36).substring(7), session.amount).subscribe(() => {
+        this.toast.success('Gateway Payment Successful!');
+        this.selectedSession = null;
+        this.loadData();
+      });
+    }, 2000);
+  }
+
+  payPartial(session: any) {
+    this.paymentService.payForSession(session.id, 'PARTIAL').subscribe({
+      next: () => {
+        const remaining = session.amount - this.walletBalance;
+        this.toast.info(`Wallet balance used. Now pay remaining ₹${remaining.toFixed(2)} via Gateway.`);
+        // Follow with gateway flow for remaining amount
+        this.payViaGateway({ ...session, amount: remaining });
+      },
+      error: (err: any) => this.toast.error(err.error?.message || 'Partial payment failed')
     });
   }
 }

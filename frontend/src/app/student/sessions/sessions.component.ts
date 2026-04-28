@@ -39,19 +39,10 @@ import { ToastService } from '../../shared/services/toast.service';
 
             <div class="payment-status">
               <div class="action-buttons">
-                <button class="join-meet-btn" [class.locked]="!session.isPaid" (click)="joinMeet(session)">📹 Join Meet</button>
-                <button class="material-btn" [class.locked]="!session.isPaid" (click)="viewMaterial(session)">📚 Study Material</button>
+                <button class="join-meet-btn" (click)="joinMeet(session)">📹 Join Meet</button>
+                <button class="material-btn" (click)="viewMaterial(session)">📚 Study Material</button>
               </div>
-
-              <div *ngIf="!session.isPaid" class="unpaid-info">
-                <span class="amount">{{ session.amount }} {{ session.teacher.currency || 'INR' }}</span>
-                <button class="pay-btn" (click)="openPaymentOptions(session)">Pay to Unlock</button>
-              </div>
-
-              <div *ngIf="session.isPaid" class="paid-info-group">
-                <div class="paid-badge"><span class="icon">✅</span> Payment Confirmed</div>
-                <button *ngIf="session.status === 'COMPLETED'" class="feedback-btn" (click)="openFeedback(session)">Give Feedback</button>
-              </div>
+              <p class="status-hint">Manage fees in <strong>Payments</strong> section</p>
             </div>
           </div>
 
@@ -188,6 +179,7 @@ import { ToastService } from '../../shared/services/toast.service';
     .material-btn:hover:not(.locked) { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
 
     .feedback-btn { background: #fffbeb; color: #b45309; border: 1px solid #fef3c7; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .status-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; text-align: right; }
     .feedback-btn:hover { background: #fef3c7; transform: scale(1.05); }
     .unpaid-info { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
     .amount { font-weight: 800; color: #1e293b; font-size: 1.125rem; }
@@ -254,8 +246,10 @@ export class SessionsComponent implements OnInit {
   loadData() {
     const user = this.authService.getCurrentUser();
     if (user) {
-      this.paymentService.getStudentSessions(user.userId).subscribe(s => this.sessions = s);
-      this.paymentService.getWalletBalance(user.userId).subscribe(w => this.walletBalance = w.balance);
+      // Filter only active/upcoming sessions for "My Classes"
+      this.paymentService.getStudentSessions(user.userId).subscribe(s => {
+        this.sessions = s.filter((session: any) => session.status !== 'COMPLETED');
+      });
     }
   }
 
