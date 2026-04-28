@@ -32,54 +32,21 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         // 1. Super Admin
-        if (!userRepository.existsByEmail("admin@tuitionhub.com")) {
-            User admin = User.builder()
-                    .name("Super Admin")
-                    .mobile("9999999999")
-                    .email("admin@tuitionhub.com")
-                    .password(passwordEncoder.encode("admin123"))
-                    .role(Role.ADMIN)
-                    .isActive(true)
-                    .isApproved(true)
-                    .referralCode("TUI-ADMIN")
-                    .build();
-            userRepository.save(admin);
-            walletService.getOrCreateWallet(admin.getId());
-            log.info("✅ Admin created: email=admin@tuitionhub.com, password=admin123");
-        }
+        createIfNotExists("admin@tuitionhub.com", "Super Admin", Role.ADMIN, "admin123", "TUI-ADMIN");
+        createIfNotExists("super@tuitionhub.com", "Main Super Admin", Role.SUPER_ADMIN, "super123", "TUI-SUPER");
+        
+        // 2. Demo Teacher
+        createIfNotExists("teacher@tuitionhub.com", "Dr. Amit Sharma", Role.TEACHER, "teacher123", "TUI-TEACH");
 
-        // 2. Main Super Admin
-        if (!userRepository.existsByEmail("super@tuitionhub.com")) {
-            User superAdmin = User.builder()
-                    .name("Main Super Admin")
-                    .mobile("1111111111")
-                    .email("super@tuitionhub.com")
-                    .password(passwordEncoder.encode("super123"))
-                    .role(Role.SUPER_ADMIN)
-                    .isActive(true)
-                    .isApproved(true)
-                    .referralCode("TUI-SUPER")
-                    .build();
-            userRepository.save(superAdmin);
-            walletService.getOrCreateWallet(superAdmin.getId());
-            log.info("✅ Main Super Admin created: email=super@tuitionhub.com, password=super123");
-        }
+        // 3. Ensure your email exists as a Student
+        createIfNotExists("surajkannujiya517@gmail.com", "Suraj Kannujiya", Role.STUDENT, "suraj123", "TUI-SURAJ");
 
-        // 3. Demo Data for Showcasing Features
-        User student = userRepository.findByEmail("student@tuitionhub.com").orElse(null);
+        // 4. Demo Data for Showcasing Features
+        User student = userRepository.findByEmail("surajkannujiya517@gmail.com").orElse(null);
         User teacher = userRepository.findByEmail("teacher@tuitionhub.com").orElse(null);
         if (student != null && teacher != null) {
             seedDemoSessions(student, teacher);
         }
-
-        // 4. Assign referral codes to existing users
-        userRepository.findAll().stream()
-                .filter(u -> u.getReferralCode() == null || u.getReferralCode().isEmpty())
-                .forEach(u -> {
-                    String code = "TUI-" + UUID.randomUUID().toString().substring(0, 5).toUpperCase();
-                    u.setReferralCode(code);
-                    userRepository.save(u);
-                });
 
         // 5. Seed Default Subjects
         if (subjectRepository.count() == 0) {
@@ -89,29 +56,47 @@ public class DataInitializer implements CommandLineRunner {
                 Subject.builder().name("Chemistry").icon("⚗️").build(),
                 Subject.builder().name("Biology").icon("🧬").build(),
                 Subject.builder().name("Computer Science").icon("💻").build(),
-                Subject.builder().name("English").icon("📖").build(),
-                Subject.builder().name("Social Studies").icon("🌍").build(),
-                Subject.builder().name("Hindi").icon("🇮🇳").build()
+                Subject.builder().name("English").icon("📖").build()
             ).forEach(subjectRepository::save);
-            log.info("📚 Default subjects seeded.");
+        }
+    }
+
+    private void createIfNotExists(String email, String name, Role role, String password, String referral) {
+        if (!userRepository.existsByEmail(email)) {
+            User user = User.builder()
+                    .name(name)
+                    .email(email)
+                    .mobile("9876543210")
+                    .password(passwordEncoder.encode(password))
+                    .role(role)
+                    .isActive(true)
+                    .isApproved(true)
+                    .referralCode(referral)
+                    .build();
+            userRepository.save(user);
+            walletService.getOrCreateWallet(user.getId());
+            log.info("✅ Created {}: {}", role, email);
         }
     }
 
     private void seedDemoSessions(User student, User teacher) {
         if (sessionRepository.count() < 2) {
-            // 1. Paid Session (Shows Join Meet & Study Material)
+            // Get a subject
+            Subject physics = subjectRepository.findByNameIgnoreCase("Physics").orElse(null);
+
+            // 1. Paid Session
             Session paidSession = Session.builder()
                     .student(student)
                     .teacher(teacher)
-                    .startTime(LocalDateTime.now().plusHours(1))
-                    .endTime(LocalDateTime.now().plusHours(2))
+                    .startTime(LocalDateTime.now().plusHours(2))
+                    .endTime(LocalDateTime.now().plusHours(3))
                     .amount(500.0)
                     .isPaid(true)
                     .status(Session.SessionStatus.CONFIRMED)
                     .build();
             sessionRepository.save(paidSession);
 
-            // 2. Completed Session (Shows Feedback Button)
+            // 2. Completed Session
             Session completedSession = Session.builder()
                     .student(student)
                     .teacher(teacher)
@@ -123,7 +108,7 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             sessionRepository.save(completedSession);
             
-            log.info("✅ Demo sessions seeded for student@tuitionhub.com");
+            log.info("✅ Demo sessions seeded for {}", student.getEmail());
         }
     }
 }
