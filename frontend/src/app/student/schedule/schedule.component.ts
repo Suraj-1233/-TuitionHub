@@ -86,7 +86,7 @@ import { AuthService } from '../../shared/services/auth.service';
     .view-toggle button { border: none; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s; background: transparent; color: #64748b; }
     .view-toggle button.active { background: white; color: #6366f1; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-    .schedule-content { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }
+    .schedule-content { background: white; border-radius: 24px; overflow: auto; max-height: 80vh; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }
     
     /* Calendar View */
     .calendar-grid { display: grid; grid-template-columns: 80px repeat(7, 1fr); min-width: 900px; }
@@ -132,7 +132,11 @@ import { AuthService } from '../../shared/services/auth.service';
 })
 export class StudentScheduleComponent implements OnInit {
   days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-  timeSlots = ['04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM'];
+  timeSlots = [
+    '06:00 AM', '07:00 AM', '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
+    '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM',
+    '06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM', '10:00 PM', '11:00 PM'
+  ];
   
   viewMode: 'calendar' | 'list' = 'calendar';
   combinedItems: any[] = [];
@@ -186,16 +190,18 @@ export class StudentScheduleComponent implements OnInit {
     return this.combinedItems.filter(item => {
       if (!item.startTime) return false;
 
-      // Handle Session Date/Day
       const sessionDate = new Date(item.startTime);
       const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
       if (dayNames[sessionDate.getDay()] !== day) return false;
 
-      // Time Match (Rough)
-      const slotHour = timeSlot.substring(0, 2);
-      const isPM = timeSlot.includes('PM');
-      const itemTimeStr = new Date(item.startTime).toLocaleTimeString();
-      return itemTimeStr.startsWith(slotHour) && itemTimeStr.includes(isPM ? 'PM' : 'AM');
+      // Extract hour and AM/PM for comparison
+      let hour = sessionDate.getHours();
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12;
+      hour = hour ? hour : 12; // the hour '0' should be '12'
+      
+      const sessionTimeStr = `${hour.toString().padStart(2, '0')}:00 ${ampm}`;
+      return sessionTimeStr === timeSlot;
     });
   }
 }
