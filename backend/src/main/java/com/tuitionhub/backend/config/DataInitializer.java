@@ -92,23 +92,6 @@ public class DataInitializer implements CommandLineRunner {
             log.info("✅ Super Admin created: super@tuitionhub.com");
         }
 
-        if (!userRepository.existsByEmail("parent@example.com")) {
-            User parent = User.builder()
-                    .name("John Doe")
-                    .mobile("2222222222")
-                    .email("parent@example.com")
-                    .password(passwordEncoder.encode("password123"))
-                    .role(Role.PARENT)
-                    .city("New York")
-                    .timezone("America/New_York")
-                    .currency("USD")
-                    .isActive(true)
-                    .isApproved(true)
-                    .build();
-            userRepository.save(parent);
-            log.info("✅ Sample Parent created: parent@example.com (US Timezone)");
-        }
-
         // Add Dummy Teachers
         createTeacherIfNotExist("suresh@tuitionhub.com", "Suresh Raina", "Physics", "M.Tech", "Physics for JEE/NEET");
         createTeacherIfNotExist("sanya@tuitionhub.com", "Sanya Malhotra", "Biology", "M.Sc Bio", "Pre-medical Biology expert");

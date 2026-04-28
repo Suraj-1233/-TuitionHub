@@ -140,25 +140,6 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("message", "Student removed from batch"));
     }
 
-    @PostMapping("/parents/{parentId}/link-student/{studentId}")
-    public ResponseEntity<Map<String, String>> linkParentStudent(@PathVariable Long parentId, @PathVariable Long studentId) {
-        User parent = userRepository.findById(parentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Parent not found"));
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
-
-        if (parent.getRole() != Role.PARENT) {
-            return ResponseEntity.badRequest().body(Map.of("message", "User is not a parent"));
-        }
-        if (student.getRole() != Role.STUDENT) {
-            return ResponseEntity.badRequest().body(Map.of("message", "User is not a student"));
-        }
-
-        student.setParent(parent);
-        userRepository.save(student);
-        return ResponseEntity.ok(Map.of("message", "Student linked to parent successfully"));
-    }
-
     @GetMapping("/assignment-requests")
     public ResponseEntity<List<AssignmentRequest>> getPendingRequests() {
         List<AssignmentRequest> requests = requestRepository.findByStatus(AssignmentRequest.RequestStatus.PENDING);
