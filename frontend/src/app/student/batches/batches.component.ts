@@ -166,6 +166,6 @@ export class StudentBatchesComponent implements OnInit {
   }
 
   loadData() {
-    this.batchService.getMyBatches().subscribe(b => this.myBatches = b);
+    this.batchService.getMyBatches().subscribe((b: Batch[]) => this.myBatches = b);
   }
 }

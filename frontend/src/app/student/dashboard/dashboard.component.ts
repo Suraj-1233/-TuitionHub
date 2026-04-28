@@ -274,7 +274,7 @@ export class StudentDashboardComponent implements OnInit {
   }
 
   loadData() {
-    this.batchService.getMyBatches().subscribe(b => this.myBatches = b);
+    this.batchService.getMyBatches().subscribe((b: Batch[]) => this.myBatches = b);
     this.studentService.getMyRequests().subscribe(r => this.pendingRequests = r);
     
     // Fetch payments count (Placeholder logic until backend summary API is ready)

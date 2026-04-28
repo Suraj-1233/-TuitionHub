@@ -49,7 +49,9 @@ export class BatchService {
     );
   }
 
-  // Legacy/Cleanup
-  createBatch(data: any) { return this.createClass(data); }
-  getTeacherBatches() { return this.getTeacherClasses(); }
+  // Legacy/Cleanup (Maintaining aliases for existing components)
+  createBatch(data: any): Observable<Class> { return this.createClass(data); }
+  getTeacherBatches(): Observable<Class[]> { return this.getTeacherClasses(); }
+  getMyBatches(): Observable<Class[]> { return this.getMyClasses(); }
+  getBatch(id: number): Observable<Class> { return this.getClassById(id); }
 }

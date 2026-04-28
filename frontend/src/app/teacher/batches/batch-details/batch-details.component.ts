@@ -294,7 +294,7 @@ export class TeacherBatchDetailsComponent implements OnInit {
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
-      this.batchService.getBatch(id).subscribe(b => {
+      this.batchService.getBatch(id).subscribe((b: Batch) => {
         this.batch = b;
         this.loadMaterials();
         this.loadAssignments();
