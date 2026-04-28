@@ -176,42 +176,24 @@ public class AdminController {
         final String finalTimingFrom = tFrom;
         final String finalTimingTo = tTo;
 
-        com.tuitionhub.backend.model.Batch batch = batchRepository.findByTeacher(teacher).stream()
-                .filter(b -> b.getSubject().equalsIgnoreCase(request.getSubjects()))
-                .findFirst()
-                .orElseGet(() -> {
-                    com.tuitionhub.backend.model.Batch newBatch = com.tuitionhub.backend.model.Batch.builder()
-                            .name(request.getSubjects() + " - " + teacher.getName())
-                            .subject(request.getSubjects())
-                            .teacher(teacher)
-                            .targetClass(request.getStudent().getStudentClass())
-                            .timingFrom(finalTimingFrom)
-                            .timingTo(finalTimingTo)
-                            .days("Daily")
-                            .monthlyFees(teacher.getFees() != null ? teacher.getFees() : 0.0)
-                            .maxStudents(50)
-                            .liveClassLink("https://meet.jit.si/TuitionHub_" + teacher.getName().replace(" ", "") + "_" + request.getSubjects().replace(" ", ""))
-                            .liveClassPlatform("JITSI")
-                            .isActive(true)
-                            .build();
-                    return batchRepository.save(newBatch);
-                });
-
-        // Ensure link is set even for existing batches
-        if (batch.getLiveClassLink() == null || batch.getLiveClassLink().isEmpty()) {
-            batch.setLiveClassLink("https://meet.jit.si/TuitionHub_" + teacher.getName().replace(" ", "") + "_" + request.getSubjects().replace(" ", ""));
-            batch.setLiveClassPlatform("JITSI");
-            batch = batchRepository.save(batch);
-        }
-
-        if (batch.getStudents() == null) {
-            batch.setStudents(new java.util.ArrayList<>());
-        }
-
-        if (!batch.getStudents().contains(request.getStudent())) {
-            batch.getStudents().add(request.getStudent());
-            batchRepository.save(batch);
-        }
+        // ALWAYS create a NEW Batch for this assignment for Individual (1-on-1) classes
+        com.tuitionhub.backend.model.Batch batch = com.tuitionhub.backend.model.Batch.builder()
+                .name(request.getSubjects() + " - " + request.getStudent().getName())
+                .subject(request.getSubjects())
+                .teacher(teacher)
+                .targetClass(request.getStudent().getStudentClass())
+                .timingFrom(finalTimingFrom)
+                .timingTo(finalTimingTo)
+                .days("Daily")
+                .monthlyFees(teacher.getFees() != null ? teacher.getFees() : 0.0)
+                .maxStudents(1) 
+                .liveClassLink("https://meet.jit.si/TuitionHub_" + teacher.getName().replace(" ", "") + "_" + request.getStudent().getName().replace(" ", ""))
+                .liveClassPlatform("JITSI")
+                .isActive(true)
+                .students(new java.util.ArrayList<>(java.util.List.of(request.getStudent())))
+                .build();
+        
+        batchRepository.save(batch);
 
         String message = "Teacher assigned successfully.";
         if (conflictMessage != null) {

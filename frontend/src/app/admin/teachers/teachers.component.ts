@@ -154,7 +154,7 @@ import { User } from '../../shared/models/models';
                           <div class="batch-name">{{ batch.name }}</div>
                           <span class="subject-pill">{{ batch.subject }}</span>
                         </div>
-                        <div class="batch-price">₹{{ batch.monthlyFees }}<span>/mo</span></div>
+                        <div class="batch-price">{{ getCurrencySymbol(batch.currency) }}{{ batch.monthlyFees }}<span>/mo</span></div>
                       </div>
                       
                       <div class="batch-info-grid">
@@ -327,6 +327,18 @@ export class AdminTeachersComponent implements OnInit {
   filteredTeachers: User[] = [];
   allBatches: any[] = [];
   expandedTeacher: User | null = null;
+
+  getCurrencySymbol(currency?: string): string {
+    if (!currency) return '₹';
+    switch (currency.toUpperCase()) {
+      case 'USD': return '$';
+      case 'GBP': return '£';
+      case 'EUR': return '€';
+      case 'CAD': return 'C$';
+      case 'AUD': return 'A$';
+      default: return '₹';
+    }
+  }
 
   toggleExpand(teacher: User) {
     this.expandedTeacher = teacher;
