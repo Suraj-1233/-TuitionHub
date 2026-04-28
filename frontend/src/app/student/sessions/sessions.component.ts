@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import { DashboardLayoutComponent } from '../../shared/components/layout/dashboard-layout.component';
 import { PaymentService } from '../../shared/services/payment.service';
+import { FeedbackService } from '../../shared/services/feedback.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
 
@@ -34,8 +35,9 @@ import { ToastService } from '../../shared/services/toast.service';
             </div>
 
             <div class="payment-status">
-              <div *ngIf="session.isPaid" class="paid-badge">
-                <span class="icon">✅</span> Paid
+              <div *ngIf="session.isPaid" class="paid-badge-group">
+                <div class="paid-badge"><span class="icon">✅</span> Paid</div>
+                <button *ngIf="session.status === 'COMPLETED'" class="feedback-btn" (click)="openFeedback(session)">Give Feedback</button>
               </div>
               <div *ngIf="!session.isPaid" class="unpaid-info">
                 <span class="amount">{{ session.amount }} {{ session.teacher.currency || 'INR' }}</span>
@@ -87,6 +89,27 @@ import { ToastService } from '../../shared/services/toast.service';
             <button class="close-btn" (click)="selectedSession = null">Close</button>
           </div>
         </div>
+
+        <!-- Feedback Modal -->
+        <div class="modal-overlay" *ngIf="showFeedbackModal" (click)="showFeedbackModal = false">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <h2>How was your session?</h2>
+            <p>Rate your experience with {{ feedbackSession?.teacher?.name }}</p>
+            
+            <div class="rating-stars">
+              <span *ngFor="let star of [1,2,3,4,5]" 
+                    (click)="selectedRating = star"
+                    [class.active]="selectedRating >= star">★</span>
+            </div>
+
+            <textarea [(ngModel)]="feedbackComment" placeholder="Write a short review..."></textarea>
+
+            <div class="modal-actions">
+              <button class="secondary-btn" (click)="showFeedbackModal = false">Later</button>
+              <button class="primary-btn" [disabled]="!selectedRating" (click)="submitFeedback()">Submit Review</button>
+            </div>
+          </div>
+        </div>
       </div>
     </app-dashboard-layout>
   `,
@@ -128,6 +151,9 @@ import { ToastService } from '../../shared/services/toast.service';
     .details .time { margin: 0; color: #94a3b8; font-size: 0.875rem; }
 
     .paid-badge { background: #ecfdf5; color: #059669; padding: 0.5rem 1rem; border-radius: 99px; font-weight: 700; font-size: 0.875rem; }
+    .paid-badge-group { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; }
+    .feedback-btn { background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+    .feedback-btn:hover { background: #2563eb; color: white; }
     .unpaid-info { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
     .amount { font-weight: 800; color: #1e293b; font-size: 1.125rem; }
     .pay-btn { background: #6366f1; color: white; border: none; padding: 0.5rem 1.25rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
@@ -159,6 +185,13 @@ import { ToastService } from '../../shared/services/toast.service';
     .hint { font-size: 0.875rem; color: #6366f1; margin: 1rem 0; line-height: 1.4; }
     .close-btn { width: 100%; margin-top: 1.5rem; background: none; border: none; color: #94a3b8; font-weight: 600; cursor: pointer; }
 
+    .rating-stars { display: flex; justify-content: center; gap: 0.5rem; font-size: 2.5rem; margin: 1.5rem 0; }
+    .rating-stars span { cursor: pointer; color: #e2e8f0; transition: color 0.2s; }
+    .rating-stars span.active { color: #f59e0b; }
+    
+    textarea { width: 100%; height: 100px; border: 2px solid #e2e8f0; border-radius: 12px; padding: 1rem; font-family: inherit; resize: none; outline: none; }
+    textarea:focus { border-color: #6366f1; }
+
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   `]
 })
@@ -167,8 +200,14 @@ export class SessionsComponent implements OnInit {
   walletBalance = 0;
   selectedSession: any = null;
 
+  showFeedbackModal = false;
+  feedbackSession: any = null;
+  selectedRating = 0;
+  feedbackComment = '';
+
   constructor(
     private paymentService: PaymentService,
+    private feedbackService: FeedbackService,
     private authService: AuthService,
     private toastService: ToastService
   ) {}
