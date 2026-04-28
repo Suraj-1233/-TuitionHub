@@ -42,9 +42,6 @@ import { Assignment, AssignmentService } from 'src/app/shared/services/assignmen
             <button class="tab-btn" [class.active]="activeTab === 'assignments'" (click)="activeTab = 'assignments'">
               📝 Assignments
             </button>
-            <button class="tab-btn" [class.active]="activeTab === 'attendance'" (click)="activeTab = 'attendance'">
-              ✅ Attendance
-            </button>
             <button class="tab-btn" [class.active]="activeTab === 'schedule'" (click)="activeTab = 'schedule'">
               🕒 Schedule
             </button>
@@ -139,53 +136,6 @@ import { Assignment, AssignmentService } from 'src/app/shared/services/assignmen
            </div>
         </div>
 
-        <!-- Attendance Tab -->
-        <div *ngIf="activeTab === 'attendance'" class="animate-slide">
-          <div class="card glass mb-6 p-6">
-            <div class="flex justify-between items-center mb-6">
-              <h3 class="card-title">Mark Attendance</h3>
-              <input type="date" class="form-control w-auto" [(ngModel)]="attendanceDate" (change)="loadAttendance()">
-            </div>
-
-            <div class="attendance-table-container">
-              <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="text-secondary text-sm border-b border-gray-100">
-                    <th class="pb-4 font-semibold">Student Name</th>
-                    <th class="pb-4 font-semibold">Status</th>
-                    <th class="pb-4 font-semibold text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let student of batch.students" class="border-b border-gray-50">
-                    <td class="py-4">
-                      <div class="font-bold text-slate-800">{{ student.name }}</div>
-                      <div class="text-xs text-slate-500">{{ student.email }}</div>
-                    </td>
-                    <td class="py-4">
-                      <span class="status-pill" [class]="getAttendanceStatus(student.id!)">
-                        {{ getAttendanceStatusLabel(student.id!) }}
-                      </span>
-                    </td>
-                    <td class="py-4">
-                      <div class="flex justify-center gap-2">
-                        <button class="btn btn-sm btn-success" (click)="markStudentAttendance(student, 'PRESENT')">Present</button>
-                        <button class="btn btn-sm btn-danger" (click)="markStudentAttendance(student, 'ABSENT')">Absent</button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div *ngIf="!batch.students?.length" class="empty-state">No students in this batch.</div>
-            </div>
-            
-            <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
-              <p class="text-sm text-blue-700">
-                💡 <strong>Note:</strong> Marking a student as <strong>Absent</strong> will automatically send an email alert to the student and their parents.
-              </p>
-            </div>
-          </div>
-        </div>
 
         <!-- Schedule Tab -->
         <div *ngIf="activeTab === 'schedule'" class="animate-slide">
@@ -247,10 +197,6 @@ import { Assignment, AssignmentService } from 'src/app/shared/services/assignmen
     .info-row .value { font-weight: 700; color: var(--text-primary); }
     .empty-state { text-align: center; padding: 3rem; color: var(--text-secondary); font-style: italic; }
 
-    .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-    .status-pill.present { background: #DCFCE7; color: #15803D; }
-    .status-pill.absent { background: #FEE2E2; color: #B91C1C; }
-    .status-pill.none { background: #F1F5F9; color: #64748B; }
     
     .btn-success { background: #22C55E; color: white; border: none; }
     .btn-danger { background: #EF4444; color: white; border: none; }
@@ -268,7 +214,7 @@ import { Assignment, AssignmentService } from 'src/app/shared/services/assignmen
 })
 export class TeacherBatchDetailsComponent implements OnInit {
   batch: Batch | null = null;
-  activeTab: 'materials' | 'assignments' | 'schedule' | 'attendance' = 'materials';
+  activeTab: 'materials' | 'assignments' | 'schedule' = 'materials';
   newProposedTime = '';
   selectedFileName = '';
   selectedFile: File | null = null;
@@ -276,8 +222,6 @@ export class TeacherBatchDetailsComponent implements OnInit {
 
   materials: StudyMaterial[] = [];
   assignments: Assignment[] = [];
-  attendanceRecords: Attendance[] = [];
-  attendanceDate: string = new Date().toISOString().split('T')[0];
 
   newMaterial: StudyMaterial = { title: '', type: 'PDF', url: '' };
   newAssignment: Assignment = { title: '', dueDate: '', description: '', maxMarks: 100 };
@@ -298,7 +242,6 @@ export class TeacherBatchDetailsComponent implements OnInit {
         this.batch = b;
         this.loadMaterials();
         this.loadAssignments();
-        this.loadAttendance();
       });
     }
   }
@@ -385,40 +328,4 @@ export class TeacherBatchDetailsComponent implements OnInit {
     return url;
   }
 
-  loadAttendance() {
-    if (this.batch) {
-      this.attendanceService.getBatchAttendance(this.batch.id, this.attendanceDate).subscribe(records => {
-        this.attendanceRecords = records;
-      });
-    }
-  }
-
-  markStudentAttendance(student: User, status: 'PRESENT' | 'ABSENT' | 'LATE') {
-    if (!this.batch) return;
-
-    const record: Attendance = {
-      batchId: this.batch.id,
-      studentId: student.id!,
-      attendanceDate: this.attendanceDate,
-      status: status
-    };
-
-    this.attendanceService.markAttendance(record).subscribe({
-      next: () => {
-        this.toast.success(`Attendance marked as ${status} for ${student.name}`);
-        this.loadAttendance();
-      },
-      error: () => this.toast.error('Failed to mark attendance')
-    });
-  }
-
-  getAttendanceStatus(studentId: number): string {
-    const record = this.attendanceRecords.find(r => r.studentId === studentId);
-    return record ? record.status.toLowerCase() : 'none';
-  }
-
-  getAttendanceStatusLabel(studentId: number): string {
-    const record = this.attendanceRecords.find(r => r.studentId === studentId);
-    return record ? record.status : 'NOT MARKED';
-  }
 }
