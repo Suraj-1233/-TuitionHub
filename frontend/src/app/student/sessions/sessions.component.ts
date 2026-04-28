@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardLayoutComponent } from '../../shared/components/layout/dashboard-layout.component';
+import { Router } from '@angular/router';
 import { PaymentService } from '../../shared/services/payment.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
@@ -99,7 +100,8 @@ export class SessionsComponent implements OnInit {
   constructor(
     private paymentService: PaymentService,
     private authService: AuthService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -124,6 +126,10 @@ export class SessionsComponent implements OnInit {
   }
 
   viewMaterial(session: any) {
-    alert('Opening Study Materials for ' + (session.batch?.subject?.name || 'Class'));
+    if (session.batch?.id) {
+      this.router.navigate(['/student/mentors', session.batch.id]);
+    } else {
+      this.toastService.error('Batch information not found');
+    }
   }
 }
