@@ -4,6 +4,8 @@ import { DashboardLayoutComponent } from '../../shared/components/layout/dashboa
 import { PaymentService } from '../../shared/services/payment.service';
 import { TimezoneService } from '../../shared/services/timezone.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { Router } from '@angular/router';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-student-schedule',
@@ -147,7 +149,9 @@ export class StudentScheduleComponent implements OnInit {
   constructor(
     private paymentService: PaymentService,
     private authService: AuthService,
-    private tzService: TimezoneService
+    private tzService: TimezoneService,
+    private router: Router,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -172,10 +176,15 @@ export class StudentScheduleComponent implements OnInit {
 
   handleItemClick(item: any) {
     if (!item.isPaid) {
-      // Redirect to sessions page to pay
-      window.location.href = '/student/sessions';
+      this.toast.info('Please complete payment to join the session.');
+      this.router.navigate(['/student/payments']);
     } else {
-      alert('Launching 1-on-1 Session...');
+      if (item.batch?.liveClassLink) {
+        this.toast.success('Launching your 1-on-1 session...');
+        setTimeout(() => window.open(item.batch.liveClassLink, '_blank'), 1000);
+      } else {
+        this.toast.info('The mentor hasn\'t shared the link yet. Please check back 5 mins before start time.');
+      }
     }
   }
 
