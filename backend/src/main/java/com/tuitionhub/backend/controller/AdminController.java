@@ -27,15 +27,24 @@ public class AdminController {
     private final PaymentRepository paymentRepository;
     private final AssignmentRequestRepository requestRepository;
     private final com.tuitionhub.backend.repository.SubjectRepository subjectRepository;
+    private final com.tuitionhub.backend.service.WalletService walletService;
+    private final com.tuitionhub.backend.repository.WalletTransactionRepository walletTransactionRepository;
+    private final com.tuitionhub.backend.repository.SessionRepository sessionRepository;
 
     public AdminController(UserRepository userRepository, BatchRepository batchRepository, 
                            PaymentRepository paymentRepository, AssignmentRequestRepository requestRepository,
-                           com.tuitionhub.backend.repository.SubjectRepository subjectRepository) {
+                           com.tuitionhub.backend.repository.SubjectRepository subjectRepository,
+                           com.tuitionhub.backend.service.WalletService walletService,
+                           com.tuitionhub.backend.repository.WalletTransactionRepository walletTransactionRepository,
+                           com.tuitionhub.backend.repository.SessionRepository sessionRepository) {
         this.userRepository = userRepository;
         this.batchRepository = batchRepository;
         this.paymentRepository = paymentRepository;
         this.requestRepository = requestRepository;
         this.subjectRepository = subjectRepository;
+        this.walletService = walletService;
+        this.walletTransactionRepository = walletTransactionRepository;
+        this.sessionRepository = sessionRepository;
     }
 
     @GetMapping("/dashboard")
@@ -224,6 +233,45 @@ public class AdminController {
     public ResponseEntity<?> deleteSubject(@PathVariable Long id) {
         subjectRepository.deleteById(id);
         return ResponseEntity.ok(Map.of("message", "Subject deleted"));
+    }
+
+    // ==================== WALLET & SESSION MANAGEMENT ====================
+
+    @PostMapping("/wallet/adjust")
+    public ResponseEntity<?> adjustWallet(@RequestBody Map<String, Object> request) {
+        Long userId = Long.valueOf(request.get("userId").toString());
+        Double amount = Double.valueOf(request.get("amount").toString());
+        boolean isCredit = (boolean) request.getOrDefault("isCredit", true);
+        String description = (String) request.getOrDefault("description", "Admin adjustment");
+
+        if (isCredit) {
+            walletService.addCredits(userId, amount, com.tuitionhub.backend.model.WalletTransaction.TransactionSource.PROMO, description, false);
+        } else {
+            walletService.deductBalance(userId, amount, description, "ADMIN_ADJ");
+        }
+        return ResponseEntity.ok(Map.of("message", "Wallet adjusted successfully"));
+    }
+
+    @GetMapping("/wallet/transactions")
+    public ResponseEntity<?> getAllWalletTransactions() {
+        return ResponseEntity.ok(walletTransactionRepository.findAll());
+    }
+
+    @GetMapping("/sessions")
+    public ResponseEntity<?> getAllSessions() {
+        return ResponseEntity.ok(sessionRepository.findAll());
+    }
+
+    @PutMapping("/sessions/{id}/payout")
+    public ResponseEntity<?> updatePayoutStatus(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        com.tuitionhub.backend.model.Session session = sessionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Session not found"));
+        
+        com.tuitionhub.backend.model.Session.PayoutStatus status = com.tuitionhub.backend.model.Session.PayoutStatus.valueOf(request.get("status"));
+        session.setPayoutStatus(status);
+        sessionRepository.save(session);
+        
+        return ResponseEntity.ok(Map.of("message", "Payout status updated to " + status));
     }
 
     private String checkConflicts(String requestedTime, List<com.tuitionhub.backend.model.Batch> batches) {

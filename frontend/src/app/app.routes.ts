@@ -50,6 +50,14 @@ export const routes: Routes = [
         path: 'payments',
         loadComponent: () => import('./student/payments/payments.component').then(m => m.StudentPaymentsComponent)
       },
+      {
+        path: 'wallet',
+        loadComponent: () => import('./student/wallet/wallet.component').then(m => m.WalletComponent)
+      },
+      {
+        path: 'sessions',
+        loadComponent: () => import('./student/sessions/sessions.component').then(m => m.SessionsComponent)
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
@@ -109,6 +117,10 @@ export const routes: Routes = [
       {
         path: 'subjects',
         loadComponent: () => import('./admin/subjects/subjects.component').then(m => m.AdminSubjectsComponent)
+      },
+      {
+        path: 'wallet',
+        loadComponent: () => import('./admin/wallet/wallet.component').then(m => m.AdminWalletComponent)
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

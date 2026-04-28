@@ -37,9 +37,33 @@ export class PaymentService {
     return this.http.get<Payment[]>(`${this.apiUrl}/admin/payments`);
   }
 
-  markAsPaid(paymentId: number, remark: string): Observable<Payment> {
-    return this.http.post<Payment>(`${this.apiUrl}/admin/payments/${paymentId}/mark-as-paid?remark=${remark}`, {});
+  // Wallet Methods
+  getWalletBalance(userId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/wallet/balance?userId=${userId}`);
   }
 
+  getWalletTransactions(userId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/wallet/transactions?userId=${userId}`);
+  }
 
+  topupWallet(userId: number, amount: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/wallet/topup`, { userId, amount });
+  }
+
+  // Session Methods
+  bookSession(request: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/sessions/book`, request);
+  }
+
+  payForSession(sessionId: number, method: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/sessions/${sessionId}/pay`, { method });
+  }
+
+  confirmGateway(sessionId: number, ref: string, amount: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/sessions/${sessionId}/confirm-gateway`, { paymentReference: ref, amount });
+  }
+
+  getStudentSessions(studentId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/sessions/student?studentId=${studentId}`);
+  }
 }

@@ -74,7 +74,20 @@ export class AdminService {
     return this.http.post(`${this.apiUrl}/admin/subjects`, subject);
   }
 
-  deleteSubject(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/admin/subjects/${id}`);
+  // Wallet & Session Management
+  adjustWallet(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/admin/wallet/adjust`, data);
+  }
+
+  getAllWalletTransactions(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/admin/wallet/transactions`);
+  }
+
+  getAllSessions(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/admin/sessions`);
+  }
+
+  updatePayoutStatus(id: number, status: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/admin/sessions/${id}/payout`, { status });
   }
 }

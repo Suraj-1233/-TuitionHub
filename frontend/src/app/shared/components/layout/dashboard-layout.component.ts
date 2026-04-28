@@ -253,6 +253,8 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
       this.navItems = [
         { path: '/student/dashboard', label: 'Dashboard', icon: '📊' },
         { path: '/student/mentors', label: 'My Mentors', icon: '👩‍🏫' },
+        { path: '/student/sessions', label: 'Bookings', icon: '🎟️' },
+        { path: '/student/wallet', label: 'Wallet', icon: '👛' },
         { path: '/student/schedule', label: 'Schedule', icon: '📅' },
         { path: '/student/payments', label: 'Payments', icon: '💳' },
       ];
@@ -269,6 +271,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
         { path: '/admin/requests', label: 'Tuition Requests', icon: '📩' },
         { path: '/admin/teachers', label: 'Teacher Directory', icon: '👨‍🏫' },
         { path: '/admin/students', label: 'Student Directory', icon: '👨‍🎓' },
+        { path: '/admin/wallet', label: 'Wallet Management', icon: '👛' },
         { path: '/admin/payments', label: 'Global Revenue', icon: '💳' },
       ];
     }

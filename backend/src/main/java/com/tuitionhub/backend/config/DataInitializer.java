@@ -21,6 +21,8 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
     private final PasswordEncoder passwordEncoder;
+    private final com.tuitionhub.backend.service.WalletService walletService;
+
 
     @Override
     public void run(String... args) {
@@ -37,6 +39,7 @@ public class DataInitializer implements CommandLineRunner {
                     .referralCode("TUI-ADMIN")
                     .build();
             userRepository.save(admin);
+            walletService.getOrCreateWallet(admin.getId());
             log.info("✅ Admin created: email=admin@tuitionhub.com, password=admin123");
         }
 
@@ -53,6 +56,7 @@ public class DataInitializer implements CommandLineRunner {
                     .referralCode("TUI-SUPER")
                     .build();
             userRepository.save(superAdmin);
+            walletService.getOrCreateWallet(superAdmin.getId());
             log.info("✅ Super Admin created: super@tuitionhub.com (Password: super123)");
         }
 

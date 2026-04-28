@@ -25,6 +25,8 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final OtpService otpService;
+    private final WalletService walletService;
+
 
     // ==================== EMAIL/PASSWORD LOGIN ====================
 
@@ -218,6 +220,9 @@ public class AuthService {
         user.setOtpExpiry(null);
         user.setIsActive(true);
         userRepository.save(user);
+
+        // Create wallet for the new user
+        walletService.getOrCreateWallet(user.getId());
 
         String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole().name(), user.getId());
         return new AuthDto.AuthResponse(token, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), user.getIsApproved(), user.getReferralCode());

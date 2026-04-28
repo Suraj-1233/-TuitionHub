@@ -1,0 +1,247 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+import { DashboardLayoutComponent } from '../../shared/components/layout/dashboard-layout.component';
+import { PaymentService } from '../../shared/services/payment.service';
+import { AuthService } from '../../shared/services/auth.service';
+import { ToastService } from '../../shared/services/toast.service';
+
+@Component({
+  selector: 'app-wallet',
+  standalone: true,
+  imports: [CommonModule, FormsModule, DashboardLayoutComponent],
+  template: `
+    <app-dashboard-layout role="STUDENT">
+      <div class="wallet-container">
+        <header class="wallet-header">
+          <div>
+            <h1>My Wallet</h1>
+            <p>Manage your credits and transaction history</p>
+          </div>
+          <button class="topup-btn" (click)="showTopupModal = true">
+            <span class="icon">➕</span> Add Money
+          </button>
+        </header>
+
+        <div class="wallet-grid">
+          <div class="balance-card">
+            <div class="card-content">
+              <span class="label">Total Balance</span>
+              <h2 class="amount">{{ wallet?.currency }} {{ wallet?.balance?.toFixed(2) }}</h2>
+              <div class="balance-details">
+                <div class="detail-item">
+                  <span class="detail-label">Real Money</span>
+                  <span class="detail-value">{{ wallet?.currency }} {{ (wallet?.balance - wallet?.promoBalance).toFixed(2) }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Promo Credits</span>
+                  <span class="detail-value">{{ wallet?.currency }} {{ wallet?.promoBalance?.toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="referral-stats">
+            <div class="card-content">
+              <span class="label">Referral Earnings</span>
+              <h2 class="amount">{{ wallet?.currency }} {{ totalReferralEarnings.toFixed(2) }}</h2>
+              <p class="hint">Earn more by inviting friends!</p>
+            </div>
+          </div>
+        </div>
+
+        <section class="transactions-section">
+          <h3>Transaction History</h3>
+          <div class="table-container">
+            <table class="transaction-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Source</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let tx of transactions">
+                  <td>{{ tx.createdAt | date:'medium' }}</td>
+                  <td>{{ tx.description }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="tx.source.toLowerCase()">
+                      {{ tx.source }}
+                    </span>
+                  </td>
+                  <td>
+                    <span [ngClass]="tx.type === 'CREDIT' ? 'text-success' : 'text-danger'">
+                      {{ tx.type }}
+                    </span>
+                  </td>
+                  <td class="font-bold">
+                    {{ tx.type === 'CREDIT' ? '+' : '-' }}{{ wallet?.currency }} {{ tx.amount.toFixed(2) }}
+                  </td>
+                </tr>
+                <tr *ngIf="transactions.length === 0">
+                  <td colspan="5" class="empty-state">No transactions found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Topup Modal -->
+        <div class="modal-overlay" *ngIf="showTopupModal" (click)="showTopupModal = false">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <h2>Add Money to Wallet</h2>
+            <p>Enter the amount you want to add</p>
+            <div class="input-group">
+              <span class="prefix">{{ wallet?.currency }}</span>
+              <input type="number" [(ngModel)]="topupAmount" placeholder="0.00">
+            </div>
+            <div class="modal-actions">
+              <button class="secondary-btn" (click)="showTopupModal = false">Cancel</button>
+              <button class="primary-btn" (click)="handleTopup()">Proceed to Pay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </app-dashboard-layout>
+  `,
+  styles: [`
+    .wallet-container { animation: fadeIn 0.5s ease-out; }
+    .wallet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .wallet-header h1 { font-size: 2rem; font-weight: 800; color: #1e293b; margin: 0; }
+    .wallet-header p { color: #64748b; margin: 0.25rem 0 0 0; }
+
+    .topup-btn {
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+      transition: all 0.3s ease;
+    }
+    .topup-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); }
+
+    .wallet-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 3rem; }
+
+    .balance-card, .referral-stats {
+      background: white;
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      border: 1px solid #f1f5f9;
+      position: relative;
+      overflow: hidden;
+    }
+    .balance-card::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 150px;
+      height: 150px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 50%;
+    }
+
+    .label { font-size: 0.875rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+    .amount { font-size: 2.5rem; font-weight: 800; color: #1e293b; margin: 0.5rem 0 1.5rem 0; }
+    
+    .balance-details { display: flex; gap: 2rem; border-top: 1px solid #f1f5f9; pt: 1.5rem; }
+    .detail-item { display: flex; flex-direction: column; gap: 0.25rem; }
+    .detail-label { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
+    .detail-value { font-size: 1.125rem; font-weight: 700; color: #334155; }
+
+    .transactions-section h3 { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-bottom: 1.5rem; }
+    
+    .table-container { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
+    .transaction-table { width: 100%; border-collapse: collapse; }
+    .transaction-table th { background: #f8fafc; padding: 1rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .transaction-table td { padding: 1.25rem 1.5rem; border-top: 1px solid #f1f5f9; color: #475569; font-size: 0.875rem; }
+    
+    .badge { padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.7rem; font-weight: 700; }
+    .badge.topup { background: #ecfdf5; color: #059669; }
+    .badge.referral { background: #eff6ff; color: #2563eb; }
+    .badge.promo { background: #faf5ff; color: #9333ea; }
+    .badge.session_payment { background: #fff7ed; color: #ea580c; }
+    
+    .text-success { color: #10b981; font-weight: 600; }
+    .text-danger { color: #ef4444; font-weight: 600; }
+    .font-bold { font-weight: 700; color: #1e293b; }
+    .empty-state { text-align: center; padding: 3rem; color: #94a3b8; }
+
+    /* Modal Styles */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+    .modal-content { background: white; padding: 2.5rem; border-radius: 24px; width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); animation: slideUp 0.3s ease-out; }
+    .modal-content h2 { margin-top: 0; }
+    .input-group { display: flex; align-items: center; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 0.75rem 1rem; margin: 1.5rem 0; transition: border-color 0.3s; }
+    .input-group:focus-within { border-color: #6366f1; }
+    .input-group input { border: none; background: transparent; width: 100%; font-size: 1.25rem; font-weight: 700; color: #1e293b; outline: none; }
+    .prefix { font-weight: 700; color: #64748b; margin-right: 0.5rem; }
+    
+    .modal-actions { display: flex; gap: 1rem; margin-top: 2rem; }
+    .primary-btn { flex: 1; background: #6366f1; color: white; border: none; padding: 0.75rem; border-radius: 10px; font-weight: 700; cursor: pointer; }
+    .secondary-btn { flex: 1; background: #f1f5f9; color: #475569; border: none; padding: 0.75rem; border-radius: 10px; font-weight: 700; cursor: pointer; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  `]
+})
+export class WalletComponent implements OnInit {
+  wallet: any;
+  transactions: any[] = [];
+  totalReferralEarnings = 0;
+  showTopupModal = false;
+  topupAmount: number = 0;
+
+  constructor(
+    private paymentService: PaymentService,
+    private authService: AuthService,
+    private toastService: ToastService
+  ) {}
+
+  ngOnInit() {
+    this.loadData();
+  }
+
+  loadData() {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.paymentService.getWalletBalance(user.userId).subscribe(w => this.wallet = w);
+      this.paymentService.getWalletTransactions(user.userId).subscribe(txs => {
+        this.transactions = txs;
+        this.totalReferralEarnings = txs
+          .filter(t => t.source === 'REFERRAL' && t.type === 'CREDIT')
+          .reduce((sum, t) => sum + t.amount, 0);
+      });
+    }
+  }
+
+  handleTopup() {
+    if (this.topupAmount <= 0) {
+      this.toastService.error('Please enter a valid amount');
+      return;
+    }
+
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.paymentService.topupWallet(user.userId, this.topupAmount).subscribe({
+        next: () => {
+          this.toastService.success('Topup successful! (Simulated)');
+          this.showTopupModal = false;
+          this.topupAmount = 0;
+          this.loadData();
+        },
+        error: () => this.toastService.error('Topup failed')
+      });
+    }
+  }
+}
