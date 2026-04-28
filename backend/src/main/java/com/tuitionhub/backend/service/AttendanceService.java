@@ -71,24 +71,6 @@ public class AttendanceService {
         );
 
         emailService.sendSimpleEmail(to, subject, body);
-        
-        // Also notify parent if linked
-        if (student.getParent() != null && student.getParent().getEmail() != null) {
-            String parentSubject = "Attendance Alert: " + student.getName() + " was Absent";
-            String parentBody = String.format("""
-                Hello,
-                
-                Your child %s was marked ABSENT for the class "%s" on %s.
-                
-                Regards,
-                TuitionHub Team
-                """, 
-                student.getName(), 
-                attendance.getBatch().getName(), 
-                attendance.getAttendanceDate().toString()
-            );
-            emailService.sendSimpleEmail(student.getParent().getEmail(), parentSubject, parentBody);
-        }
     }
 
     public List<Attendance> getBatchAttendance(Long batchId, LocalDate date) {
