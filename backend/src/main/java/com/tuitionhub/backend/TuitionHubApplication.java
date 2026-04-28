@@ -24,7 +24,8 @@ public class TuitionHubApplication {
             }
         });
         
-        System.out.println("📬 Mail Config Check: " + System.getProperty("MAIL_USERNAME"));
+        String mailUser = System.getProperty("MAIL_USERNAME") != null ? System.getProperty("MAIL_USERNAME") : System.getenv("MAIL_USERNAME");
+        System.out.println("📬 Mail Config Check: " + mailUser);
         SpringApplication.run(TuitionHubApplication.class, args);
     }
 }
