@@ -17,45 +17,10 @@ import { FormsModule } from '@angular/forms';
     <app-dashboard-layout role="STUDENT">
       <!-- Welcome Banner -->
       <div class="welcome-banner animate-slide">
-        <div class="header-content animate-slide">
+        <div class="welcome-text">
           <h1 class="page-title">Welcome back! 👋</h1>
-          <p class="subtitle text-secondary">Your learning journey, your rules. You're in control of your schedule and success.</p>
+          <p class="subtitle">Here's what's happening with your studies today.</p>
         </div>
-
-        <!-- Student Priority Preferences -->
-        <section class="priority-section mt-5 animate-fade">
-          <div class="card glass preference-card">
-            <div class="pref-header">
-              <h3>🎯 Your Learning Priorities</h3>
-              <span class="priority-tag">Student-First Mode</span>
-            </div>
-            <div class="pref-grid">
-              <div class="pref-item">
-                <span class="icon">💰</span>
-                <div class="pref-info">
-                  <label>Your Currency</label>
-                  <select [(ngModel)]="preferredCurrency" (change)="updateCurrency()">
-                    <option value="INR">INR (₹)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                  </select>
-                </div>
-              </div>
-              <div class="pref-item">
-                <span class="icon">🕒</span>
-                <div class="pref-info">
-                  <label>Preferred Global Time</label>
-                  <input type="text" [(ngModel)]="preferredGlobalTime" placeholder="e.g. 07:00 PM">
-                  <small>Teachers will adapt to this time.</small>
-                </div>
-              </div>
-              <div class="pref-item">
-                 <button class="btn-save-pref" (click)="savePreferences()">Lock Preferences</button>
-              </div>
-            </div>
-          </div>
-        </section>
         <div class="banner-actions">
           <button class="btn-request-glow" (click)="showRequestModal = true">
             🚀 Request New Subject
@@ -238,21 +203,6 @@ import { FormsModule } from '@angular/forms';
     }
     .btn-request-glow:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 15px 30px rgba(255,255,255,0.6); }
 
-    .preference-card { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(99, 102, 241, 0.2); padding: 1.5rem; margin-top: 1rem; }
-    .pref-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-    .pref-header h3 { margin: 0; color: #1e293b; font-size: 1.1rem; }
-    .priority-tag { background: #6366f1; color: white; padding: 4px 12px; border-radius: 99px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
-    .pref-grid { display: flex; gap: 2rem; align-items: flex-end; }
-    .pref-item { display: flex; align-items: center; gap: 0.75rem; flex: 1; }
-    .pref-item .icon { font-size: 1.5rem; background: #f1f5f9; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
-    .pref-info { display: flex; flex-direction: column; flex: 1; }
-    .pref-info label { font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem; }
-    .pref-info select, .pref-info input { padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-weight: 600; color: #1e293b; outline: none; }
-    .pref-info select:focus, .pref-info input:focus { border-color: #6366f1; }
-    .pref-info small { font-size: 0.65rem; color: #94a3b8; margin-top: 0.25rem; }
-    .btn-save-pref { background: #1e293b; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-    .btn-save-pref:hover { background: #000; transform: translateY(-2px); }
-
     .banner-actions { display: flex; gap: 1rem; margin-top: 2rem; }
 
     .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
@@ -319,9 +269,6 @@ export class StudentDashboardComponent implements OnInit {
   requestData = { subjects: '', startTime: '', endTime: '', notes: '' };
   paymentCount = 0;
   referrals: any[] = [];
-  preferredCurrency = 'INR';
-  preferredGlobalTime = '06:00 PM';
-  currencySymbol = '₹';
 
   constructor(
     private authService: AuthService,
@@ -333,20 +280,7 @@ export class StudentDashboardComponent implements OnInit {
   ngOnInit() {
     const user = this.authService.getCurrentUser();
     this.userName = user?.name || 'Student';
-    this.preferredCurrency = this.authService.getCurrency();
-    this.currencySymbol = this.authService.getCurrencySymbol();
     this.loadData();
-  }
-
-  updateCurrency() {
-    this.authService.setCurrency(this.preferredCurrency);
-    this.currencySymbol = this.authService.getCurrencySymbol();
-    this.toast.info(`Currency set to ${this.preferredCurrency} (${this.currencySymbol})`);
-  }
-
-  savePreferences() {
-    this.authService.setCurrency(this.preferredCurrency);
-    this.toast.success('Priority preferences locked! UI will now reflect ' + this.preferredCurrency);
   }
 
   loadData() {
