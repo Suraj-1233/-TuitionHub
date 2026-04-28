@@ -252,7 +252,6 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     if (this.role === 'STUDENT') {
       this.navItems = [
         { path: '/student/dashboard', label: 'Dashboard', icon: '📊' },
-        { path: '/student/mentors', label: 'Find Mentors', icon: '🔍' },
         { path: '/student/sessions', label: 'My Bookings', icon: '📅' },
         { path: '/student/schedule', label: 'Schedule', icon: '⏰' },
         { path: '/student/wallet', label: 'Wallet', icon: '💳' },

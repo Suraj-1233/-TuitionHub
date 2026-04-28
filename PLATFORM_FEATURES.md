@@ -16,7 +16,7 @@ Implemented a secure and scalable internal economy for students and tutors.
 - **Transaction Logs**: Granular history for every credit, debit, referral, and top-up.
 
 ## 🎟️ 2. Pure 1-on-1 Session Management
-Exclusively designed for individual tutoring. Group batches have been removed to focus on personalized learning.
+Exclusively designed for individual tutoring. Students manage their assigned sessions directly through their private portal.
 
 - **Booking Workflow**: Sessions are created as `PENDING` and only `CONFIRMED` (unlocked) after successful payment.
 - **Automated Payout Tracking**: System tracks teacher earnings per session, pending admin approval.

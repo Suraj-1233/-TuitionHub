@@ -35,8 +35,12 @@ import { ToastService } from '../../shared/services/toast.service';
             </div>
 
             <div class="payment-status">
-              <div *ngIf="session.isPaid" class="paid-badge-group">
+              <div *ngIf="session.isPaid" class="paid-actions-group">
                 <div class="paid-badge"><span class="icon">✅</span> Paid</div>
+                <div class="action-buttons">
+                  <button class="join-meet-btn" (click)="joinMeet(session)">📹 Join Meet</button>
+                  <button class="material-btn" (click)="viewMaterial(session)">📚 Study Material</button>
+                </div>
                 <button *ngIf="session.status === 'COMPLETED'" class="feedback-btn" (click)="openFeedback(session)">Give Feedback</button>
               </div>
               <div *ngIf="!session.isPaid" class="unpaid-info">
@@ -150,10 +154,18 @@ import { ToastService } from '../../shared/services/toast.service';
     .details .teacher { margin: 0.25rem 0; color: #64748b; font-size: 0.875rem; }
     .details .time { margin: 0; color: #94a3b8; font-size: 0.875rem; }
 
-    .paid-badge { background: #ecfdf5; color: #059669; padding: 0.5rem 1rem; border-radius: 99px; font-weight: 700; font-size: 0.875rem; }
-    .paid-badge-group { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; }
-    .feedback-btn { background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
-    .feedback-btn:hover { background: #2563eb; color: white; }
+    .paid-badge { background: #ecfdf5; color: #059669; padding: 0.5rem 1rem; border-radius: 99px; font-weight: 700; font-size: 0.875rem; text-align: center; }
+    .paid-actions-group { display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-end; }
+    .action-buttons { display: flex; gap: 0.5rem; }
+    
+    .join-meet-btn { background: #10b981; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 700; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; }
+    .join-meet-btn:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+    
+    .material-btn { background: #6366f1; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 700; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; }
+    .material-btn:hover { background: #4f46e5; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+
+    .feedback-btn { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+    .feedback-btn:hover { background: #f1f5f9; color: #1e293b; }
     .unpaid-info { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
     .amount { font-weight: 800; color: #1e293b; font-size: 1.125rem; }
     .pay-btn { background: #6366f1; color: white; border: none; padding: 0.5rem 1.25rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
@@ -261,6 +273,18 @@ export class SessionsComponent implements OnInit {
       },
       error: (err: any) => this.toastService.error(err.error?.message || 'Partial payment failed')
     });
+  }
+
+  joinMeet(session: any) {
+    if (session.batch?.liveClassLink) {
+      window.open(session.batch.liveClassLink, '_blank');
+    } else {
+      this.toastService.info('Meeting link will be shared by mentor soon.');
+    }
+  }
+
+  viewMaterial(session: any) {
+    alert('Opening Study Materials for ' + (session.batch?.subject || 'Session'));
   }
 
   openFeedback(session: any) {
