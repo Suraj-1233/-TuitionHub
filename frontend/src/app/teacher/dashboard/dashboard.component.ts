@@ -86,7 +86,7 @@ import { Batch, BatchJoinRequest } from '../../shared/models/models';
             </div>
 
             <div class="batch-summary-list" *ngIf="myBatches.length > 0">
-              <div class="batch-summary-item" *ngFor="let batch of myBatches">
+              <div class="batch-summary-item animate-scale" *ngFor="let batch of myBatches" [routerLink]="['/teacher/classes', batch.id]">
                 <div class="b-header">
                   <span class="b-name">{{ batch.name }}</span>
                   <span class="b-count">{{ batch.currentStudents }}/{{ batch.maxStudents }}</span>
@@ -172,8 +172,8 @@ import { Batch, BatchJoinRequest } from '../../shared/models/models';
     .btn-reject { background: #FEE2E2; color: var(--danger-color); border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.875rem; cursor: pointer; }
 
     .batch-summary-list { display: flex; flex-direction: column; gap: 1rem; }
-    .batch-summary-item { padding: 1rem; border: 1px solid var(--border-color); border-radius: 12px; transition: var(--transition); }
-    .batch-summary-item:hover { background: #F8FAFC; }
+    .batch-summary-item { padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 16px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .batch-summary-item:hover { background: white; border-color: var(--primary-color); transform: translateX(5px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.05); }
     .b-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
     .b-name { font-weight: 700; color: var(--text-primary); }
     .b-count { font-size: 0.75rem; background: #F1F5F9; padding: 0.2rem 0.5rem; border-radius: 6px; color: var(--text-secondary); font-weight: 700; }

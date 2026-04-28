@@ -138,12 +138,16 @@ import { FormsModule } from '@angular/forms';
           </div>
 
           <div class="batch-list" *ngIf="myBatches.length > 0">
-            <div *ngFor="let batch of myBatches" class="batch-mini" [routerLink]="['/student/batches', batch.id]">
+            <div *ngFor="let batch of myBatches" class="batch-mini animate-scale" [routerLink]="['/student/mentors', batch.id]">
               <div class="batch-icon">🎓</div>
               <div class="batch-info">
                 <div class="batch-name">{{ batch.name }}</div>
-                <div class="teacher-tag">Mentor: {{ batch.teacher.name }}</div>
+                <div class="batch-meta">
+                  <span>👨‍🏫 {{ batch.teacher.name }}</span>
+                  <span class="timing-pill">🕒 {{ batch.timingFrom }}</span>
+                </div>
               </div>
+              <div class="batch-arrow">→</div>
             </div>
           </div>
         </div>
@@ -229,11 +233,15 @@ import { FormsModule } from '@angular/forms';
     .status-badge.ASSIGNED { background: #DCFCE7; color: #166534; }
     .req-footer { font-size: 0.75rem; color: #64748B; font-weight: 500; }
     
-    .batch-mini { display: flex; gap: 1rem; padding: 1.25rem; border-radius: 16px; background: #F8FAFC; margin-bottom: 1rem; border: 1px solid #E2E8F0; cursor: pointer; transition: all 0.2s; }
-    .batch-mini:hover { background: #F1F5F9; border-color: #CBD5E1; transform: translateX(5px); }
-    .batch-icon { width: 45px; height: 45px; border-radius: 12px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-    .batch-name { font-weight: 800; color: #1E293B; }
-    .teacher-tag { font-size: 0.8rem; color: #64748B; }
+    .batch-mini { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; border-radius: 16px; background: #F8FAFC; margin-bottom: 1rem; border: 1px solid #E2E8F0; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+    .batch-mini:hover { background: white; border-color: #6366f1; transform: translateX(8px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.1); }
+    .batch-icon { width: 50px; height: 50px; border-radius: 14px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #6366f1; }
+    .batch-name { font-weight: 800; color: #1E293B; font-size: 1.1rem; }
+    .batch-meta { display: flex; align-items: center; gap: 1rem; margin-top: 0.25rem; }
+    .batch-meta span { font-size: 0.8rem; color: #64748B; font-weight: 600; }
+    .timing-pill { background: #ECFDF5; color: #059669 !important; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem !important; }
+    .batch-arrow { margin-left: auto; color: #CBD5E1; font-weight: 900; transition: all 0.2s; }
+    .batch-mini:hover .batch-arrow { color: #6366f1; transform: translateX(5px); }
 
     .referral-list { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem; }
     .ref-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0; }
