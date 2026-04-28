@@ -16,4 +16,8 @@ export class StudentService {
   getMyRequests(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/student/my-requests`);
   }
+
+  getPayments(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/student/my-payments`);
+  }
 }

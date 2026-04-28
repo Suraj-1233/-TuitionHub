@@ -40,7 +40,7 @@ import { FormsModule } from '@angular/forms';
         <div class="stat-card glass warning" routerLink="/student/payments">
           <div class="stat-icon warning">💸</div>
           <div class="stat-info">
-            <div class="stat-value">1</div>
+            <div class="stat-value">{{ paymentCount }}</div>
             <div class="stat-label">Payments</div>
           </div>
         </div>
@@ -231,6 +231,7 @@ export class StudentDashboardComponent implements OnInit {
   showRequestModal = false;
   isLoading = false;
   requestData = { subjects: '', startTime: '', endTime: '', notes: '' };
+  paymentCount = 0;
 
   constructor(
     private authService: AuthService,
@@ -248,6 +249,11 @@ export class StudentDashboardComponent implements OnInit {
   loadData() {
     this.batchService.getMyBatches().subscribe(b => this.myBatches = b);
     this.studentService.getMyRequests().subscribe(r => this.pendingRequests = r);
+    
+    // Fetch payments count (Placeholder logic until backend summary API is ready)
+    this.studentService.getPayments().subscribe(p => {
+      this.paymentCount = p.length;
+    });
   }
 
   submitRequest() {
