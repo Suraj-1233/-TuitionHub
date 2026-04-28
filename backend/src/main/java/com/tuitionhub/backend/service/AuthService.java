@@ -218,6 +218,19 @@ public class AuthService {
         }
     }
 
+    public void updateCurrency(String token, String currency) {
+        try {
+            String email = jwtTokenProvider.getEmailFromToken(token);
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            user.setCurrency(currency);
+            userRepository.save(user);
+            log.info("Updated currency for {} to {}", email, currency);
+        } catch (Exception e) {
+            log.warn("Could not update currency: {}", e.getMessage());
+        }
+    }
+
     private String generateOtp() {
         return String.format("%06d", new Random().nextInt(999999));
     }

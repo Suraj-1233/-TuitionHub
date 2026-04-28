@@ -76,6 +76,17 @@ public class AuthController {
         return ResponseEntity.badRequest().body(Map.of("error", "Timezone is required"));
     }
 
+    @PutMapping("/update-currency")
+    public ResponseEntity<Map<String, String>> updateCurrency(@RequestBody Map<String, String> body,
+                                                               @RequestHeader("Authorization") String token) {
+        String currency = body.get("currency");
+        if (currency != null && !currency.isEmpty()) {
+            authService.updateCurrency(token.replace("Bearer ", ""), currency);
+            return ResponseEntity.ok(Map.of("message", "Currency updated to " + currency));
+        }
+        return ResponseEntity.badRequest().body(Map.of("error", "Currency is required"));
+    }
+
     // ==================== LEGACY OTP (kept for backward compat) ====================
 
     @PostMapping("/verify-otp")

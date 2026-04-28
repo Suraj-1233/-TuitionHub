@@ -114,11 +114,17 @@ export class AuthService {
   }
 
   getCurrencySymbol(): string {
-    const cur = this.getCurrency();
-    if (cur === 'USD') return '$';
-    if (cur === 'EUR') return '€';
-    if (cur === 'GBP') return '£';
-    return '₹';
+    const currency = this.getCurrency();
+    switch (currency) {
+      case 'USD': return '$';
+      case 'EUR': return '€';
+      case 'GBP': return '£';
+      default: return '₹';
+    }
+  }
+
+  updateBackendCurrency(currency: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/auth/update-currency`, { currency });
   }
 
   getRole(): string | null {

@@ -118,12 +118,13 @@ public class PaymentService {
 
             // Create real Razorpay order via SDK
             String orderId;
+            String currency = (student.getCurrency() != null && !student.getCurrency().isEmpty()) ? student.getCurrency() : "INR";
             try {
                 RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId.trim(), razorpayKeySecret.trim());
                 JSONObject orderRequest = new JSONObject();
                 int amountPaise = (int) (amount * 100);
                 orderRequest.put("amount", amountPaise);
-                orderRequest.put("currency", "INR");
+                orderRequest.put("currency", currency);
                 orderRequest.put("receipt", "topup_" + System.currentTimeMillis());
                 
                 Order razorpayOrder = razorpayClient.orders.create(orderRequest);
