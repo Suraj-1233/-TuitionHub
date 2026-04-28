@@ -20,7 +20,7 @@ import { ToastService } from '../../shared/services/toast.service';
           </div>
           <div class="wallet-summary glass">
             <span class="label">Wallet Balance</span>
-            <span class="balance">₹{{ walletBalance.toFixed(2) }}</span>
+            <span class="balance">{{ currencySymbol }}{{ walletBalance.toFixed(2) }}</span>
           </div>
         </header>
 
@@ -33,7 +33,7 @@ import { ToastService } from '../../shared/services/toast.service';
                 <div class="subject-tag">{{ session.batch?.subject?.name || 'General' }}</div>
                 <h3>1-on-1 with {{ session.teacher?.name }}</h3>
                 <p class="time">📅 {{ session.startTime | date:'MMM dd, yyyy' }} at {{ session.startTime | date:'shortTime' }}</p>
-                <div class="amount">₹{{ session.amount }}</div>
+                <div class="amount">{{ currencySymbol }}{{ session.amount }}</div>
               </div>
               <button class="btn-pay" (click)="openPaymentModal(session)">Pay Now</button>
             </div>
@@ -82,13 +82,13 @@ import { ToastService } from '../../shared/services/toast.service';
         <div class="modal-overlay" *ngIf="selectedSession" (click)="selectedSession = null">
           <div class="modal-content animate-pop" (click)="$event.stopPropagation()">
             <h2>Complete Payment</h2>
-            <p>Session Fee: <strong>₹{{ selectedSession.amount }}</strong></p>
+            <p>Session Fee: <strong>{{ currencySymbol }}{{ selectedSession.amount }}</strong></p>
             
             <div class="payment-methods">
               <div class="method-card" [class.disabled]="walletBalance < selectedSession.amount" (click)="payViaWallet(selectedSession)">
                 <div class="method-info">
                   <strong>Full Wallet Payment</strong>
-                  <span>Use ₹{{ selectedSession.amount }} from wallet</span>
+                  <span>Use {{ currencySymbol }}{{ selectedSession.amount }} from wallet</span>
                 </div>
                 <span class="icon">👛</span>
               </div>
@@ -96,7 +96,7 @@ import { ToastService } from '../../shared/services/toast.service';
               <div class="method-card outline" *ngIf="walletBalance > 0 && walletBalance < selectedSession.amount" (click)="payPartial(selectedSession)">
                 <div class="method-info">
                   <strong>Wallet + Gateway</strong>
-                  <span>Use ₹{{ walletBalance.toFixed(2) }} from wallet & pay rest via Gateway</span>
+                  <span>Use {{ currencySymbol }}{{ walletBalance.toFixed(2) }} from wallet & pay rest via Gateway</span>
                 </div>
                 <span class="icon">🌓</span>
               </div>
@@ -104,7 +104,7 @@ import { ToastService } from '../../shared/services/toast.service';
               <div class="method-card primary" (click)="payViaGateway(selectedSession)">
                 <div class="method-info">
                   <strong>Direct Payment Gateway</strong>
-                  <span>Pay full ₹{{ selectedSession.amount }} via Cards/UPI</span>
+                  <span>Pay full {{ currencySymbol }}{{ selectedSession.amount }} via Cards/UPI</span>
                 </div>
                 <span class="icon">💳</span>
               </div>
@@ -174,6 +174,7 @@ export class StudentPaymentsComponent implements OnInit {
   unpaidSessions: any[] = [];
   walletBalance = 0;
   selectedSession: any = null;
+  currencySymbol = '₹';
 
   constructor(
     private paymentService: PaymentService,
@@ -187,6 +188,7 @@ export class StudentPaymentsComponent implements OnInit {
 
   loadData() {
     const user = this.authService.getCurrentUser();
+    this.currencySymbol = this.authService.getCurrencySymbol();
     if (user) {
       this.paymentService.getStudentSessions(user.userId).subscribe((s: any[]) => {
         this.sessions = s.sort((a: any, b: any) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());

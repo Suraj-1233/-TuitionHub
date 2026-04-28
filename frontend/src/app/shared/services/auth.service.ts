@@ -100,6 +100,27 @@ export class AuthService {
     return this.http.get<AuthResponse>(`${this.apiUrl}/auth/me`);
   }
 
+  setCurrency(currency: string) {
+    localStorage.setItem('tuitionhub_currency', currency);
+    const user = this.getCurrentUser();
+    if (user) {
+      user.referralCode = currency; // Temporary hack to store in local user object if needed
+      localStorage.setItem(this.userKey, JSON.stringify(user));
+    }
+  }
+
+  getCurrency(): string {
+    return localStorage.getItem('tuitionhub_currency') || 'INR';
+  }
+
+  getCurrencySymbol(): string {
+    const cur = this.getCurrency();
+    if (cur === 'USD') return '$';
+    if (cur === 'EUR') return '€';
+    if (cur === 'GBP') return '£';
+    return '₹';
+  }
+
   getRole(): string | null {
     return this.currentUserSubject.value?.role ?? null;
   }

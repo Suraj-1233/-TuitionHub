@@ -28,15 +28,15 @@ import { ToastService } from '../../shared/services/toast.service';
           <div class="balance-card">
             <div class="card-content">
               <span class="label">Total Balance</span>
-              <h2 class="amount">{{ wallet?.currency }} {{ wallet?.balance?.toFixed(2) }}</h2>
+              <h2 class="amount">{{ currencySymbol }} {{ wallet?.balance?.toFixed(2) }}</h2>
               <div class="balance-details">
                 <div class="detail-item">
                   <span class="detail-label">Real Money</span>
-                  <span class="detail-value">{{ wallet?.currency }} {{ (wallet?.balance - wallet?.promoBalance).toFixed(2) }}</span>
+                  <span class="detail-value">{{ currencySymbol }} {{ (wallet?.balance - wallet?.promoBalance).toFixed(2) }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">Promo Credits</span>
-                  <span class="detail-value">{{ wallet?.currency }} {{ wallet?.promoBalance?.toFixed(2) }}</span>
+                  <span class="detail-value">{{ currencySymbol }} {{ wallet?.promoBalance?.toFixed(2) }}</span>
                 </div>
               </div>
             </div>
@@ -45,7 +45,7 @@ import { ToastService } from '../../shared/services/toast.service';
           <div class="referral-stats">
             <div class="card-content">
               <span class="label">Referral Earnings</span>
-              <h2 class="amount">{{ wallet?.currency }} {{ totalReferralEarnings.toFixed(2) }}</h2>
+              <h2 class="amount">{{ currencySymbol }} {{ totalReferralEarnings.toFixed(2) }}</h2>
               
               <div class="referral-code-section">
                 <span class="code-label">Your Referral Code</span>
@@ -87,7 +87,7 @@ import { ToastService } from '../../shared/services/toast.service';
                     </span>
                   </td>
                   <td class="font-bold">
-                    {{ tx.type === 'CREDIT' ? '+' : '-' }}{{ wallet?.currency }} {{ tx.amount.toFixed(2) }}
+                    {{ tx.type === 'CREDIT' ? '+' : '-' }}{{ currencySymbol }} {{ tx.amount.toFixed(2) }}
                   </td>
                 </tr>
                 <tr *ngIf="transactions.length === 0">
@@ -104,7 +104,7 @@ import { ToastService } from '../../shared/services/toast.service';
             <h2>Add Money to Wallet</h2>
             <p>Enter the amount you want to add</p>
             <div class="input-group">
-              <span class="prefix">{{ wallet?.currency }}</span>
+              <span class="prefix">{{ currencySymbol }}</span>
               <input type="number" [(ngModel)]="topupAmount" placeholder="0.00">
             </div>
             <div class="modal-actions">
@@ -218,6 +218,7 @@ export class WalletComponent implements OnInit {
   referralCode = '';
   showTopupModal = false;
   topupAmount: number = 0;
+  currencySymbol = '₹';
 
   constructor(
     private paymentService: PaymentService,
@@ -231,6 +232,7 @@ export class WalletComponent implements OnInit {
 
   loadData() {
     const user = this.authService.getCurrentUser();
+    this.currencySymbol = this.authService.getCurrencySymbol();
     if (user) {
       this.referralCode = user.referralCode || '';
       

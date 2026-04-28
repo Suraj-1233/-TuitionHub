@@ -207,7 +207,7 @@ export class TeacherDashboardComponent implements OnInit {
     }
   }
 
-  constructor(private batchService: BatchService, private toast: ToastService) {}
+  constructor(private batchService: BatchService, private toast: ToastService) { }
 
   ngOnInit() {
     this.loadData();
