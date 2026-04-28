@@ -359,9 +359,9 @@ public class PaymentService {
         PaymentDto.Response res = new PaymentDto.Response();
         res.setId(p.getId());
         res.setStudentName(p.getStudent().getName());
-        res.setBatchName(p.getBatch().getName());
+        res.setBatchName(p.getBatch() != null ? p.getBatch().getName() : "Wallet Topup");
         res.setAmount(p.getAmount());
-        res.setCurrency(p.getBatch().getCurrency() != null ? p.getBatch().getCurrency() : "INR");
+        res.setCurrency(p.getBatch() != null ? (p.getBatch().getCurrency() != null ? p.getBatch().getCurrency() : "INR") : "INR");
         res.setForMonth(p.getForMonth() != null
                 ? p.getForMonth().format(DateTimeFormatter.ofPattern("MMMM yyyy")) : null);
         res.setStatus(p.getStatus().name());
