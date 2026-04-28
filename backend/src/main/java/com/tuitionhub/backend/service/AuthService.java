@@ -128,8 +128,6 @@ public class AuthService {
         return new AuthDto.AuthResponse(null, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), false, user.getReferralCode());
     }
 
-    // Google Login Removed
-
     // ==================== FORGOT PASSWORD ====================
 
     public void forgotPassword(String email) {
@@ -168,6 +166,13 @@ public class AuthService {
         user.setOtpExpiry(null);
         userRepository.save(user);
         log.info("Password reset successful with OTP for: {}", user.getEmail());
+    }
+
+    public AuthDto.AuthResponse getUserProfile(String token) {
+        String email = jwtTokenProvider.getEmailFromToken(token);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return new AuthDto.AuthResponse(null, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), user.getIsApproved(), user.getReferralCode());
     }
 
     public AuthDto.AuthResponse verifyOtpAndLogin(AuthDto.VerifyOtpRequest request) {
@@ -225,7 +230,6 @@ public class AuthService {
             sb.append(chars.charAt(rnd.nextInt(chars.length())));
         }
         String code = sb.toString();
-        // Rare case check if exists, but for now simple
         return code;
     }
 }

@@ -96,6 +96,10 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  getProfile(): Observable<AuthResponse> {
+    return this.http.get<AuthResponse>(`${this.apiUrl}/auth/me`);
+  }
+
   getRole(): string | null {
     return this.currentUserSubject.value?.role ?? null;
   }

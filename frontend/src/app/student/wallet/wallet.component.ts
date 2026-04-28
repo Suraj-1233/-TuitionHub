@@ -233,6 +233,14 @@ export class WalletComponent implements OnInit {
     const user = this.authService.getCurrentUser();
     if (user) {
       this.referralCode = user.referralCode || '';
+      
+      // If code is missing (e.g. legacy user), fetch it from server
+      if (!this.referralCode) {
+        this.authService.getProfile().subscribe(p => {
+          this.referralCode = p.referralCode || '';
+        });
+      }
+
       this.paymentService.getWalletBalance(user.userId).subscribe(w => this.wallet = w);
       this.paymentService.getWalletTransactions(user.userId).subscribe(txs => {
         this.transactions = txs;

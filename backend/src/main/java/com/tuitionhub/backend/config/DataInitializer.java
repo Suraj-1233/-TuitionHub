@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -46,7 +47,27 @@ public class DataInitializer implements CommandLineRunner {
         // 3. Demo Sessions
         seedSessionsForUser("surajkannujiya517@gmail.com", "teacher@tuitionhub.com");
 
+        // 4. Maintenance: Ensure all users have referral codes
+        userRepository.findAll().forEach(user -> {
+            if (user.getReferralCode() == null || user.getReferralCode().isEmpty()) {
+                String code = "TUI-" + UUID.randomUUID().toString().substring(0, 5).toUpperCase();
+                user.setReferralCode(code);
+                userRepository.save(user);
+                log.info("🎁 Generated missing referral code for: {}", user.getEmail());
+            }
+        });
+
         log.info("✅ Data Initialization Complete.");
+    }
+
+    private String generateUniqueReferralCode() {
+        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        StringBuilder sb = new StringBuilder("TUI-");
+        java.util.Random rnd = new java.util.Random();
+        for (int i = 0; i < 5; i++) {
+            sb.append(chars.charAt(rnd.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     private void createIfNotExists(String email, String name, Role role, String password, String referral) {
@@ -64,12 +85,11 @@ public class DataInitializer implements CommandLineRunner {
 
     private void seedSubjects() {
         List.of(
-            Subject.builder().name("Mathematics").icon("🔢").build(),
-            Subject.builder().name("Physics").icon("🧪").build(),
-            Subject.builder().name("Chemistry").icon("⚗️").build(),
-            Subject.builder().name("Biology").icon("🧬").build(),
-            Subject.builder().name("Computer Science").icon("💻").build()
-        ).forEach(subjectRepository::save);
+                Subject.builder().name("Mathematics").icon("🔢").build(),
+                Subject.builder().name("Physics").icon("🧪").build(),
+                Subject.builder().name("Chemistry").icon("⚗️").build(),
+                Subject.builder().name("Biology").icon("🧬").build(),
+                Subject.builder().name("Computer Science").icon("💻").build()).forEach(subjectRepository::save);
         log.info("📚 Subjects seeded.");
     }
 
@@ -93,7 +113,7 @@ public class DataInitializer implements CommandLineRunner {
                     .endTime(LocalDateTime.now().minusDays(1).plusHours(1))
                     .amount(400.0).isPaid(true)
                     .status(Session.SessionStatus.COMPLETED).build());
-            
+
             log.info("📅 Demo sessions seeded for {}", studentEmail);
         }
     }

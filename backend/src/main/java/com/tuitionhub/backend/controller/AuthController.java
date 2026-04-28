@@ -29,6 +29,11 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<AuthDto.AuthResponse> getProfile(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(authService.getUserProfile(token.replace("Bearer ", "")));
+    }
+
     // ==================== REGISTRATION ====================
 
     @PostMapping("/register")
