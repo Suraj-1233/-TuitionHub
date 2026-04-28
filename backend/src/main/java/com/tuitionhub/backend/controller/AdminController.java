@@ -188,7 +188,7 @@ public class AdminController {
                 .timingFrom(finalTimingFrom)
                 .timingTo(finalTimingTo)
                 .days("Daily")
-                .monthlyFees(teacher.getFees() != null ? teacher.getFees() : 0.0)
+                .monthlyFees(10.0) // Set to 10 for testing as requested
                 .maxStudents(1) 
                 .liveClassLink("https://meet.jit.si/TuitionHub_" + teacher.getName().replace(" ", "") + "_" + request.getStudent().getName().replace(" ", ""))
                 .liveClassPlatform("JITSI")
