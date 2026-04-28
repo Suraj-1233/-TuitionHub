@@ -235,7 +235,7 @@ export class SessionsComponent implements OnInit {
         this.selectedSession = null;
         this.loadData();
       },
-      error: (err) => this.toastService.error(err.error?.message || 'Payment failed')
+      error: (err: any) => this.toastService.error(err.error?.message || 'Payment failed')
     });
   }
 
@@ -259,7 +259,25 @@ export class SessionsComponent implements OnInit {
         // Followed by gateway flow
         this.payViaGateway({ ...session, amount: remaining });
       },
-      error: (err) => this.toastService.error(err.error?.message || 'Partial payment failed')
+      error: (err: any) => this.toastService.error(err.error?.message || 'Partial payment failed')
+    });
+  }
+
+  openFeedback(session: any) {
+    this.feedbackSession = session;
+    this.selectedRating = 0;
+    this.feedbackComment = '';
+    this.showFeedbackModal = true;
+  }
+
+  submitFeedback() {
+    this.feedbackService.submitFeedback(this.feedbackSession.id, this.selectedRating, this.feedbackComment).subscribe({
+      next: () => {
+        this.toastService.success('Thank you for your feedback!');
+        this.showFeedbackModal = false;
+        this.loadData();
+      },
+      error: (err: any) => this.toastService.error(err.error?.message || 'Submission failed')
     });
   }
 }
