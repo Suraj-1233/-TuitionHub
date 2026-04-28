@@ -273,6 +273,7 @@ public class PaymentService {
         res.setStudentName(p.getStudent().getName());
         res.setBatchName(p.getBatch().getName());
         res.setAmount(p.getAmount());
+        res.setCurrency(p.getBatch().getCurrency() != null ? p.getBatch().getCurrency() : "INR");
         res.setForMonth(p.getForMonth() != null
                 ? p.getForMonth().format(DateTimeFormatter.ofPattern("MMMM yyyy")) : null);
         res.setStatus(p.getStatus().name());

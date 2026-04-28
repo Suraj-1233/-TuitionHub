@@ -25,6 +25,7 @@ public class PaymentDto {
         private String studentName;
         private String batchName;
         private Double amount;
+        private String currency;
         private String forMonth;
         private String status;
         private String razorpayOrderId;

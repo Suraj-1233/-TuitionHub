@@ -68,10 +68,6 @@ import { ToastService } from '../../shared/services/toast.service';
               <span class="role-icon">👩‍🏫</span>
               <span class="role-label">Teacher</span>
             </button>
-            <button type="button" class="role-btn" [class.active]="formData.role === 'PARENT'" (click)="formData.role = 'PARENT'">
-              <span class="role-icon">👨‍👩‍👧</span>
-              <span class="role-label">Parent</span>
-            </button>
           </div>
 
           <div *ngIf="formData.role === 'TEACHER'" class="approval-notice mb-4">
@@ -154,14 +150,7 @@ import { ToastService } from '../../shared/services/toast.service';
             </div>
           </ng-container>
 
-          <!-- Parent Fields -->
-          <ng-container *ngIf="formData.role === 'PARENT'">
-            <div class="form-group">
-              <label class="form-label">Child's Email Address</label>
-              <input type="email" class="form-control" [(ngModel)]="formData.childEmail" name="childEmail" required email placeholder="Enter student's registered email">
-              <p class="text-xs text-secondary mt-1">Linking your account to your child's profile is required.</p>
-            </div>
-          </ng-container>
+          <!-- Parent Fields Removed -->
 
           <button type="submit" class="btn btn-primary btn-block mt-4" [disabled]="regForm.invalid || isLoading">
             {{ isLoading ? 'Creating Account...' : (formData.role === 'TEACHER' ? '📋 Submit for Approval' : '🚀 Create Account') }}
@@ -276,9 +265,7 @@ export class RegisterComponent implements OnInit {
     currency: 'INR',
     studentClass: '',
     board: 'CBSE',
-    subject: '',
     qualification: '',
-    childEmail: ''
   };
 
   private countryMap: Record<string, { tz: string; currency: string }> = {

@@ -29,7 +29,6 @@ public class AuthDto {
         private String city;
         private String country;
         private String timezone;
-        private String childEmail; // For linking parent to existing student
     }
 
     @Data

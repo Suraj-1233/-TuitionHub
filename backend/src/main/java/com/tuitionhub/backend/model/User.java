@@ -95,15 +95,4 @@ public class User {
     @ManyToMany(mappedBy = "students")
     @Builder.Default
     private List<Batch> batches = new ArrayList<>();
-
-    // Parent-Student Relationship
-    @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "children", "batches"})
-    private User parent;
-
-    @OneToMany(mappedBy = "parent", fetch = jakarta.persistence.FetchType.LAZY)
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "parent", "batches"})
-    @Builder.Default
-    private List<User> children = new ArrayList<>();
 }

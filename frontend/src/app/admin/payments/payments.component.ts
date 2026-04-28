@@ -43,7 +43,7 @@ import { ToastService } from '../../shared/services/toast.service';
       <div class="revenue-summary animate-fade" *ngIf="filteredPayments.length > 0">
         <div class="rev-card">
           <span class="rev-label">Total Volume (Filtered)</span>
-          <span class="rev-value">₹{{ totalFilteredRevenue }}</span>
+          <span class="rev-value">{{ getCurrencySymbol(filteredPayments[0]?.currency) }}{{ totalFilteredRevenue }}</span>
         </div>
       </div>
 
@@ -80,7 +80,7 @@ import { ToastService } from '../../shared/services/toast.service';
                 </div>
               </td>
               <td>
-                <div class="amount-cell">₹{{ p.amount }}</div>
+                <div class="amount-cell">{{ getCurrencySymbol(p.currency) }}{{ p.amount }}</div>
               </td>
               <td>
                 <span class="status-pill" [ngClass]="{
@@ -187,6 +187,18 @@ export class AdminPaymentsComponent implements OnInit {
   filteredPayments: Payment[] = [];
   searchQuery = '';
   selectedStatus = '';
+
+  getCurrencySymbol(currency?: string): string {
+    if (!currency) return '₹';
+    switch (currency.toUpperCase()) {
+      case 'USD': return '$';
+      case 'GBP': return '£';
+      case 'EUR': return '€';
+      case 'CAD': return 'C$';
+      case 'AUD': return 'A$';
+      default: return '₹';
+    }
+  }
 
   constructor(
     private paymentService: PaymentService,

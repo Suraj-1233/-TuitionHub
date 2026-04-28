@@ -109,25 +109,5 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
-  {
-    path: 'parent',
-    canActivate: [authGuard, roleGuard],
-    data: { role: 'PARENT' },
-    children: [
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./parent/dashboard/dashboard.component').then(m => m.ParentDashboardComponent)
-      },
-      {
-        path: 'children',
-        loadComponent: () => import('./parent/dashboard/dashboard.component').then(m => m.ParentDashboardComponent) // Reuse dashboard for now
-      },
-      {
-        path: 'payments',
-        loadComponent: () => import('./parent/dashboard/dashboard.component').then(m => m.ParentDashboardComponent) // Reuse dashboard for now
-      },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
-    ]
-  },
   { path: '**', redirectTo: '/auth/login' }
 ];

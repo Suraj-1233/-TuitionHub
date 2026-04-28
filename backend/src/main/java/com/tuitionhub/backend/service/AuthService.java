@@ -107,14 +107,6 @@ public class AuthService {
 
         userRepository.save(user);
 
-        if (request.getRole() == Role.PARENT && request.getChildEmail() != null && !request.getChildEmail().isEmpty()) {
-            User student = userRepository.findByEmail(request.getChildEmail()).orElse(null);
-            if (student != null && student.getRole() == Role.STUDENT) {
-                student.setParent(user);
-                userRepository.save(student);
-            }
-        }
-
         otpService.sendOtp(user.getEmail(), otp);
         return new AuthDto.AuthResponse(null, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), false);
     }

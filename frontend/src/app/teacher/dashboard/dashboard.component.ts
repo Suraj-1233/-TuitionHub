@@ -37,7 +37,7 @@ import { Batch, BatchJoinRequest } from '../../shared/models/models';
         <div class="stat-card glass highlight">
           <div class="stat-icon success">💰</div>
           <div class="stat-info">
-            <div class="stat-value text-success">₹{{ totalEarnings }}</div>
+            <div class="stat-value text-success">{{ getCurrencySymbol(myBatches[0]?.currency) }}{{ totalEarnings }}</div>
             <div class="stat-label">Monthly Revenue</div>
           </div>
         </div>
@@ -194,6 +194,18 @@ import { Batch, BatchJoinRequest } from '../../shared/models/models';
 export class TeacherDashboardComponent implements OnInit {
   myBatches: Batch[] = [];
   pendingRequests: BatchJoinRequest[] = [];
+
+  getCurrencySymbol(currency?: string): string {
+    if (!currency) return '₹';
+    switch (currency.toUpperCase()) {
+      case 'USD': return '$';
+      case 'GBP': return '£';
+      case 'EUR': return '€';
+      case 'CAD': return 'C$';
+      case 'AUD': return 'A$';
+      default: return '₹';
+    }
+  }
 
   constructor(private batchService: BatchService, private toast: ToastService) {}
 

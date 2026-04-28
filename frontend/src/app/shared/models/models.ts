@@ -41,6 +41,7 @@ export interface Batch {
   maxStudents: number;
   currentStudents: number;
   monthlyFees: number;
+  currency?: string;
   timingFrom: string;
   timingTo: string;
   days: string;
@@ -69,6 +70,7 @@ export interface Payment {
   studentName: string;
   batchName: string;
   amount: number;
+  currency?: string;
   forMonth: string;
   status: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
   razorpayOrderId?: string;

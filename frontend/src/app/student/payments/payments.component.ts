@@ -28,7 +28,7 @@ declare var Razorpay: any;
           <div class="due-info">
             <div class="batch-name">{{ batch.name }}</div>
             <div class="due-month">{{ currentMonthName }} Fees</div>
-            <div class="amount text-primary">₹{{ batch.monthlyFees }}</div>
+            <div class="amount text-primary">{{ getCurrencySymbol(batch.currency) }}{{ batch.monthlyFees }}</div>
           </div>
           <button class="btn-pay" (click)="payForBatch(batch)" [disabled]="isProcessing">
             {{ isProcessing ? '...' : 'Pay Now' }}
@@ -68,7 +68,7 @@ declare var Razorpay: any;
               <td>
                 <code class="text-xs bg-slate-100 p-1 rounded">{{ p.razorpayPaymentId || '---' }}</code>
               </td>
-              <td><span class="amount-cell font-bold text-primary">₹{{ p.amount }}</span></td>
+              <td><span class="amount-cell font-bold text-primary">{{ getCurrencySymbol(p.currency) }}{{ p.amount }}</span></td>
               <td>
                 <span class="status-pill" [ngClass]="{
                   'paid': p.status === 'PAID',
@@ -104,7 +104,7 @@ declare var Razorpay: any;
             <div class="receipt-divider"></div>
             <div class="receipt-item">
               <label>Amount Paid</label>
-              <div class="receipt-amount">₹{{ selectedPayment.amount }}</div>
+              <div class="receipt-amount">{{ getCurrencySymbol(selectedPayment.currency) }}{{ selectedPayment.amount }}</div>
             </div>
             <div class="receipt-grid">
               <div class="receipt-item">
@@ -229,6 +229,18 @@ export class StudentPaymentsComponent implements OnInit {
   isProcessing = false;
   selectedPayment: any = null;
   window = window;
+
+  getCurrencySymbol(currency?: string): string {
+    if (!currency) return '₹';
+    switch (currency.toUpperCase()) {
+      case 'USD': return '$';
+      case 'GBP': return '£';
+      case 'EUR': return '€';
+      case 'CAD': return 'C$';
+      case 'AUD': return 'A$';
+      default: return '₹';
+    }
+  }
 
   get currentMonth() {
     return new Date().toISOString().slice(0, 7); // YYYY-MM

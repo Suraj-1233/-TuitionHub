@@ -169,7 +169,7 @@ import { AuthService } from '../../services/auth.service';
   `]
 })
 export class DashboardLayoutComponent implements OnInit, OnDestroy {
-  @Input() role: 'STUDENT' | 'TEACHER' | 'ADMIN' | 'PARENT' | 'SUPER_ADMIN' | 'ORG_ADMIN' = 'STUDENT';
+  @Input() role: 'STUDENT' | 'TEACHER' | 'ADMIN' | 'SUPER_ADMIN' | 'ORG_ADMIN' = 'STUDENT';
   
   navItems: any[] = [];
   userName = 'User';
@@ -229,12 +229,6 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
         { path: '/teacher/classes', label: 'My Classes', icon: '📚' },
         { path: '/teacher/students', label: 'Students', icon: '👨‍🎓' },
         { path: '/teacher/profile', label: 'Profile Settings', icon: '⚙️' },
-      ];
-    } else if (this.role === 'PARENT') {
-      this.navItems = [
-        { path: '/parent/dashboard', label: 'Overview', icon: '📊' },
-        { path: '/parent/children', label: 'Manage Children', icon: '👨‍👩‍👧' },
-        { path: '/parent/payments', label: 'Fees & Invoices', icon: '💳' },
       ];
     } else {
       this.navItems = [
