@@ -73,13 +73,6 @@ public class AuthController {
 
     // ==================== LEGACY OTP (kept for backward compat) ====================
 
-    @PostMapping("/send-otp")
-    public ResponseEntity<Map<String, String>> sendOtp(@RequestBody @Valid AuthDto.SendOtpRequest request) {
-        log.info("Received send-otp request for email: {}", request.getEmail());
-        authService.sendOtp(request.getEmail());
-        return ResponseEntity.ok(Map.of("message", "OTP sent to " + request.getEmail()));
-    }
-
     @PostMapping("/verify-otp")
     public ResponseEntity<AuthDto.AuthResponse> verifyOtp(@RequestBody @Valid AuthDto.VerifyOtpRequest request) {
         log.info("Received verify-otp request for email: {}", request.getEmail());

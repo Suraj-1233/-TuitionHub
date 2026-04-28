@@ -72,7 +72,7 @@ export const routes: Routes = [
       },
       {
         path: 'classes',
-        loadComponent: () => import('./teacher/batches/batches.component').then(m => m.TeacherBatchesComponent)
+        loadComponent: () => import('./teacher/batches/batches.component').then(m => m.TeacherClassesComponent)
       },
       {
         path: 'classes/:id',

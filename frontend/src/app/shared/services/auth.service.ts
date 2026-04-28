@@ -47,10 +47,6 @@ export class AuthService {
 
   // ==================== LEGACY OTP (kept for backward compat) ====================
 
-  sendOtp(email: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/send-otp`, { email });
-  }
-
   verifyOtp(email: string, otp: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/verify-otp`, { email, otp }).pipe(
       tap(res => {
@@ -115,7 +111,7 @@ export class AuthService {
     let url = '/auth/login';
     if (roleUpper === 'STUDENT') url = '/student/dashboard';
     else if (roleUpper === 'TEACHER') url = '/teacher/dashboard';
-    else if (roleUpper === 'PARENT') url = '/parent/dashboard';
+
     else if (roleUpper === 'ADMIN' || roleUpper === 'SUPER_ADMIN' || roleUpper === 'ORG_ADMIN') url = '/admin/dashboard';
     
     if (url === '/auth/login') {

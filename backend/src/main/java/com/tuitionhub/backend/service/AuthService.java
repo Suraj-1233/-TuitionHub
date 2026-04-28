@@ -170,36 +170,6 @@ public class AuthService {
         log.info("Password reset successful with OTP for: {}", user.getEmail());
     }
 
-    // ==================== LEGACY OTP (kept for backward compat) ====================
-
-    public void sendOtp(String email) {
-        String otp = generateOtp();
-        String encodedOtp = passwordEncoder.encode(otp);
-
-        User user = userRepository.findByEmail(email).orElse(null);
-
-        if (user == null) {
-            user = User.builder()
-                    .email(email)
-                    .name("Pending")
-                    .password(encodedOtp)
-                    .role(Role.STUDENT)
-                    .isActive(false)
-                    .isApproved(false)
-                    .otp(encodedOtp)
-                    .otpExpiry(LocalDateTime.now().plusMinutes(10))
-                    .build();
-            userRepository.save(user);
-        } else {
-            user.setOtp(encodedOtp);
-            user.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
-            userRepository.save(user);
-        }
-
-        otpService.sendOtp(email, otp);
-        log.info("OTP for {} : {}", email, otp);
-    }
-
     public AuthDto.AuthResponse verifyOtpAndLogin(AuthDto.VerifyOtpRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

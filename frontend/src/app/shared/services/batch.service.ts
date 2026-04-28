@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Batch, BatchJoinRequest } from '../models/models';
+import { Batch as Class, BatchJoinRequest } from '../models/models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -10,53 +10,34 @@ export class BatchService {
 
   constructor(private http: HttpClient) {}
 
-  // Public
-  getAllBatches(): Observable<Batch[]> {
-    return this.http.get<Batch[]>(`${this.apiUrl}/batches`);
+  // Common Class Operations
+  getAllClasses(): Observable<Class[]> {
+    return this.http.get<Class[]>(`${this.apiUrl}/batches`);
   }
 
-  getBatchById(id: number): Observable<Batch> {
-    return this.http.get<Batch>(`${this.apiUrl}/batches/${id}`);
+  getClassById(id: number): Observable<Class> {
+    return this.http.get<Class>(`${this.apiUrl}/batches/${id}`);
   }
 
-  getBatch(id: number): Observable<Batch> {
-    return this.getBatchById(id);
+  // Student Operations
+  getMyClasses(): Observable<Class[]> {
+    return this.http.get<Class[]>(`${this.apiUrl}/student/batches`);
   }
 
-  // Student
-  getMyBatches(): Observable<Batch[]> {
-    return this.http.get<Batch[]>(`${this.apiUrl}/student/batches`);
+  // Teacher Operations
+  createClass(data: any): Observable<Class> {
+    return this.http.post<Class>(`${this.apiUrl}/teacher/batches`, data);
   }
 
-  joinBatch(batchId: number): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/student/batches/${batchId}/join`, {});
+  getTeacherClasses(): Observable<Class[]> {
+    return this.http.get<Class[]>(`${this.apiUrl}/teacher/batches`);
   }
 
-  leaveBatch(batchId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/student/batches/${batchId}/leave`);
+  updateLiveLink(classId: number, data: { liveClassLink: string; liveClassPlatform: string }): Observable<Class> {
+    return this.http.put<Class>(`${this.apiUrl}/teacher/batches/${classId}/live-link`, data);
   }
 
-  proposeReschedule(batchId: number, newTiming: string): Observable<Batch> {
-    return this.http.post<Batch>(`${this.apiUrl}/batches/${batchId}/propose-reschedule`, { newTiming });
-  }
-
-  respondToReschedule(batchId: number, accept: boolean): Observable<Batch> {
-    return this.http.post<Batch>(`${this.apiUrl}/batches/${batchId}/respond-reschedule?accept=${accept}`, {});
-  }
-
-  // Teacher
-  createBatch(data: any): Observable<Batch> {
-    return this.http.post<Batch>(`${this.apiUrl}/teacher/batches`, data);
-  }
-
-  getTeacherBatches(): Observable<Batch[]> {
-    return this.http.get<Batch[]>(`${this.apiUrl}/teacher/batches`);
-  }
-
-  updateLiveLink(batchId: number, data: { liveClassLink: string; liveClassPlatform: string }): Observable<Batch> {
-    return this.http.put<Batch>(`${this.apiUrl}/teacher/batches/${batchId}/live-link`, data);
-  }
-
+  // Requests Management (1-on-1 Setup)
   getPendingRequests(): Observable<BatchJoinRequest[]> {
     return this.http.get<BatchJoinRequest[]>(`${this.apiUrl}/teacher/join-requests`);
   }
@@ -67,4 +48,8 @@ export class BatchService {
       {}
     );
   }
+
+  // Legacy/Cleanup
+  createBatch(data: any) { return this.createClass(data); }
+  getTeacherBatches() { return this.getTeacherClasses(); }
 }

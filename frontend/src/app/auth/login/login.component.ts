@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { environment } from '../../../environments/environment';
 
-declare const google: any;
+
+
 
 @Component({
   selector: 'app-login',

@@ -33,18 +33,7 @@ public class AuthDto {
     }
 
     @Data
-    public static class SendOtpRequest {
-        @NotBlank private String email;
-    }
-
-    @Data
     public static class VerifyOtpRequest {
-        @NotBlank private String email;
-        @NotBlank private String otp;
-    }
-
-    @Data
-    public static class LoginRequest {
         @NotBlank private String email;
         @NotBlank private String otp;
     }

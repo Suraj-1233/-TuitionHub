@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -31,84 +30,71 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // 1. Super Admin
+        log.info("🚀 Initializing Demo Data...");
+
+        // 1. Core Accounts
         createIfNotExists("admin@tuitionhub.com", "Super Admin", Role.ADMIN, "admin123", "TUI-ADMIN");
         createIfNotExists("super@tuitionhub.com", "Main Super Admin", Role.SUPER_ADMIN, "super123", "TUI-SUPER");
-        
-        // 2. Demo Teacher
         createIfNotExists("teacher@tuitionhub.com", "Dr. Amit Sharma", Role.TEACHER, "teacher123", "TUI-TEACH");
-
-        // 3. Ensure your email exists as a Student
         createIfNotExists("surajkannujiya517@gmail.com", "Suraj Kannujiya", Role.STUDENT, "suraj123", "TUI-SURAJ");
 
-        // 4. Demo Data for Showcasing Features
-        User student = userRepository.findByEmail("surajkannujiya517@gmail.com").orElse(null);
-        User teacher = userRepository.findByEmail("teacher@tuitionhub.com").orElse(null);
-        if (student != null && teacher != null) {
-            seedDemoSessions(student, teacher);
+        // 2. Default Subjects
+        if (subjectRepository.count() == 0) {
+            seedSubjects();
         }
 
-        // 5. Seed Default Subjects
-        if (subjectRepository.count() == 0) {
-            List.of(
-                Subject.builder().name("Mathematics").icon("🔢").build(),
-                Subject.builder().name("Physics").icon("🧪").build(),
-                Subject.builder().name("Chemistry").icon("⚗️").build(),
-                Subject.builder().name("Biology").icon("🧬").build(),
-                Subject.builder().name("Computer Science").icon("💻").build(),
-                Subject.builder().name("English").icon("📖").build()
-            ).forEach(subjectRepository::save);
-        }
+        // 3. Demo Sessions
+        seedSessionsForUser("surajkannujiya517@gmail.com", "teacher@tuitionhub.com");
+
+        log.info("✅ Data Initialization Complete.");
     }
 
     private void createIfNotExists(String email, String name, Role role, String password, String referral) {
         if (!userRepository.existsByEmail(email)) {
             User user = User.builder()
-                    .name(name)
-                    .email(email)
-                    .mobile("9876543210")
+                    .name(name).email(email).mobile("9876543210")
                     .password(passwordEncoder.encode(password))
-                    .role(role)
-                    .isActive(true)
-                    .isApproved(true)
-                    .referralCode(referral)
+                    .role(role).isActive(true).isApproved(true).referralCode(referral)
                     .build();
             userRepository.save(user);
             walletService.getOrCreateWallet(user.getId());
-            log.info("✅ Created {}: {}", role, email);
+            log.info("👤 Created User: {}", email);
         }
     }
 
-    private void seedDemoSessions(User student, User teacher) {
-        if (sessionRepository.count() < 2) {
-            // Get a subject
-            Subject physics = subjectRepository.findByNameIgnoreCase("Physics").orElse(null);
+    private void seedSubjects() {
+        List.of(
+            Subject.builder().name("Mathematics").icon("🔢").build(),
+            Subject.builder().name("Physics").icon("🧪").build(),
+            Subject.builder().name("Chemistry").icon("⚗️").build(),
+            Subject.builder().name("Biology").icon("🧬").build(),
+            Subject.builder().name("Computer Science").icon("💻").build()
+        ).forEach(subjectRepository::save);
+        log.info("📚 Subjects seeded.");
+    }
 
-            // 1. Paid Session
-            Session paidSession = Session.builder()
-                    .student(student)
-                    .teacher(teacher)
+    private void seedSessionsForUser(String studentEmail, String teacherEmail) {
+        User student = userRepository.findByEmail(studentEmail).orElse(null);
+        User teacher = userRepository.findByEmail(teacherEmail).orElse(null);
+
+        if (student != null && teacher != null && sessionRepository.count() < 2) {
+            // Paid Upcoming Session
+            sessionRepository.save(Session.builder()
+                    .student(student).teacher(teacher)
                     .startTime(LocalDateTime.now().plusHours(2))
                     .endTime(LocalDateTime.now().plusHours(3))
-                    .amount(500.0)
-                    .isPaid(true)
-                    .status(Session.SessionStatus.CONFIRMED)
-                    .build();
-            sessionRepository.save(paidSession);
+                    .amount(500.0).isPaid(true)
+                    .status(Session.SessionStatus.CONFIRMED).build());
 
-            // 2. Completed Session
-            Session completedSession = Session.builder()
-                    .student(student)
-                    .teacher(teacher)
+            // Completed Past Session
+            sessionRepository.save(Session.builder()
+                    .student(student).teacher(teacher)
                     .startTime(LocalDateTime.now().minusDays(1))
                     .endTime(LocalDateTime.now().minusDays(1).plusHours(1))
-                    .amount(400.0)
-                    .isPaid(true)
-                    .status(Session.SessionStatus.COMPLETED)
-                    .build();
-            sessionRepository.save(completedSession);
+                    .amount(400.0).isPaid(true)
+                    .status(Session.SessionStatus.COMPLETED).build());
             
-            log.info("✅ Demo sessions seeded for {}", student.getEmail());
+            log.info("📅 Demo sessions seeded for {}", studentEmail);
         }
     }
 }

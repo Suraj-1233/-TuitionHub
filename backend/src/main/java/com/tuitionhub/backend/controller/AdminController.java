@@ -9,7 +9,7 @@ import com.tuitionhub.backend.repository.AssignmentRequestRepository;
 import com.tuitionhub.backend.model.AssignmentRequest;
 import com.tuitionhub.backend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
