@@ -33,6 +33,9 @@ public class AuthService {
                 .orElseThrow(() -> new BadRequestException("No account found with this email. Please register first."));
 
         if (!user.getIsActive()) {
+            if (user.getOtp() != null) {
+                throw new BadRequestException("Please verify your email first. An OTP was sent to you.");
+            }
             throw new BadRequestException("Your account is deactivated. Please contact admin.");
         }
 
@@ -52,11 +55,16 @@ public class AuthService {
     // ==================== REGISTRATION ====================
 
     public AuthDto.AuthResponse register(AuthDto.RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            User existing = userRepository.findByEmail(request.getEmail()).get();
-            if (existing.getIsActive()) {
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        
+        if (user != null) {
+            if (user.getIsActive()) {
                 throw new BadRequestException("An account with this email already exists. Please login instead.");
             }
+            // If user exists but is not active, we will reuse the record and update it
+            log.info("Updating unverified account for: {}", request.getEmail());
+        } else {
+            user = new User();
         }
 
         if (request.getPassword() == null || request.getPassword().length() < 6) {
@@ -67,49 +75,42 @@ public class AuthService {
         String otp = generateOtp();
         String encodedOtp = passwordEncoder.encode(otp);
         
-        // Ensure mobile is null if empty to avoid unique constraint issues
         String mobile = (request.getMobile() == null || request.getMobile().trim().isEmpty()) ? null : request.getMobile();
 
-        User user = User.builder()
-                .email(request.getEmail())
-                .name(request.getName())
-                .mobile(mobile)
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole())
-                .studentClass(request.getStudentClass())
-                .board(request.getBoard())
-                .subject(request.getSubject())
-                .qualification(request.getQualification())
-                .bio(request.getBio())
-                .fees(request.getFees())
-                .timingFrom(request.getTimingFrom())
-                .timingTo(request.getTimingTo())
-                .availableDays(request.getAvailableDays())
-                .city(request.getCity())
-                .country(request.getCountry())
-                .timezone(request.getTimezone() != null ? request.getTimezone() : "Asia/Kolkata")
-                .isActive(false) // Mandatory verification
-                .isApproved(!isTeacher)
-                .otp(encodedOtp)
-                .otpExpiry(LocalDateTime.now().plusMinutes(10))
-                .build();
+        // Update fields
+        user.setEmail(request.getEmail());
+        user.setName(request.getName());
+        user.setMobile(mobile);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
+        user.setStudentClass(request.getStudentClass());
+        user.setBoard(request.getBoard());
+        user.setSubject(request.getSubject());
+        user.setQualification(request.getQualification());
+        user.setBio(request.getBio());
+        user.setFees(request.getFees());
+        user.setTimingFrom(request.getTimingFrom());
+        user.setTimingTo(request.getTimingTo());
+        user.setAvailableDays(request.getAvailableDays());
+        user.setCity(request.getCity());
+        user.setCountry(request.getCountry());
+        user.setTimezone(request.getTimezone() != null ? request.getTimezone() : "Asia/Kolkata");
+        user.setIsActive(false); 
+        user.setIsApproved(!isTeacher);
+        user.setOtp(encodedOtp);
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
 
         userRepository.save(user);
 
-        // If parent is registering, link to child if email provided
         if (request.getRole() == Role.PARENT && request.getChildEmail() != null && !request.getChildEmail().isEmpty()) {
             User student = userRepository.findByEmail(request.getChildEmail()).orElse(null);
             if (student != null && student.getRole() == Role.STUDENT) {
                 student.setParent(user);
                 userRepository.save(student);
-                log.info("Linked parent {} to student {}", user.getEmail(), student.getEmail());
             }
         }
 
-        // Send OTP for verification
         otpService.sendOtp(user.getEmail(), otp);
-        log.info("Registration OTP for {}: {}", user.getEmail(), otp);
-
         return new AuthDto.AuthResponse(null, user.getRole().name(), user.getId(), user.getName(), user.getEmail(), false);
     }
 
