@@ -106,6 +106,10 @@ export const routes: Routes = [
         path: 'payments',
         loadComponent: () => import('./admin/payments/payments.component').then(m => m.AdminPaymentsComponent)
       },
+      {
+        path: 'subjects',
+        loadComponent: () => import('./admin/subjects/subjects.component').then(m => m.AdminSubjectsComponent)
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

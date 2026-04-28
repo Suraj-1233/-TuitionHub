@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { PublicService } from '../../shared/services/public.service';
 
 @Component({
   selector: 'app-register',
@@ -142,7 +143,10 @@ import { ToastService } from '../../shared/services/toast.service';
           <ng-container *ngIf="formData.role === 'TEACHER'">
             <div class="form-group">
               <label class="form-label">Subject Expertise</label>
-              <input type="text" class="form-control" [(ngModel)]="formData.subject" name="subject" required placeholder="e.g. Mathematics, Physics">
+              <select class="form-control" [(ngModel)]="formData.subject" name="subject" required>
+                <option value="">-- Select Subject --</option>
+                <option *ngFor="let s of subjects" [value]="s.name">{{ s.icon }} {{ s.name }}</option>
+              </select>
             </div>
             <div class="form-group">
               <label class="form-label">Qualification</label>
@@ -252,6 +256,7 @@ export class RegisterComponent implements OnInit {
   isVerifying = false;
   teacherPending = false;
   otpValue = '';
+  subjects: any[] = [];
 
   formData: any = {
     role: 'STUDENT',
@@ -266,6 +271,7 @@ export class RegisterComponent implements OnInit {
     studentClass: '',
     board: 'CBSE',
     qualification: '',
+    subject: ''
   };
 
   private countryMap: Record<string, { tz: string; currency: string }> = {
@@ -290,13 +296,22 @@ export class RegisterComponent implements OnInit {
     'OTHER': { tz: Intl.DateTimeFormat().resolvedOptions().timeZone, currency: 'USD' }
   };
 
-  constructor(private authService: AuthService, private toast: ToastService) {}
+  constructor(
+    private authService: AuthService, 
+    private toast: ToastService,
+    private publicService: PublicService
+  ) {}
 
   ngOnInit() {
+    this.loadSubjects();
     if (this.authService.isLoggedIn()) {
       const role = this.authService.getRole();
       if (role) this.authService.navigateByRole(role);
     }
+  }
+
+  loadSubjects() {
+    this.publicService.getSubjects().subscribe(s => this.subjects = s);
   }
 
   onCountryChange() {

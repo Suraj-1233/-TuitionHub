@@ -44,6 +44,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/api/auth/**",
+                    "/api/public/**",
                     "/h2-console/**",
                     "/api/teachers/list",
                     "/api/teachers/{id}",

@@ -26,13 +26,16 @@ public class AdminController {
     private final BatchRepository batchRepository;
     private final PaymentRepository paymentRepository;
     private final AssignmentRequestRepository requestRepository;
+    private final com.tuitionhub.backend.repository.SubjectRepository subjectRepository;
 
     public AdminController(UserRepository userRepository, BatchRepository batchRepository, 
-                           PaymentRepository paymentRepository, AssignmentRequestRepository requestRepository) {
+                           PaymentRepository paymentRepository, AssignmentRequestRepository requestRepository,
+                           com.tuitionhub.backend.repository.SubjectRepository subjectRepository) {
         this.userRepository = userRepository;
         this.batchRepository = batchRepository;
         this.paymentRepository = paymentRepository;
         this.requestRepository = requestRepository;
+        this.subjectRepository = subjectRepository;
     }
 
     @GetMapping("/dashboard")
@@ -201,6 +204,26 @@ public class AdminController {
         }
 
         return ResponseEntity.ok(Map.of("message", message));
+    }
+
+    // ==================== SUBJECT MANAGEMENT ====================
+    @GetMapping("/subjects")
+    public ResponseEntity<List<com.tuitionhub.backend.model.Subject>> getAllSubjects() {
+        return ResponseEntity.ok(subjectRepository.findAll());
+    }
+
+    @PostMapping("/subjects")
+    public ResponseEntity<?> addSubject(@RequestBody com.tuitionhub.backend.model.Subject subject) {
+        if (subjectRepository.existsByNameIgnoreCase(subject.getName())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Subject already exists"));
+        }
+        return ResponseEntity.ok(subjectRepository.save(subject));
+    }
+
+    @DeleteMapping("/subjects/{id}")
+    public ResponseEntity<?> deleteSubject(@PathVariable Long id) {
+        subjectRepository.deleteById(id);
+        return ResponseEntity.ok(Map.of("message", "Subject deleted"));
     }
 
     private String checkConflicts(String requestedTime, List<com.tuitionhub.backend.model.Batch> batches) {

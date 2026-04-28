@@ -91,6 +91,13 @@ import { User } from '../../shared/models/models';
                 <span class="action-desc">{{ stats?.pendingTeacherApprovals }} pending reviews</span>
               </div>
             </a>
+            <a routerLink="/admin/subjects" class="action-item">
+              <div class="action-icon">📚</div>
+              <div class="action-details">
+                <span class="action-name">Manage Subjects</span>
+                <span class="action-desc">Add or remove subjects from the platform</span>
+              </div>
+            </a>
           </div>
         </div>
       </div>
