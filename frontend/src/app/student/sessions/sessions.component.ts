@@ -35,17 +35,19 @@ import { ToastService } from '../../shared/services/toast.service';
             </div>
 
             <div class="payment-status">
-              <div *ngIf="session.isPaid" class="paid-actions-group">
-                <div class="paid-badge"><span class="icon">✅</span> Paid</div>
-                <div class="action-buttons">
-                  <button class="join-meet-btn" (click)="joinMeet(session)">📹 Join Meet</button>
-                  <button class="material-btn" (click)="viewMaterial(session)">📚 Study Material</button>
-                </div>
-                <button *ngIf="session.status === 'COMPLETED'" class="feedback-btn" (click)="openFeedback(session)">Give Feedback</button>
+              <div class="action-buttons">
+                <button class="join-meet-btn" [class.locked]="!session.isPaid" (click)="joinMeet(session)">📹 Join Meet</button>
+                <button class="material-btn" [class.locked]="!session.isPaid" (click)="viewMaterial(session)">📚 Study Material</button>
               </div>
+
               <div *ngIf="!session.isPaid" class="unpaid-info">
                 <span class="amount">{{ session.amount }} {{ session.teacher.currency || 'INR' }}</span>
                 <button class="pay-btn" (click)="openPaymentOptions(session)">Pay to Unlock</button>
+              </div>
+
+              <div *ngIf="session.isPaid" class="paid-info-group">
+                <div class="paid-badge"><span class="icon">✅</span> Payment Confirmed</div>
+                <button *ngIf="session.status === 'COMPLETED'" class="feedback-btn" (click)="openFeedback(session)">Give Feedback</button>
               </div>
             </div>
           </div>
@@ -155,16 +157,18 @@ import { ToastService } from '../../shared/services/toast.service';
     .details .time { margin: 0; color: #94a3b8; font-size: 0.875rem; }
 
     .paid-badge { background: #ecfdf5; color: #059669; padding: 0.5rem 1rem; border-radius: 99px; font-weight: 700; font-size: 0.875rem; text-align: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
-    .paid-actions-group { display: flex; flex-direction: column; gap: 1rem; align-items: flex-end; }
-    .action-buttons { display: flex; gap: 0.75rem; }
+    .paid-info-group { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; margin-top: 0.5rem; }
+    .action-buttons { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
     
     .join-meet-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.875rem; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
-    .join-meet-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+    .join-meet-btn.locked { background: #f1f5f9; color: #94a3b8; box-shadow: none; }
+    .join-meet-btn:hover:not(.locked) { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
     
     .material-btn { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.875rem; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
-    .material-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
+    .material-btn.locked { background: #f1f5f9; color: #94a3b8; box-shadow: none; }
+    .material-btn:hover:not(.locked) { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
 
-    .feedback-btn { background: #fffbeb; color: #b45309; border: 1px solid #fef3c7; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem; }
+    .feedback-btn { background: #fffbeb; color: #b45309; border: 1px solid #fef3c7; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .feedback-btn:hover { background: #fef3c7; transform: scale(1.05); }
     .unpaid-info { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
     .amount { font-weight: 800; color: #1e293b; font-size: 1.125rem; }
@@ -276,6 +280,10 @@ export class SessionsComponent implements OnInit {
   }
 
   joinMeet(session: any) {
+    if (!session.isPaid) {
+      this.toastService.error('Please pay to unlock the meeting link');
+      return;
+    }
     if (session.batch?.liveClassLink) {
       window.open(session.batch.liveClassLink, '_blank');
     } else {
@@ -284,6 +292,10 @@ export class SessionsComponent implements OnInit {
   }
 
   viewMaterial(session: any) {
+    if (!session.isPaid) {
+      this.toastService.error('Please pay to access study materials');
+      return;
+    }
     alert('Opening Study Materials for ' + (session.batch?.subject || 'Session'));
   }
 
