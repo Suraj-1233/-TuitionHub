@@ -37,7 +37,7 @@ import { Batch, BatchJoinRequest } from '../../shared/models/models';
         <div class="stat-card glass highlight">
           <div class="stat-icon success">💰</div>
           <div class="stat-info">
-            <div class="stat-value text-success">{{ getCurrencySymbol(myBatches[0]?.currency) }}{{ totalEarnings }}</div>
+            <div class="stat-value text-success">{{ getCurrencySymbol(myBatches.length > 0 ? myBatches[0].currency : undefined) }}{{ totalEarnings }}</div>
             <div class="stat-label">Monthly Revenue</div>
           </div>
         </div>
