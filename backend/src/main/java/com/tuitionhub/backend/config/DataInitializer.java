@@ -36,10 +36,10 @@ public class DataInitializer implements CommandLineRunner {
         log.info("🚀 Initializing Demo Data...");
 
         // 1. Core Accounts
-        createIfNotExists("admin@tuitionhub.com", "Super Admin", Role.ADMIN, "admin123", "TUI-ADMIN");
-        createIfNotExists("super@tuitionhub.com", "Main Super Admin", Role.SUPER_ADMIN, "super123", "TUI-SUPER");
-        createIfNotExists("teacher@tuitionhub.com", "Dr. Amit Sharma", Role.TEACHER, "teacher123", "TUI-TEACH");
-        createIfNotExists("surajkannujiya517@gmail.com", "Suraj Kannujiya", Role.STUDENT, "suraj123", "TUI-SURAJ");
+        createIfNotExists("admin@tuitionhub.com", "Super Admin", Role.ADMIN, "admin123", "TUI-ADMIN", "INR");
+        createIfNotExists("super@tuitionhub.com", "Main Super Admin", Role.SUPER_ADMIN, "super123", "TUI-SUPER", "USD");
+        createIfNotExists("teacher@tuitionhub.com", "Dr. Amit Sharma", Role.TEACHER, "teacher123", "TUI-TEACH", "INR");
+        createIfNotExists("surajkannujiya517@gmail.com", "Suraj Kannujiya", Role.STUDENT, "suraj123", "TUI-SURAJ", "USD");
 
         // 2. Default Subjects
         if (subjectRepository.count() == 0) {
@@ -71,26 +71,17 @@ public class DataInitializer implements CommandLineRunner {
         log.info("✅ Data Initialization Complete.");
     }
 
-    private String generateUniqueReferralCode() {
-        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        StringBuilder sb = new StringBuilder("TUI-");
-        java.util.Random rnd = new java.util.Random();
-        for (int i = 0; i < 5; i++) {
-            sb.append(chars.charAt(rnd.nextInt(chars.length())));
-        }
-        return sb.toString();
-    }
-
-    private void createIfNotExists(String email, String name, Role role, String password, String referral) {
+    private void createIfNotExists(String email, String name, Role role, String password, String referral, String currency) {
         if (!userRepository.existsByEmail(email)) {
             User user = User.builder()
                     .name(name).email(email).mobile("9876543210")
                     .password(passwordEncoder.encode(password))
                     .role(role).isActive(true).isApproved(true).referralCode(referral)
+                    .currency(currency)
                     .build();
             userRepository.save(user);
             walletService.getOrCreateWallet(user.getId());
-            log.info("👤 Created User: {}", email);
+            log.info("👤 Created User: {} with currency: {}", email, currency);
         }
     }
 
