@@ -7,16 +7,21 @@ This document tracks the evolution of the TuitionHub platform, documenting all m
 ## 🏫 1. Payment & Wallet System
 Implemented a secure and scalable internal economy for students and tutors.
 
-- **Internal Wallet**: Every user has a virtual wallet to store real currency (top-ups) and promotional credits.
+- **Internal Wallet**: Every user (primarily Parents) has a virtual wallet to store real currency (top-ups) and promotional credits.
 - **Promo vs. Real Balance**: System distinguishes between withdrawable "Real Money" and non-withdrawable "Promo Credits".
+- **Parent-Centric Economy**: Financial responsibility shifted entirely to the **Parent Role**. Students focus on learning, while Parents manage wallets, top-ups, and fee payments for all linked children.
 - **Multi-Mode Payments**:
     - **Full Wallet Payment**: Pay using existing balance.
     - **Direct Gateway**: Pay via Razorpay.
     - **Partial Payment**: Use remaining wallet balance and pay the rest via gateway.
 - **Transaction Logs**: Granular history for every credit, debit, referral, and top-up.
 
-## 🎟️ 2. Pure 1-on-1 Session Management
-Exclusively designed for individual tutoring. Students manage their assigned sessions directly through their private portal.
+## 🎟️ 2. Flexible Learning Modes & Dynamic Pricing
+Transitioned from fixed batch sizes to a flexible "Individual vs. Batch" model.
+
+- **1-on-1 vs. Group**: Parents can choose high-priority 1-on-1 sessions or cost-effective group batches.
+- **Negotiated Pricing**: Admin has the power to set custom, dynamic fees for each student based on the chosen mode and parent consultation.
+- **Auto-Provisioning**: The system automatically creates dedicated batches and meeting links once the Admin confirms the negotiated terms.
 
 - **Booking Workflow**: Sessions are created as `PENDING` and only `CONFIRMED` (unlocked) after successful payment.
 - **Automated Payout Tracking**: System tracks teacher earnings per session, pending admin approval.
@@ -40,6 +45,17 @@ Enhanced controls for platform administrators.
 - **Revenue Dashboard**: Track global platform revenue and transaction flows.
 - **Tutor Approval**: Multi-step verification for new teachers.
 - **Session Oversight**: Track all tutoring sessions and manage payouts.
+
+## 🛡️ 5. Enterprise-Grade Observability (Audit Logging)
+Implemented a robust AOP-based Audit System to track sensitive operations across the platform.
+
+- **@Auditable Annotation**: Custom annotation-driven logging for methods like payment approvals, wallet adjustments, and role changes.
+- **Tamper-Evident History**: Records who performed what action, when, and on which entity.
+
+## 📡 6. Standardized Communication (API Contract)
+Introduced a unified `ApiResponse<T>` wrapper for all backend communication.
+
+- **Consistent JSON Contract**: Every response follows a predictable structure: `success`, `message`, `data`, `errors`, and `timestamp`.
 
 ---
 

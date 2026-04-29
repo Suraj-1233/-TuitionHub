@@ -35,6 +35,16 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         log.info("🚀 Initializing Demo Data...");
 
+        // 0. Database Schema Fixes (Must run before inserts)
+        try {
+            log.info("🛠️ Applying database schema fix for payments and users table...");
+            jdbcTemplate.execute("ALTER TABLE payments MODIFY batch_id BIGINT NULL");
+            jdbcTemplate.execute("ALTER TABLE users MODIFY COLUMN role VARCHAR(50)");
+            log.info("✅ Database schema fix applied.");
+        } catch (Exception e) {
+            log.warn("⚠️ Could not apply database fix: {}", e.getMessage());
+        }
+
         // 1. Core Accounts
         createIfNotExists("admin@tuitionhub.com", "Super Admin", Role.ADMIN, "admin123", "TUI-ADMIN", "INR");
         createIfNotExists("super@tuitionhub.com", "Main Super Admin", Role.SUPER_ADMIN, "super123", "TUI-SUPER", "USD");
@@ -68,15 +78,6 @@ public class DataInitializer implements CommandLineRunner {
                 log.info("🎁 Generated missing referral code for: {}", user.getEmail());
             }
         });
-
-        // 5. Database Fix: Ensure payments.batch_id is nullable for top-ups
-        try {
-            log.info("🛠️ Applying database schema fix for payments table...");
-            jdbcTemplate.execute("ALTER TABLE payments MODIFY batch_id BIGINT NULL");
-            log.info("✅ Database schema fix applied.");
-        } catch (Exception e) {
-            log.warn("⚠️ Could not apply database fix (it might already be applied): {}", e.getMessage());
-        }
 
         log.info("✅ Data Initialization Complete.");
     }
