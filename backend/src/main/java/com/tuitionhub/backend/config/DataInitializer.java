@@ -51,8 +51,7 @@ public class DataInitializer implements CommandLineRunner {
         createIfNotExists("teacher@tuitionhub.com", "Dr. Amit Sharma", Role.TEACHER, "teacher123", "TUI-TEACH", "INR", "9000000003");
         createIfNotExists("surajkannujiya517@gmail.com", "Suraj Kannujiya", Role.STUDENT, "suraj123", "TUI-SURAJ", "USD", "9000000004");
         
-        // Force refresh parent
-        userRepository.findByEmail("parent@tuitionhub.com").ifPresent(u -> userRepository.delete(u));
+        // Ensure parent exists and has correct role
         createIfNotExists("parent@tuitionhub.com", "Rajesh Kannujiya", Role.PARENT, "parent123", "TUI-PARENT", "INR", "9000000005");
 
         // Link Parent to Student
