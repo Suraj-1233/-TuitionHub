@@ -22,26 +22,6 @@ import { FormsModule } from '@angular/forms';
           <p class="subtitle">Here's what's happening with your studies today.</p>
         </div>
 
-        <!-- Student Priority Preferences (Simplified) -->
-        <section class="priority-section mt-5 animate-fade">
-          <div class="card glass preference-card">
-            <div class="pref-grid">
-              <div class="pref-item">
-                <span class="icon">💰</span>
-                <div class="pref-info">
-                  <label>Payment Currency</label>
-                  <select [(ngModel)]="preferredCurrency" (change)="updateCurrency()">
-                    <option value="INR">INR (₹)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                  </select>
-                  <small>Wallet & Top-ups will use this currency.</small>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         <div class="banner-actions">
           <button class="btn-request-glow" (click)="showRequestModal = true">
@@ -57,13 +37,6 @@ import { FormsModule } from '@angular/forms';
           <div class="stat-info">
             <div class="stat-value">{{ myBatches.length }}</div>
             <div class="stat-label">My Batches</div>
-          </div>
-        </div>
-        <div class="stat-card glass warning" routerLink="/student/payments">
-          <div class="stat-icon warning">💸</div>
-          <div class="stat-info">
-            <div class="stat-value">{{ paymentCount }}</div>
-            <div class="stat-label">Payments</div>
           </div>
         </div>
         <div class="stat-card glass highlight" routerLink="/student/batches">
@@ -225,15 +198,6 @@ import { FormsModule } from '@angular/forms';
     }
     .btn-request-glow:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 15px 30px rgba(255,255,255,0.6); }
 
-    .preference-card { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(99, 102, 241, 0.2); padding: 1.25rem; margin-top: 1rem; border-radius: 16px; }
-    .pref-grid { display: flex; gap: 2rem; align-items: flex-end; }
-    .pref-item { display: flex; align-items: center; gap: 0.75rem; flex: 1; }
-    .pref-item .icon { font-size: 1.5rem; background: #f1f5f9; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
-    .pref-info { display: flex; flex-direction: column; flex: 1; }
-    .pref-info label { font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem; }
-    .pref-info select { padding: 0.5rem; border-radius: 8px; border: 1px solid #e2e8f0; font-weight: 600; color: #1e293b; outline: none; background: white; }
-    .pref-info select:focus { border-color: #6366f1; }
-    .pref-info small { font-size: 0.65rem; color: #94a3b8; margin-top: 0.25rem; }
 
     .banner-actions { display: flex; gap: 1rem; margin-top: 2rem; }
 
@@ -301,8 +265,6 @@ export class StudentDashboardComponent implements OnInit {
   requestData = { subjects: '', startTime: '', endTime: '', notes: '' };
   paymentCount = 0;
   referrals: any[] = [];
-  preferredCurrency = 'INR';
-  currencySymbol = '₹';
 
   constructor(
     private authService: AuthService,
@@ -314,35 +276,13 @@ export class StudentDashboardComponent implements OnInit {
   ngOnInit() {
     const user = this.authService.getCurrentUser();
     this.userName = user?.name || 'Student';
-    this.preferredCurrency = this.authService.getCurrency();
-    this.currencySymbol = this.authService.getCurrencySymbol();
-    this.authService.fetchExchangeRate().subscribe(() => {
-      this.loadData();
-    });
+    this.loadData();
   }
 
-  updateCurrency() {
-    this.authService.setCurrency(this.preferredCurrency);
-    this.currencySymbol = this.authService.getCurrencySymbol();
-    
-    // Fetch new exchange rate before updating UI
-    this.authService.fetchExchangeRate().subscribe();
-
-    // Save to backend
-    this.authService.updateBackendCurrency(this.preferredCurrency).subscribe({
-      next: () => this.toast.success(`Currency updated to ${this.preferredCurrency}`),
-      error: () => this.toast.error('Failed to sync currency with server')
-    });
-  }
 
   loadData() {
     this.batchService.getMyBatches().subscribe((b: Batch[]) => this.myBatches = b);
     this.studentService.getMyRequests().subscribe(r => this.pendingRequests = r);
-
-    // Fetch payments count (Placeholder logic until backend summary API is ready)
-    this.studentService.getPayments().subscribe(p => {
-      this.paymentCount = p.length;
-    });
 
     this.studentService.getReferrals().subscribe(ref => {
       this.referrals = ref;
