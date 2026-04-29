@@ -1,5 +1,6 @@
 package com.tuitionhub.backend.controller;
 
+import com.tuitionhub.backend.dto.ApiResponse;
 import com.tuitionhub.backend.dto.PaymentDto;
 import com.tuitionhub.backend.model.User;
 import com.tuitionhub.backend.service.PaymentService;
@@ -19,33 +20,32 @@ public class PaymentController {
 
     @PostMapping("/api/parent/payments/create-order")
     @PreAuthorize("hasRole('PARENT')")
-    public ResponseEntity<PaymentDto.Response> createOrder(
+    public ResponseEntity<ApiResponse<PaymentDto.Response>> createOrder(
             @jakarta.validation.Valid @RequestBody PaymentDto.CreateOrderRequest request,
             @AuthenticationPrincipal User parent) {
-        // Validation logic to ensure student belongs to parent can be in service or here
-        return ResponseEntity.ok(paymentService.createPaymentOrder(request, null)); // Service will need to handle student lookup via request.batchId
+        return ResponseEntity.ok(ApiResponse.success(paymentService.createPaymentOrder(request, parent), "Order created"));
     }
 
     @PostMapping("/api/parent/payments/verify")
     @PreAuthorize("hasRole('PARENT')")
-    public ResponseEntity<PaymentDto.Response> verifyPayment(@jakarta.validation.Valid @RequestBody PaymentDto.VerifyRequest request) {
-        return ResponseEntity.ok(paymentService.verifyAndUpdatePayment(request));
+    public ResponseEntity<ApiResponse<PaymentDto.Response>> verifyPayment(@jakarta.validation.Valid @RequestBody PaymentDto.VerifyRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(paymentService.verifyAndUpdatePayment(request), "Payment verified"));
     }
 
     @PostMapping("/api/parent/wallet/topup/create-order")
     @PreAuthorize("hasRole('PARENT')")
-    public ResponseEntity<PaymentDto.Response> createTopupOrder(
+    public ResponseEntity<ApiResponse<PaymentDto.Response>> createTopupOrder(
             @RequestParam Double amount,
             @AuthenticationPrincipal User parent) {
-        return ResponseEntity.ok(paymentService.createTopupOrder(amount, parent));
+        return ResponseEntity.ok(ApiResponse.success(paymentService.createTopupOrder(amount, parent), "Topup order created"));
     }
 
     @PostMapping("/api/parent/wallet/topup/verify")
     @PreAuthorize("hasRole('PARENT')")
-    public ResponseEntity<PaymentDto.Response> verifyTopup(
+    public ResponseEntity<ApiResponse<PaymentDto.Response>> verifyTopup(
             @RequestBody PaymentDto.VerifyRequest request,
             @AuthenticationPrincipal User parent) {
-        return ResponseEntity.ok(paymentService.verifyTopup(request, parent));
+        return ResponseEntity.ok(ApiResponse.success(paymentService.verifyTopup(request, parent), "Topup verified"));
     }
 
     @PostMapping("/api/parent/payments/notify-failure")
@@ -57,33 +57,32 @@ public class PaymentController {
 
     @GetMapping("/api/parent/payments")
     @PreAuthorize("hasRole('PARENT')")
-    public ResponseEntity<List<PaymentDto.Response>> getParentPayments(@AuthenticationPrincipal User parent) {
-        // Returns all payments made by/for this parent's children
-        return ResponseEntity.ok(paymentService.getParentPayments(parent));
+    public ResponseEntity<ApiResponse<List<PaymentDto.Response>>> getParentPayments(@AuthenticationPrincipal User parent) {
+        return ResponseEntity.ok(ApiResponse.success(paymentService.getParentPayments(parent), "Payments fetched"));
     }
 
     @GetMapping("/api/teacher/payments")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<List<PaymentDto.Response>> getTeacherPayments(@AuthenticationPrincipal User teacher) {
-        return ResponseEntity.ok(paymentService.getTeacherPayments(teacher));
+    public ResponseEntity<ApiResponse<List<PaymentDto.Response>>> getTeacherPayments(@AuthenticationPrincipal User teacher) {
+        return ResponseEntity.ok(ApiResponse.success(paymentService.getTeacherPayments(teacher), "Payments fetched"));
     }
 
     @GetMapping("/api/admin/payments")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<PaymentDto.Response>> getAllPayments() {
-        return ResponseEntity.ok(paymentService.getAllPayments());
+    public ResponseEntity<ApiResponse<List<PaymentDto.Response>>> getAllPayments() {
+        return ResponseEntity.ok(ApiResponse.success(paymentService.getAllPayments(), "All payments fetched"));
     }
 
     @PostMapping("/api/admin/payments/{id}/mark-as-paid")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PaymentDto.Response> markAsPaid(
+    public ResponseEntity<ApiResponse<PaymentDto.Response>> markAsPaid(
             @PathVariable Long id,
             @RequestParam(required = false) String remark) {
-        return ResponseEntity.ok(paymentService.markAsPaid(id, remark));
+        return ResponseEntity.ok(ApiResponse.success(paymentService.markAsPaid(id, remark), "Payment marked as paid"));
     }
 
     @GetMapping("/api/config/razorpay-key")
-    public ResponseEntity<java.util.Map<String, String>> getRazorpayKey() {
-        return ResponseEntity.ok(java.util.Map.of("keyId", paymentService.getRazorpayKeyId()));
+    public ResponseEntity<ApiResponse<java.util.Map<String, String>>> getRazorpayKey() {
+        return ResponseEntity.ok(ApiResponse.success(java.util.Map.of("keyId", paymentService.getRazorpayKeyId()), "Key fetched"));
     }
 }
