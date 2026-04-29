@@ -83,6 +83,20 @@ import { RouterLink } from '@angular/router';
               </select>
             </div>
 
+            <div class="form-row mt-4">
+              <div class="form-group flex-1">
+                <label class="form-label">Negotiated Monthly Fees (INR)</label>
+                <input type="number" [(ngModel)]="negotiatedFees" class="modal-input" placeholder="e.g. 1500">
+              </div>
+              <div class="form-group flex-1">
+                <label class="form-label">Learning Mode</label>
+                <select [(ngModel)]="isIndividual" class="modal-input">
+                  <option [ngValue]="true">1-on-1 (Individual)</option>
+                  <option [ngValue]="false">Batch (Group)</option>
+                </select>
+              </div>
+            </div>
+
             <div *ngIf="getFilteredTeachers().length === 0" class="error-text mt-2">
               ⚠️ No teachers found for this subject.
             </div>
@@ -131,6 +145,8 @@ import { RouterLink } from '@angular/router';
     .modal-card { width: 95%; max-width: 500px; background: white; border-radius: 24px; padding: 2rem; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .modal-input { width: 100%; padding: 0.85rem; border-radius: 12px; border: 1.5px solid #E2E8F0; }
+    .form-row { display: flex; gap: 1rem; }
+    .flex-1 { flex: 1; }
     .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
   `]
 })
@@ -140,6 +156,8 @@ export class AdminRequestsComponent implements OnInit {
   showAssignModal = false;
   selectedRequest: any = null;
   selectedTeacherId: number | null = null;
+  negotiatedFees: number = 0;
+  isIndividual: boolean = true;
   isAssigning = false;
 
   constructor(
@@ -160,6 +178,8 @@ export class AdminRequestsComponent implements OnInit {
     this.selectedRequest = req;
     this.showAssignModal = true;
     this.selectedTeacherId = null;
+    this.negotiatedFees = req.negotiatedFees || 0;
+    this.isIndividual = req.isIndividual !== undefined ? req.isIndividual : true;
   }
 
   getFilteredTeachers() {
@@ -176,15 +196,25 @@ export class AdminRequestsComponent implements OnInit {
     if (!this.selectedTeacherId || !this.selectedRequest) return;
     
     this.isAssigning = true;
-    this.adminService.assignTeacherToRequest(this.selectedRequest.id, this.selectedTeacherId).subscribe({
-      next: (res) => {
-        this.toast.success(res.message);
-        this.showAssignModal = false;
-        this.isAssigning = false;
-        this.loadData();
+    // Step 1: Update details (fees and mode)
+    this.adminService.updateRequestDetails(this.selectedRequest.id, this.negotiatedFees, this.isIndividual).subscribe({
+      next: () => {
+        // Step 2: Assign teacher
+        this.adminService.assignTeacherToRequest(this.selectedRequest.id, this.selectedTeacherId!).subscribe({
+          next: (res) => {
+            this.toast.success(res.message);
+            this.showAssignModal = false;
+            this.isAssigning = false;
+            this.loadData();
+          },
+          error: (err) => {
+            this.toast.error(err.error?.message || 'Assignment failed');
+            this.isAssigning = false;
+          }
+        });
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Assignment failed');
+        this.toast.error(err.error?.message || 'Failed to update request details');
         this.isAssigning = false;
       }
     });

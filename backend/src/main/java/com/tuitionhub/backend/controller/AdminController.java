@@ -116,6 +116,16 @@ public class AdminController {
                 .ok(ApiResponse.success(assignmentRequestService.getPendingRequests(), "Pending requests fetched"));
     }
 
+    @PutMapping("/requests/{requestId}/details")
+    public ResponseEntity<ApiResponse<Void>> updateRequestDetails(
+            @PathVariable Long requestId,
+            @RequestBody Map<String, Object> body) {
+        Double fees = Double.valueOf(body.get("negotiatedFees").toString());
+        Boolean isIndividual = (Boolean) body.get("isIndividual");
+        assignmentRequestService.updateRequestDetails(requestId, fees, isIndividual);
+        return ResponseEntity.ok(ApiResponse.success(null, "Request details updated"));
+    }
+
     @PostMapping("/requests/{requestId}/assign-teacher/{teacherId}")
     public ResponseEntity<ApiResponse<Void>> assignTeacher(@PathVariable Long requestId, @PathVariable Long teacherId) {
         String conflictMessage = assignmentRequestService.assignTeacher(requestId, teacherId);

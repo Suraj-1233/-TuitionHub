@@ -65,6 +65,10 @@ export class AdminService {
     return this.http.post(`${this.apiUrl}/admin/requests/${requestId}/assign-teacher/${teacherId}`, {});
   }
 
+  updateRequestDetails(requestId: number, negotiatedFees: number, isIndividual: boolean): Observable<any> {
+    return this.http.put(`${this.apiUrl}/admin/requests/${requestId}/details`, { negotiatedFees, isIndividual });
+  }
+
   // Subject Management
   getSubjects(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/admin/subjects`);

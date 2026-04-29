@@ -58,6 +58,15 @@ public class User {
     @JoinColumn(name = "referred_by_id")
     private User referredBy;
 
+    // Parent-Student Relationship
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private User parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<User> children = new ArrayList<>();
+
     private String city;
     private String country;
 

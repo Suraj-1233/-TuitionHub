@@ -9,6 +9,8 @@ import com.tuitionhub.backend.model.Batch;
 import com.tuitionhub.backend.model.Payment;
 import com.tuitionhub.backend.model.User;
 import com.tuitionhub.backend.repository.BatchRepository;
+import com.tuitionhub.backend.model.Role;
+import com.tuitionhub.backend.repository.UserRepository;
 import com.tuitionhub.backend.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final BatchRepository batchRepository;
+    private final UserRepository userRepository;
     private final EmailService emailService;
     private final WalletService walletService;
     private final PaymentGateway paymentGateway;
@@ -34,8 +37,18 @@ public class PaymentService {
     private static final String DEFAULT_CURRENCY = "INR";
 
     @Transactional
-    public PaymentDto.Response createPaymentOrder(PaymentDto.CreateOrderRequest request, User student) {
+    public PaymentDto.Response createPaymentOrder(PaymentDto.CreateOrderRequest request, User caller) {
         try {
+            User student = userRepository.findById(request.getStudentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+
+            // If caller is a Parent, check if they are the parent of this student
+            if (caller.getRole() == Role.PARENT) {
+                if (student.getParent() == null || !student.getParent().getId().equals(caller.getId())) {
+                    throw new BadRequestException("You are not authorized to pay for this student");
+                }
+            }
+
             Batch batch = batchRepository.findById(request.getBatchId())
                     .orElseThrow(() -> new ResourceNotFoundException("Batch not found"));
 
@@ -83,7 +96,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentDto.Response createTopupOrder(Double amount, User student) {
+    public PaymentDto.Response createTopupOrder(Double amount, User parent) {
         try {
             if (amount < 1) {
                 throw new BadRequestException("Amount must be at least 1 INR");
@@ -93,7 +106,7 @@ public class PaymentService {
             String gatewayOrderId = paymentGateway.createOrder(amount, DEFAULT_CURRENCY, receipt);
 
             Payment payment = Payment.builder()
-                    .student(student)
+                    .student(parent) // For topup, the user who pays gets the balance
                     .amount(amount)
                     .currency(DEFAULT_CURRENCY)
                     .gateway(paymentGateway.getGatewayName())
@@ -208,6 +221,15 @@ public class PaymentService {
         payment.setErrorStep(request.getErrorStep());
 
         paymentRepository.save(payment);
+    }
+
+    public List<PaymentDto.Response> getParentPayments(User parent) {
+        // Find all payments where student's parent is this user
+        return paymentRepository.findAll().stream()
+                .filter(p -> p.getStudent() != null && p.getStudent().getParent() != null 
+                        && p.getStudent().getParent().getId().equals(parent.getId()))
+                .map(paymentMapper::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     public String getRazorpayKeyId() {

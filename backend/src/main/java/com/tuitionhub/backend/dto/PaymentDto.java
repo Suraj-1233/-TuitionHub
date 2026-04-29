@@ -10,6 +10,9 @@ public class PaymentDto {
         @jakarta.validation.constraints.NotNull(message = "Batch ID is required")
         private Long batchId;
         
+        @jakarta.validation.constraints.NotNull(message = "Student ID is required")
+        private Long studentId; // Required when parent is paying
+        
         @jakarta.validation.constraints.NotNull(message = "Month is required")
         private LocalDate forMonth;
     }

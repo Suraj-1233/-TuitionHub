@@ -46,16 +46,32 @@ export const routes: Routes = [
         loadComponent: () => import('./student/schedule/schedule.component').then(m => m.StudentScheduleComponent)
       },
       {
+        path: 'sessions',
+        loadComponent: () => import('./student/sessions/sessions.component').then(m => m.SessionsComponent)
+      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+    ]
+  },
+  {
+    path: 'parent',
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'PARENT' },
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./parent/dashboard/dashboard.component').then(m => m.ParentDashboardComponent)
+      },
+      {
+        path: 'children',
+        loadComponent: () => import('./parent/children/children.component').then(m => m.ParentChildrenComponent)
+      },
+      {
         path: 'payments',
-        loadComponent: () => import('./student/payments/payments.component').then(m => m.StudentPaymentsComponent)
+        loadComponent: () => import('./parent/payments/payments.component').then(m => m.ParentPaymentsComponent)
       },
       {
         path: 'wallet',
-        loadComponent: () => import('./student/wallet/wallet.component').then(m => m.WalletComponent)
-      },
-      {
-        path: 'sessions',
-        loadComponent: () => import('./student/sessions/sessions.component').then(m => m.SessionsComponent)
+        loadComponent: () => import('./parent/wallet/wallet.component').then(m => m.WalletComponent)
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

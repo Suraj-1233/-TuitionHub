@@ -42,10 +42,21 @@ public class AssignmentRequestService {
         request.setStatus(AssignmentRequest.RequestStatus.ASSIGNED);
         requestRepository.save(request);
 
-        // Auto-create Batch logic
-        createIndividualBatch(request, teacher);
+        // Auto-create Batch logic (only if individual)
+        if (Boolean.TRUE.equals(request.getIsIndividual())) {
+            createIndividualBatch(request, teacher);
+        }
 
         return conflictMessage;
+    }
+
+    @Transactional
+    public void updateRequestDetails(Long requestId, Double negotiatedFees, Boolean isIndividual) {
+        AssignmentRequest request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment request not found"));
+        request.setNegotiatedFees(negotiatedFees);
+        request.setIsIndividual(isIndividual);
+        requestRepository.save(request);
     }
 
     private void createIndividualBatch(AssignmentRequest request, User teacher) {
@@ -65,7 +76,7 @@ public class AssignmentRequestService {
                 .timingFrom(tFrom)
                 .timingTo(tTo)
                 .days("Daily")
-                .monthlyFees(10.0) 
+                .monthlyFees(request.getNegotiatedFees() != null ? request.getNegotiatedFees() : 0.0) 
                 .maxStudents(1) 
                 .liveClassLink("https://meet.jit.si/TuitionHub_" + teacher.getName().replace(" ", "") + "_" + request.getStudent().getName().replace(" ", ""))
                 .liveClassPlatform("JITSI")

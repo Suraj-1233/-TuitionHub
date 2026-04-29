@@ -30,6 +30,11 @@ public class AssignmentRequest {
     private String preferredTimings;
     private String additionalNotes;
 
+    @Builder.Default
+    private Boolean isIndividual = false; // true = 1-on-1, false = batch
+
+    private Double negotiatedFees; // Set by admin after talk with parent
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private RequestStatus status = RequestStatus.PENDING;

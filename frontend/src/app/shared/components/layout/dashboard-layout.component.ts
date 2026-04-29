@@ -195,7 +195,7 @@ import { AuthService } from '../../services/auth.service';
   `]
 })
 export class DashboardLayoutComponent implements OnInit, OnDestroy {
-  @Input() role: 'STUDENT' | 'TEACHER' | 'ADMIN' | 'SUPER_ADMIN' | 'ORG_ADMIN' = 'STUDENT';
+  @Input() role: 'STUDENT' | 'TEACHER' | 'ADMIN' | 'PARENT' | 'SUPER_ADMIN' | 'ORG_ADMIN' = 'STUDENT';
   
   navItems: any[] = [];
   userName = 'User';
@@ -253,9 +253,14 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
       this.navItems = [
         { path: '/student/dashboard', label: 'Dashboard', icon: '📊' },
         { path: '/student/sessions', label: 'My Classes', icon: '📚' },
-        { path: '/student/payments', label: 'Payments', icon: '💳' },
-        { path: '/student/schedule', label: 'Schedule', icon: '⏰' },
-        { path: '/student/wallet', label: 'Wallet', icon: '👛' },
+        { path: '/student/schedule', label: 'Schedule', icon: '⏰' }
+      ];
+    } else if (this.role === 'PARENT') {
+      this.navItems = [
+        { path: '/parent/dashboard', label: 'Dashboard', icon: '📊' },
+        { path: '/parent/children', label: 'My Children', icon: '👨‍👩‍👧‍👦' },
+        { path: '/parent/payments', label: 'Payments', icon: '💳' },
+        { path: '/parent/wallet', label: 'Wallet', icon: '👛' }
       ];
     } else if (this.role === 'TEACHER') {
       this.navItems = [
