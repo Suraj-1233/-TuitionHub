@@ -68,7 +68,8 @@ public class PaymentService {
 
             // Create real Razorpay order via SDK
             String orderId;
-            String currency = (batch.getCurrency() != null && !batch.getCurrency().isEmpty()) ? batch.getCurrency() : "INR";
+            String currency = (student.getCurrency() != null && !student.getCurrency().isEmpty()) ? student.getCurrency() : 
+                              ((batch.getCurrency() != null && !batch.getCurrency().isEmpty()) ? batch.getCurrency() : "INR");
             try {
                 log.info("Creating Razorpay order with KeyID: [{}]", razorpayKeyId.trim());
                 RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId.trim(), razorpayKeySecret.trim());
@@ -95,6 +96,7 @@ public class PaymentService {
                     .batch(batch)
                     .amount(batch.getMonthlyFees())
                     .forMonth(request.getForMonth())
+                    .currency(currency)
                     .status(Payment.PaymentStatus.PENDING)
                     .razorpayOrderId(orderId)
                     .build();
@@ -138,6 +140,7 @@ public class PaymentService {
             Payment payment = Payment.builder()
                     .student(student)
                     .amount(amount)
+                    .currency(currency)
                     .status(Payment.PaymentStatus.PENDING)
                     .razorpayOrderId(orderId)
                     .paymentMethod("TOPUP")
@@ -362,7 +365,7 @@ public class PaymentService {
         res.setStudentName(p.getStudent().getName());
         res.setBatchName(p.getBatch() != null ? p.getBatch().getName() : "Wallet Topup");
         res.setAmount(p.getAmount());
-        res.setCurrency(p.getBatch() != null ? (p.getBatch().getCurrency() != null ? p.getBatch().getCurrency() : "INR") : "INR");
+        res.setCurrency(p.getCurrency());
         res.setForMonth(p.getForMonth() != null
                 ? p.getForMonth().format(DateTimeFormatter.ofPattern("MMMM yyyy")) : null);
         res.setStatus(p.getStatus().name());

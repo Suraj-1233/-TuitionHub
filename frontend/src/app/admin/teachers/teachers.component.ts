@@ -5,6 +5,7 @@ import { DashboardLayoutComponent } from '../../shared/components/layout/dashboa
 import { AdminService } from '../../shared/services/admin.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { User } from '../../shared/models/models';
+import { AuthService } from 'src/app/shared/services/auth.service';
 
 @Component({
   selector: 'app-admin-teachers',
@@ -154,7 +155,7 @@ import { User } from '../../shared/models/models';
                           <div class="batch-name">{{ batch.name }}</div>
                           <span class="subject-pill">{{ batch.subject }}</span>
                         </div>
-                        <div class="batch-price">{{ getCurrencySymbol(batch.currency) }}{{ batch.monthlyFees }}<span>/mo</span></div>
+                        <div class="batch-price">{{ authService.getCurrencySymbolFor(batch.currency) }}{{ batch.monthlyFees }}<span>/mo</span></div>
                       </div>
                       
                       <div class="batch-info-grid">
@@ -328,23 +329,7 @@ export class AdminTeachersComponent implements OnInit {
   allBatches: any[] = [];
   expandedTeacher: User | null = null;
 
-  getCurrencySymbol(currency?: string): string {
-    if (!currency) return '₹';
-    switch (currency.toUpperCase()) {
-      case 'USD': return '$';
-      case 'GBP': return '£';
-      case 'EUR': return '€';
-      case 'CAD': return 'C$';
-      case 'AUD': return 'A$';
-      default: return '₹';
-    }
-  }
-
-  toggleExpand(teacher: User) {
-    this.expandedTeacher = teacher;
-  }
-
-  constructor(private adminService: AdminService, private toast: ToastService) {}
+  constructor(private adminService: AdminService, private toast: ToastService, public authService: AuthService) { }
 
   ngOnInit() {
     this.loadData();
@@ -369,8 +354,8 @@ export class AdminTeachersComponent implements OnInit {
 
   filterTeachers() {
     const list = this.activeTab === 'pending' ? this.pendingTeachers : this.approvedTeachers;
-    this.filteredTeachers = list.filter(t => 
-      t.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+    this.filteredTeachers = list.filter(t =>
+      t.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
       t.mobile.includes(this.searchQuery) ||
       t.subject?.toLowerCase().includes(this.searchQuery.toLowerCase())
     );
@@ -402,7 +387,7 @@ export class AdminTeachersComponent implements OnInit {
   }
 
   reject(id: number) {
-    if(confirm('Are you sure you want to reject this teacher?')) {
+    if (confirm('Are you sure you want to reject this teacher?')) {
       this.adminService.rejectTeacher(id).subscribe({
         next: () => {
           this.toast.info('Teacher application rejected');
@@ -414,7 +399,7 @@ export class AdminTeachersComponent implements OnInit {
   }
 
   deactivate(id: number) {
-    if(confirm('Are you sure you want to deactivate this teacher?')) {
+    if (confirm('Are you sure you want to deactivate this teacher?')) {
       this.adminService.deactivateUser(id).subscribe({
         next: () => {
           this.toast.warning('Account deactivated');

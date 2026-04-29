@@ -43,7 +43,7 @@ import { ToastService } from '../../shared/services/toast.service';
       <div class="revenue-summary animate-fade" *ngIf="filteredPayments.length > 0">
         <div class="rev-card">
           <span class="rev-label">Total Volume (Filtered)</span>
-          <span class="rev-value">{{ getCurrencySymbol(filteredPayments[0].currency) }}{{ totalFilteredRevenue }}</span>
+          <span class="rev-value">{{ authService.getCurrencySymbolFor(filteredPayments[0].currency) }}{{ totalFilteredRevenue }}</span>
         </div>
       </div>
 
@@ -317,21 +317,10 @@ export class AdminPaymentsComponent implements OnInit {
   selectedStatus = '';
   selectedPayment: Payment | null = null;
 
-  getCurrencySymbol(currency?: string): string {
-    if (!currency) return '₹';
-    switch (currency.toUpperCase()) {
-      case 'USD': return '$';
-      case 'GBP': return '£';
-      case 'EUR': return '€';
-      case 'CAD': return 'C$';
-      case 'AUD': return 'A$';
-      default: return '₹';
-    }
-  }
-
   constructor(
     private paymentService: PaymentService,
-    private toast: ToastService
+    private toast: ToastService,
+    public authService: AuthService
   ) {}
 
   ngOnInit() {

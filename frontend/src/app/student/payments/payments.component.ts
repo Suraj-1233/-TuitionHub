@@ -66,7 +66,7 @@ import { ToastService } from '../../shared/services/toast.service';
                     <div class="text-xs text-secondary">with {{ session.teacher?.name }}</div>
                   </td>
                   <td><code>{{ session.paymentReference || '---' }}</code></td>
-                  <td><strong>₹{{ session.amount }}</strong></td>
+                  <td><strong>{{ currencySymbol }}{{ session.amount }}</strong></td>
                   <td>
                     <span class="status-pill" [class.paid]="session.isPaid">
                       {{ session.isPaid ? 'PAID' : 'PENDING' }}
@@ -230,7 +230,7 @@ export class StudentPaymentsComponent implements OnInit {
     this.paymentService.payForSession(session.id, 'PARTIAL').subscribe({
       next: () => {
         const remaining = session.amount - this.walletBalance;
-        this.toast.info(`Wallet balance used. Now pay remaining ₹${remaining.toFixed(2)} via Gateway.`);
+        this.toast.info(`Wallet balance used. Now pay remaining ${this.currencySymbol}${remaining.toFixed(2)} via Gateway.`);
         // Follow with gateway flow for remaining amount
         this.payViaGateway({ ...session, amount: remaining });
       },

@@ -33,6 +33,9 @@ public class Payment {
 
     private LocalDate forMonth;         // e.g. 2024-05-01 = "May 2024"
 
+    @Builder.Default
+    private String currency = "INR";
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private PaymentStatus status = PaymentStatus.PENDING;

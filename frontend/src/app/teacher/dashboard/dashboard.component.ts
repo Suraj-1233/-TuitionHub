@@ -37,7 +37,7 @@ import { Batch, BatchJoinRequest } from '../../shared/models/models';
         <div class="stat-card glass highlight">
           <div class="stat-icon success">💰</div>
           <div class="stat-info">
-            <div class="stat-value text-success">{{ getCurrencySymbol(myBatches.length > 0 ? myBatches[0].currency : undefined) }}{{ totalEarnings }}</div>
+            <div class="stat-value text-success">{{ authService.getCurrencySymbolFor(myBatches.length > 0 ? myBatches[0].currency : undefined) }}{{ totalEarnings }}</div>
             <div class="stat-label">Monthly Revenue</div>
           </div>
         </div>
@@ -195,19 +195,7 @@ export class TeacherDashboardComponent implements OnInit {
   myBatches: Batch[] = [];
   pendingRequests: BatchJoinRequest[] = [];
 
-  getCurrencySymbol(currency?: string): string {
-    if (!currency) return '₹';
-    switch (currency.toUpperCase()) {
-      case 'USD': return '$';
-      case 'GBP': return '£';
-      case 'EUR': return '€';
-      case 'CAD': return 'C$';
-      case 'AUD': return 'A$';
-      default: return '₹';
-    }
-  }
-
-  constructor(private batchService: BatchService, private toast: ToastService) { }
+  constructor(private batchService: BatchService, private toast: ToastService, public authService: AuthService) { }
 
   ngOnInit() {
     this.loadData();

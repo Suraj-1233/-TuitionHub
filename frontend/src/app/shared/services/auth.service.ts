@@ -114,11 +114,17 @@ export class AuthService {
   }
 
   getCurrencySymbol(): string {
-    const currency = this.getCurrency();
-    switch (currency) {
+    return this.getCurrencySymbolFor(this.getCurrency());
+  }
+
+  getCurrencySymbolFor(currency?: string): string {
+    if (!currency) return '₹';
+    switch (currency.toUpperCase()) {
       case 'USD': return '$';
       case 'EUR': return '€';
       case 'GBP': return '£';
+      case 'CAD': return 'C$';
+      case 'AUD': return 'A$';
       default: return '₹';
     }
   }

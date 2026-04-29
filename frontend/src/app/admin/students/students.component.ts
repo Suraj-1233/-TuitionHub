@@ -5,6 +5,7 @@ import { DashboardLayoutComponent } from '../../shared/components/layout/dashboa
 import { AdminService } from '../../shared/services/admin.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { User } from '../../shared/models/models';
+import { AuthService } from 'src/app/shared/services/auth.service';
 
 @Component({
   selector: 'app-admin-students',
@@ -124,7 +125,7 @@ import { User } from '../../shared/models/models';
                           <div class="batch-name">{{ batch.name }}</div>
                           <span class="subject-pill">{{ batch.subject }}</span>
                         </div>
-                        <div class="batch-price">₹{{ batch.monthlyFees }}<span>/mo</span></div>
+                        <div class="batch-price">{{ authService.getCurrencySymbolFor(batch.currency) }}{{ batch.monthlyFees }}<span>/mo</span></div>
                       </div>
                       
                       <div class="batch-info-grid">
@@ -268,7 +269,7 @@ export class AdminStudentsComponent implements OnInit {
     this.expandedStudent = student;
   }
 
-  constructor(private adminService: AdminService, private toast: ToastService) {}
+  constructor(private adminService: AdminService, private toast: ToastService, public authService: AuthService) { }
 
   ngOnInit() {
     this.loadData();
@@ -290,8 +291,8 @@ export class AdminStudentsComponent implements OnInit {
 
   filterStudents() {
     this.filteredStudents = this.students.filter(s => {
-      const matchesSearch = s.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
-                           s.email?.toLowerCase().includes(this.searchQuery.toLowerCase());
+      const matchesSearch = s.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        s.email?.toLowerCase().includes(this.searchQuery.toLowerCase());
       return matchesSearch;
     });
   }
@@ -325,7 +326,7 @@ export class AdminStudentsComponent implements OnInit {
   }
 
   deactivate(id: number) {
-    if(confirm('Are you sure you want to deactivate this student?')) {
+    if (confirm('Are you sure you want to deactivate this student?')) {
       this.adminService.deactivateUser(id).subscribe({
         next: () => {
           this.toast.warning('Student account deactivated');

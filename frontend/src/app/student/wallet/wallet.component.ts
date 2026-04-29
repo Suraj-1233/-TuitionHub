@@ -218,7 +218,7 @@ export class WalletComponent implements OnInit {
   referralCode = '';
   showTopupModal = false;
   topupAmount: number = 0;
-  currencySymbol = '₹';
+  currencySymbol = '';
 
   constructor(
     private paymentService: PaymentService,
@@ -227,12 +227,12 @@ export class WalletComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.currencySymbol = this.authService.getCurrencySymbol();
     this.loadData();
   }
 
   loadData() {
     const user = this.authService.getCurrentUser();
-    this.currencySymbol = this.authService.getCurrencySymbol();
     if (user) {
       this.referralCode = user.referralCode || '';
       
@@ -283,7 +283,7 @@ export class WalletComponent implements OnInit {
         const options = {
           key: config.keyId,
           amount: order.amount * 100,
-          currency: 'INR',
+          currency: this.authService.getCurrency(),
           name: 'TuitionHub Wallet',
           description: 'Wallet Topup',
           order_id: order.razorpayOrderId,
