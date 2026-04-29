@@ -27,7 +27,8 @@ public class WalletController {
 
     @GetMapping("/transactions")
     public ResponseEntity<ApiResponse<List<WalletTransaction>>> getTransactions(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(ApiResponse.success(walletService.getTransactionHistory(user.getId()), "Transactions fetched"));
+        return ResponseEntity
+                .ok(ApiResponse.success(walletService.getTransactionHistory(user.getId()), "Transactions fetched"));
     }
 
     @PostMapping("/topup")
@@ -35,7 +36,7 @@ public class WalletController {
         Long userId = Long.valueOf(request.get("userId").toString());
         Double amount = Double.valueOf(request.get("amount").toString());
         String description = (String) request.getOrDefault("description", "Wallet topup");
-        
+
         walletService.addCredits(userId, amount, WalletTransaction.TransactionSource.TOPUP, description, true);
         return ResponseEntity.ok(Map.of("message", "Topup successful"));
     }
