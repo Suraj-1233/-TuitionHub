@@ -40,6 +40,16 @@ public class DataInitializer implements CommandLineRunner {
         createIfNotExists("super@tuitionhub.com", "Main Super Admin", Role.SUPER_ADMIN, "super123", "TUI-SUPER", "USD");
         createIfNotExists("teacher@tuitionhub.com", "Dr. Amit Sharma", Role.TEACHER, "teacher123", "TUI-TEACH", "INR");
         createIfNotExists("surajkannujiya517@gmail.com", "Suraj Kannujiya", Role.STUDENT, "suraj123", "TUI-SURAJ", "USD");
+        createIfNotExists("parent@tuitionhub.com", "Rajesh Kannujiya", Role.PARENT, "parent123", "TUI-PARENT", "INR");
+
+        // Link Parent to Student
+        User parent = userRepository.findByEmail("parent@tuitionhub.com").orElse(null);
+        User student = userRepository.findByEmail("surajkannujiya517@gmail.com").orElse(null);
+        if (parent != null && student != null) {
+            student.setParent(parent);
+            userRepository.save(student);
+            log.info("👨‍👩‍👧‍👦 Linked Parent ({}) to Student ({})", parent.getEmail(), student.getEmail());
+        }
 
         // 2. Default Subjects
         if (subjectRepository.count() == 0) {
