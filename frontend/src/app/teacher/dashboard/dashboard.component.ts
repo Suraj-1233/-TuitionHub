@@ -5,6 +5,7 @@ import { DashboardLayoutComponent } from '../../shared/components/layout/dashboa
 import { BatchService } from '../../shared/services/batch.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { Batch, BatchJoinRequest } from '../../shared/models/models';
+import { AuthService } from '../../shared/services/auth.service';
 
 @Component({
   selector: 'app-teacher-dashboard',

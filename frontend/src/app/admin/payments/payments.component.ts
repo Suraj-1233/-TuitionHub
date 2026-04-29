@@ -5,6 +5,7 @@ import { DashboardLayoutComponent } from '../../shared/components/layout/dashboa
 import { PaymentService } from '../../shared/services/payment.service';
 import { Payment } from '../../shared/models/models';
 import { ToastService } from '../../shared/services/toast.service';
+import { AuthService } from '../../shared/services/auth.service';
 
 @Component({
   selector: 'app-admin-payments',
@@ -321,7 +322,7 @@ export class AdminPaymentsComponent implements OnInit {
     private paymentService: PaymentService,
     private toast: ToastService,
     public authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadPayments();
@@ -336,8 +337,8 @@ export class AdminPaymentsComponent implements OnInit {
 
   filterPayments() {
     this.filteredPayments = this.payments.filter(p => {
-      const matchesSearch = p.studentName.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
-                           p.razorpayPaymentId?.toLowerCase().includes(this.searchQuery.toLowerCase());
+      const matchesSearch = p.studentName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        p.razorpayPaymentId?.toLowerCase().includes(this.searchQuery.toLowerCase());
       const matchesStatus = !this.selectedStatus || p.status === this.selectedStatus;
       return matchesSearch && matchesStatus;
     });

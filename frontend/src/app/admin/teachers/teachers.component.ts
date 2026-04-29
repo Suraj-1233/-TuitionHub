@@ -5,7 +5,7 @@ import { DashboardLayoutComponent } from '../../shared/components/layout/dashboa
 import { AdminService } from '../../shared/services/admin.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { User } from '../../shared/models/models';
-import { AuthService } from 'src/app/shared/services/auth.service';
+import { AuthService } from '../../shared/services/auth.service';
 
 @Component({
   selector: 'app-admin-teachers',
