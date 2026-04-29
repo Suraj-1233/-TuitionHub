@@ -81,7 +81,7 @@ import { AuthService } from '../../shared/services/auth.service';
                 </div>
               </td>
               <td>
-                <div class="amount-cell">{{ getCurrencySymbol(p.currency) }}{{ p.amount }}</div>
+                <div class="amount-cell">{{ authService.getCurrencySymbolFor(p.currency) }}{{ p.amount }}</div>
               </td>
               <td>
                 <span class="status-pill" [ngClass]="{
@@ -181,20 +181,20 @@ import { AuthService } from '../../shared/services/auth.service';
                       <h4 class="section-title">Financial Breakdown</h4>
                       <div class="info-row">
                         <span class="label">Gross Amount</span>
-                        <span class="value">{{ getCurrencySymbol(selectedPayment.currency) }}{{ selectedPayment.amount }}</span>
+                        <span class="value">{{ authService.getCurrencySymbolFor(selectedPayment.currency) }}{{ selectedPayment.amount }}</span>
                       </div>
                       <div class="info-row text-danger" *ngIf="selectedPayment.gatewayFee">
                         <span class="label">Gateway Fee</span>
-                        <span class="value">- {{ getCurrencySymbol(selectedPayment.currency) }}{{ selectedPayment.gatewayFee }}</span>
+                        <span class="value">- {{ authService.getCurrencySymbolFor(selectedPayment.currency) }}{{ selectedPayment.gatewayFee }}</span>
                       </div>
                       <div class="info-row text-danger" *ngIf="selectedPayment.gatewayTax">
                         <span class="label">GST / Tax</span>
-                        <span class="value">- {{ getCurrencySymbol(selectedPayment.currency) }}{{ selectedPayment.gatewayTax }}</span>
+                        <span class="value">- {{ authService.getCurrencySymbolFor(selectedPayment.currency) }}{{ selectedPayment.gatewayTax }}</span>
                       </div>
                       <div class="info-row grand-total mt-4 pt-4 border-t">
                         <span class="label">Net Revenue</span>
                         <span class="value success-text">
-                          {{ getCurrencySymbol(selectedPayment.currency) }}{{ (selectedPayment.amount - (selectedPayment.gatewayFee || 0) - (selectedPayment.gatewayTax || 0)) | number:'1.2-2' }}
+                          {{ authService.getCurrencySymbolFor(selectedPayment.currency) }}{{ (selectedPayment.amount - (selectedPayment.gatewayFee || 0) - (selectedPayment.gatewayTax || 0)) | number:'1.2-2' }}
                         </span>
                       </div>
                     </div>
