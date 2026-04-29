@@ -105,8 +105,12 @@ export class WalletComponent implements OnInit {
   }
 
   loadWalletData() {
-    this.parentService.getWalletBalance().subscribe(w => this.balance = w.balance);
-    this.parentService.getWalletTransactions().subscribe(txs => this.transactions = txs);
+    this.parentService.getWalletBalance().subscribe(w => {
+      if (w) this.balance = w.balance || 0;
+    });
+    this.parentService.getWalletTransactions().subscribe(txs => {
+      this.transactions = txs || [];
+    });
   }
 
   onTopup() {

@@ -4,9 +4,11 @@ import com.tuitionhub.backend.model.Role;
 import com.tuitionhub.backend.model.Subject;
 import com.tuitionhub.backend.model.User;
 import com.tuitionhub.backend.model.Session;
+import com.tuitionhub.backend.model.Payment;
 import com.tuitionhub.backend.repository.SubjectRepository;
 import com.tuitionhub.backend.repository.UserRepository;
 import com.tuitionhub.backend.repository.SessionRepository;
+import com.tuitionhub.backend.repository.PaymentRepository;
 import com.tuitionhub.backend.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,7 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
     private final SessionRepository sessionRepository;
+    private final PaymentRepository paymentRepository;
     private final PasswordEncoder passwordEncoder;
     private final WalletService walletService;
     private final JdbcTemplate jdbcTemplate;
@@ -139,6 +142,19 @@ public class DataInitializer implements CommandLineRunner {
                     .status(Session.SessionStatus.COMPLETED).build());
 
             log.info("📅 Demo sessions seeded for {}", studentEmail);
+        }
+        
+        // Seed Pending Payment for Parent test
+        if (paymentRepository.count() == 0) {
+            paymentRepository.save(Payment.builder()
+                    .student(student)
+                    .amount(1200.0)
+                    .currency("INR")
+                    .forMonth(java.time.LocalDate.now().withDayOfMonth(1))
+                    .status(Payment.PaymentStatus.PENDING)
+                    .transactionNote("Sample pending fee for Parent test")
+                    .build());
+            log.info("💰 Sample pending payment seeded for Parent test.");
         }
     }
 }
