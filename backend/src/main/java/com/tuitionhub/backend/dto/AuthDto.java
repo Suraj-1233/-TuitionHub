@@ -18,6 +18,7 @@ public class AuthDto {
         // Student fields
         private String studentClass;
         private String board;
+        private String parentEmail;
         // Teacher fields
         private String subject;
         private String qualification;

@@ -69,6 +69,10 @@ import { PublicService } from '../../shared/services/public.service';
               <span class="role-icon">👩‍🏫</span>
               <span class="role-label">Teacher</span>
             </button>
+            <button type="button" class="role-btn" [class.active]="formData.role === 'PARENT'" (click)="formData.role = 'PARENT'">
+              <span class="role-icon">👨‍👩‍👧‍👦</span>
+              <span class="role-label">Parent</span>
+            </button>
           </div>
 
           <div *ngIf="formData.role === 'TEACHER'" class="approval-notice mb-4">
@@ -133,9 +137,15 @@ import { PublicService } from '../../shared/services/public.service';
           </div>
 
           <ng-container *ngIf="formData.role === 'STUDENT'">
-            <div class="form-group">
-              <label class="form-label">Class/Grade</label>
-              <input type="text" class="form-control" [(ngModel)]="formData.studentClass" name="studentClass" required placeholder="e.g. 10">
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label class="form-label">Class/Grade</label>
+                <input type="text" class="form-control" [(ngModel)]="formData.studentClass" name="studentClass" required placeholder="e.g. 10">
+              </div>
+              <div class="form-group flex-1">
+                <label class="form-label">Parent Email</label>
+                <input type="email" class="form-control" [(ngModel)]="formData.parentEmail" name="parentEmail" required placeholder="parent@email.com">
+              </div>
             </div>
           </ng-container>
 

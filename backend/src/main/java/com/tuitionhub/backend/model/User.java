@@ -67,6 +67,8 @@ public class User {
     @JsonIgnore
     private List<User> children = new ArrayList<>();
 
+    private String tempParentEmail; // Store parent's email for linking if parent not registered yet
+
     private String city;
     private String country;
 

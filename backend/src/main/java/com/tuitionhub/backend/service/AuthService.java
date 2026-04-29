@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -97,6 +98,18 @@ public class AuthService {
 
         userRepository.save(user);
 
+        // Immediate link if parent already exists
+        User finalUser = user; 
+        if (user.getRole() == Role.STUDENT && user.getTempParentEmail() != null) {
+            userRepository.findByEmail(user.getTempParentEmail()).ifPresent(parent -> {
+                if (parent.getRole() == Role.PARENT) {
+                    finalUser.setParent(parent);
+                    userRepository.save(finalUser);
+                    log.info("Linked Student {} to existing Parent {}", finalUser.getEmail(), parent.getEmail());
+                }
+            });
+        }
+
         otpService.sendOtp(user.getEmail(), otp);
         return userMapper.mapToAuthResponse(user, null);
     }
@@ -151,6 +164,17 @@ public class AuthService {
         user.setOtpExpiry(null);
         user.setIsActive(true);
         userRepository.save(user);
+
+        // Auto-link children if this is a newly verified parent
+        if (user.getRole() == Role.PARENT) {
+            List<User> students = userRepository.findByTempParentEmail(user.getEmail());
+            for (User student : students) {
+                student.setParent(user);
+                student.setTempParentEmail(null); // Clear after linking
+                userRepository.save(student);
+                log.info("Auto-linked Student {} to new Parent {}", student.getEmail(), user.getEmail());
+            }
+        }
 
         walletService.getOrCreateWallet(user.getId());
 

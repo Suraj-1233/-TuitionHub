@@ -25,6 +25,7 @@ public class UserMapper {
             profile.setStudentClass(request.getStudentClass());
             profile.setBoard(request.getBoard());
             user.setStudentProfile(profile);
+            user.setTempParentEmail(request.getParentEmail());
         } else if (request.getRole() == Role.TEACHER) {
             TeacherProfile profile = user.getTeacherProfile() != null ? user.getTeacherProfile() : new TeacherProfile();
             profile.setUser(user);

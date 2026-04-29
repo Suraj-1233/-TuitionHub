@@ -22,4 +22,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByReferralCode(String referralCode);
     List<User> findByReferredBy(User referrer);
     List<User> findByParent(User parent);
+    List<User> findByTempParentEmail(String email);
 }
