@@ -316,13 +316,18 @@ export class StudentDashboardComponent implements OnInit {
     this.userName = user?.name || 'Student';
     this.preferredCurrency = this.authService.getCurrency();
     this.currencySymbol = this.authService.getCurrencySymbol();
-    this.loadData();
+    this.authService.fetchExchangeRate().subscribe(() => {
+      this.loadData();
+    });
   }
 
   updateCurrency() {
     this.authService.setCurrency(this.preferredCurrency);
     this.currencySymbol = this.authService.getCurrencySymbol();
     
+    // Fetch new exchange rate before updating UI
+    this.authService.fetchExchangeRate().subscribe();
+
     // Save to backend
     this.authService.updateBackendCurrency(this.preferredCurrency).subscribe({
       next: () => this.toast.success(`Currency updated to ${this.preferredCurrency}`),

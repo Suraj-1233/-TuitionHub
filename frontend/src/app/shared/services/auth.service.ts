@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, of, map } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthResponse } from '../models/models';
 import { environment } from '../../../environments/environment';
@@ -111,6 +111,32 @@ export class AuthService {
 
   getCurrency(): string {
     return localStorage.getItem('tuitionhub_currency') || 'INR';
+  }
+
+  private exchangeRate = 1.0;
+  
+  fetchExchangeRate(): Observable<number> {
+    const currency = this.getCurrency();
+    if (currency === 'INR') {
+      this.exchangeRate = 1.0;
+      return of(1.0);
+    }
+    return this.http.get<any>(`${this.apiUrl}/currency/rate/${currency}`).pipe(
+      map(res => {
+        this.exchangeRate = res.rate;
+        return res.rate;
+      })
+    );
+  }
+
+  convertAmount(amountInInr: number): number {
+    return amountInInr * this.exchangeRate;
+  }
+
+  formatAmount(amountInInr: number): string {
+    const converted = this.convertAmount(amountInInr);
+    const symbol = this.getCurrencySymbol();
+    return `${symbol}${converted.toFixed(2)}`;
   }
 
   getCurrencySymbol(): string {

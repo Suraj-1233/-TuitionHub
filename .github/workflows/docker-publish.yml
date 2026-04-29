@@ -72,12 +72,14 @@ jobs:
           RAZORPAY_SECRET: ${{ secrets.RAZORPAY_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           command_timeout: 30m
-          envs: DOCKERHUB_USERNAME,JWT_SECRET,RAZORPAY_KEY,RAZORPAY_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET
+          envs: DOCKERHUB_USERNAME,JWT_SECRET,RAZORPAY_KEY,RAZORPAY_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,MAIL_USERNAME,MAIL_PASSWORD
           script: |
             # --- AUTO INSTALL DOCKER ---
             if ! command -v docker >/dev/null; then
@@ -119,6 +121,8 @@ jobs:
             echo "RAZORPAY_KEY_SECRET=$RAZORPAY_SECRET" >> .env
             echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> .env
             echo "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET" >> .env
+            echo "MAIL_USERNAME=$MAIL_USERNAME" >> .env
+            echo "MAIL_PASSWORD=$MAIL_PASSWORD" >> .env
             
             # Log in to Docker Hub (optional if images are public, but safe if private)
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin

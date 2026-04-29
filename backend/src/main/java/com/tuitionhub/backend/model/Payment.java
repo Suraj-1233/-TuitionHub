@@ -36,6 +36,9 @@ public class Payment {
     @Builder.Default
     private String currency = "INR";
 
+    private String gateway; // RAZORPAY, STRIPE, WALLET
+    private String stripePaymentIntentId;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private PaymentStatus status = PaymentStatus.PENDING;
