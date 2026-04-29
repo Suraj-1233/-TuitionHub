@@ -174,7 +174,7 @@ export class AuthService {
     let url = '/auth/login';
     if (roleUpper === 'STUDENT') url = '/student/dashboard';
     else if (roleUpper === 'TEACHER') url = '/teacher/dashboard';
-
+    else if (roleUpper === 'PARENT') url = '/parent/dashboard';
     else if (roleUpper === 'ADMIN' || roleUpper === 'SUPER_ADMIN' || roleUpper === 'ORG_ADMIN') url = '/admin/dashboard';
     
     if (url === '/auth/login') {
