@@ -46,11 +46,11 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         // 1. Core Accounts
-        createIfNotExists("admin@tuitionhub.com", "Super Admin", Role.ADMIN, "admin123", "TUI-ADMIN", "INR");
-        createIfNotExists("super@tuitionhub.com", "Main Super Admin", Role.SUPER_ADMIN, "super123", "TUI-SUPER", "USD");
-        createIfNotExists("teacher@tuitionhub.com", "Dr. Amit Sharma", Role.TEACHER, "teacher123", "TUI-TEACH", "INR");
-        createIfNotExists("surajkannujiya517@gmail.com", "Suraj Kannujiya", Role.STUDENT, "suraj123", "TUI-SURAJ", "USD");
-        createIfNotExists("parent@tuitionhub.com", "Rajesh Kannujiya", Role.PARENT, "parent123", "TUI-PARENT", "INR");
+        createIfNotExists("admin@tuitionhub.com", "Super Admin", Role.ADMIN, "admin123", "TUI-ADMIN", "INR", "9000000001");
+        createIfNotExists("super@tuitionhub.com", "Main Super Admin", Role.SUPER_ADMIN, "super123", "TUI-SUPER", "USD", "9000000002");
+        createIfNotExists("teacher@tuitionhub.com", "Dr. Amit Sharma", Role.TEACHER, "teacher123", "TUI-TEACH", "INR", "9000000003");
+        createIfNotExists("surajkannujiya517@gmail.com", "Suraj Kannujiya", Role.STUDENT, "suraj123", "TUI-SURAJ", "USD", "9000000004");
+        createIfNotExists("parent@tuitionhub.com", "Rajesh Kannujiya", Role.PARENT, "parent123", "TUI-PARENT", "INR", "9000000005");
 
         // Link Parent to Student
         User parent = userRepository.findByEmail("parent@tuitionhub.com").orElse(null);
@@ -82,10 +82,10 @@ public class DataInitializer implements CommandLineRunner {
         log.info("✅ Data Initialization Complete.");
     }
 
-    private void createIfNotExists(String email, String name, Role role, String password, String referral, String currency) {
+    private void createIfNotExists(String email, String name, Role role, String password, String referral, String currency, String mobile) {
         if (!userRepository.existsByEmail(email)) {
             User user = User.builder()
-                    .name(name).email(email).mobile("9876543210")
+                    .name(name).email(email).mobile(mobile)
                     .password(passwordEncoder.encode(password))
                     .role(role).isActive(true).isApproved(true).referralCode(referral)
                     .currency(currency)
