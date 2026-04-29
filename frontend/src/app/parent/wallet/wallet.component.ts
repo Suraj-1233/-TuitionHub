@@ -154,10 +154,28 @@ export class WalletComponent implements OnInit {
       modal: {
         ondismiss: () => {
           this.isLoading = false;
+          // Report cancellation as failure
+          this.parentService.notifyFailure({
+            paymentId: order.id,
+            errorDescription: 'Payment cancelled by user',
+            errorReason: 'payment_cancelled'
+          }).subscribe(() => this.loadWalletData());
         }
       }
     };
     const rzp = new Razorpay(options);
+    rzp.on('payment.failed', (response: any) => {
+      this.parentService.notifyFailure({
+        paymentId: order.id,
+        errorCode: response.error.code,
+        errorDescription: response.error.description,
+        errorReason: response.error.reason,
+        errorStep: response.error.step
+      }).subscribe(() => {
+        this.loadWalletData();
+        this.isLoading = false;
+      });
+    });
     rzp.open();
   }
 

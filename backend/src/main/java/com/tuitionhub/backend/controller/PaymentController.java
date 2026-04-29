@@ -50,9 +50,9 @@ public class PaymentController {
 
     @PostMapping("/api/parent/payments/notify-failure")
     @PreAuthorize("hasRole('PARENT')")
-    public ResponseEntity<Void> notifyFailure(@RequestBody PaymentDto.FailureRequest request) {
+    public ResponseEntity<ApiResponse<Void>> notifyFailure(@RequestBody PaymentDto.FailureRequest request) {
         paymentService.handlePaymentFailure(request);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Failure recorded"));
     }
 
     @GetMapping("/api/parent/payments")

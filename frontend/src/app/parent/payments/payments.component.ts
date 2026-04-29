@@ -119,10 +119,28 @@ export class ParentPaymentsComponent implements OnInit {
       modal: {
         ondismiss: () => {
           this.isLoading = false;
+          // Report cancellation
+          this.parentService.notifyFailure({
+            paymentId: payment.id,
+            errorDescription: 'Payment cancelled by user',
+            errorReason: 'payment_cancelled'
+          }).subscribe(() => this.loadPayments());
         }
       }
     };
     const rzp = new Razorpay(options);
+    rzp.on('payment.failed', (response: any) => {
+      this.parentService.notifyFailure({
+        paymentId: payment.id,
+        errorCode: response.error.code,
+        errorDescription: response.error.description,
+        errorReason: response.error.reason,
+        errorStep: response.error.step
+      }).subscribe(() => {
+        this.loadPayments();
+        this.isLoading = false;
+      });
+    });
     rzp.open();
   }
 
