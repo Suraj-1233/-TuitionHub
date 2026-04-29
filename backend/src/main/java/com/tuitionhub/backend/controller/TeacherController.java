@@ -1,7 +1,6 @@
 package com.tuitionhub.backend.controller;
 
-import com.tuitionhub.backend.model.Role;
-import com.tuitionhub.backend.model.User;
+import com.tuitionhub.backend.model.*;
 import com.tuitionhub.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,19 +27,34 @@ public class TeacherController {
                 .orElseThrow(() -> new com.tuitionhub.backend.exception.ResourceNotFoundException("Teacher not found")));
     }
 
-    @PutMapping("/api/teacher/profile")
+    @PutMapping("/profile")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('TEACHER')")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<User> updateProfile(
             @RequestBody User updatedProfile,
             @AuthenticationPrincipal User teacher) {
+        
         teacher.setName(updatedProfile.getName());
-        teacher.setSubject(updatedProfile.getSubject());
-        teacher.setQualification(updatedProfile.getQualification());
-        teacher.setBio(updatedProfile.getBio());
-        teacher.setFees(updatedProfile.getFees());
-        teacher.setTimingFrom(updatedProfile.getTimingFrom());
-        teacher.setTimingTo(updatedProfile.getTimingTo());
-        teacher.setAvailableDays(updatedProfile.getAvailableDays());
         teacher.setCity(updatedProfile.getCity());
+        
+        TeacherProfile profile = teacher.getTeacherProfile();
+        if (profile == null) {
+            profile = new TeacherProfile();
+            profile.setUser(teacher);
+            teacher.setTeacherProfile(profile);
+        }
+        
+        TeacherProfile updatedP = updatedProfile.getTeacherProfile();
+        if (updatedP != null) {
+            profile.setSubject(updatedP.getSubject());
+            profile.setQualification(updatedP.getQualification());
+            profile.setBio(updatedP.getBio());
+            profile.setFees(updatedP.getFees());
+            profile.setTimingFrom(updatedP.getTimingFrom());
+            profile.setTimingTo(updatedP.getTimingTo());
+            profile.setAvailableDays(updatedP.getAvailableDays());
+        }
+
         return ResponseEntity.ok(userRepository.save(teacher));
     }
 }

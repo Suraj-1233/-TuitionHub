@@ -197,12 +197,17 @@ public class BatchService {
         BatchDto.TeacherSummary ts = new BatchDto.TeacherSummary();
         ts.setId(batch.getTeacher().getId());
         ts.setName(batch.getTeacher().getName());
-        ts.setSubject(batch.getTeacher().getSubject());
         ts.setProfilePhoto(batch.getTeacher().getProfilePhoto());
-        ts.setFees(batch.getTeacher().getFees());
-        ts.setTimingFrom(batch.getTeacher().getTimingFrom());
-        ts.setTimingTo(batch.getTeacher().getTimingTo());
         ts.setIsApproved(batch.getTeacher().getIsApproved());
+        
+        TeacherProfile profile = batch.getTeacher().getTeacherProfile();
+        if (profile != null) {
+            ts.setSubject(profile.getSubject());
+            ts.setFees(profile.getFees());
+            ts.setTimingFrom(profile.getTimingFrom());
+            ts.setTimingTo(profile.getTimingTo());
+        }
+        
         res.setTeacher(ts);
 
         return res;

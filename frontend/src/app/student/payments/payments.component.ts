@@ -181,7 +181,7 @@ export class StudentPaymentsComponent implements OnInit {
     private paymentService: PaymentService,
     private authService: AuthService,
     private toast: ToastService
-  ) {}
+  ) { }
 
   loading = false;
 
@@ -207,7 +207,7 @@ export class StudentPaymentsComponent implements OnInit {
 
   payViaWallet(session: any) {
     if (this.walletBalance < session.amount) return;
-    
+
     this.paymentService.payForSession(session.id, 'WALLET').subscribe({
       next: () => {
         this.toast.success('Paid successfully via Wallet!');
@@ -221,11 +221,11 @@ export class StudentPaymentsComponent implements OnInit {
   payViaGateway(session: any) {
     this.loading = true;
     this.toast.info('Initializing Secure Payment Gateway...');
-    
+
     // 1. Create order on backend (using existing createOrder logic or similar)
     // For individual sessions, we might need a separate createSessionOrder endpoint
     // But for this demonstration, let's assume we use the gateway switching logic
-    
+
     this.paymentService.createTopupOrder(session.amount).subscribe({
       next: (order: any) => {
         this.openRazorpay(order);

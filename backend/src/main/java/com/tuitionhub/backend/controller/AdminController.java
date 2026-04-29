@@ -1,15 +1,10 @@
 package com.tuitionhub.backend.controller;
 
-import com.tuitionhub.backend.model.Role;
-import com.tuitionhub.backend.model.User;
-import com.tuitionhub.backend.repository.UserRepository;
-import com.tuitionhub.backend.repository.PaymentRepository;
-import com.tuitionhub.backend.repository.BatchRepository;
-import com.tuitionhub.backend.repository.AssignmentRequestRepository;
-import com.tuitionhub.backend.model.AssignmentRequest;
-import com.tuitionhub.backend.exception.ResourceNotFoundException;
+import com.tuitionhub.backend.dto.ApiResponse;
+import com.tuitionhub.backend.model.*;
+import com.tuitionhub.backend.repository.*;
+import com.tuitionhub.backend.service.*;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,282 +15,173 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
+@RequiredArgsConstructor
 public class AdminController {
 
-    private final UserRepository userRepository;
+    private final TeacherManagementService teacherManagementService;
+    private final StudentManagementService studentManagementService;
+    private final AssignmentRequestService assignmentRequestService;
+    private final SubjectService subjectService;
+    private final WalletService walletService;
+
+    // Repositories for simple fetch operations (can also be moved to services if
+    // preferred)
     private final BatchRepository batchRepository;
     private final PaymentRepository paymentRepository;
-    private final AssignmentRequestRepository requestRepository;
-    private final com.tuitionhub.backend.repository.SubjectRepository subjectRepository;
-    private final com.tuitionhub.backend.service.WalletService walletService;
-    private final com.tuitionhub.backend.repository.WalletTransactionRepository walletTransactionRepository;
-    private final com.tuitionhub.backend.repository.SessionRepository sessionRepository;
-
-    public AdminController(UserRepository userRepository, BatchRepository batchRepository, 
-                           PaymentRepository paymentRepository, AssignmentRequestRepository requestRepository,
-                           com.tuitionhub.backend.repository.SubjectRepository subjectRepository,
-                           com.tuitionhub.backend.service.WalletService walletService,
-                           com.tuitionhub.backend.repository.WalletTransactionRepository walletTransactionRepository,
-                           com.tuitionhub.backend.repository.SessionRepository sessionRepository) {
-        this.userRepository = userRepository;
-        this.batchRepository = batchRepository;
-        this.paymentRepository = paymentRepository;
-        this.requestRepository = requestRepository;
-        this.subjectRepository = subjectRepository;
-        this.walletService = walletService;
-        this.walletTransactionRepository = walletTransactionRepository;
-        this.sessionRepository = sessionRepository;
-    }
+    private final UserRepository userRepository;
+    private final WalletTransactionRepository walletTransactionRepository;
+    private final SessionRepository sessionRepository;
 
     @GetMapping("/dashboard")
-    public ResponseEntity<Map<String, Object>> getDashboard() {
-        long totalStudents = userRepository.countByRole(Role.STUDENT);
-        long totalTeachers = userRepository.countByRole(Role.TEACHER);
-        long pendingTeachers = userRepository.countByRoleAndIsApproved(Role.TEACHER, false);
-        long totalBatches = batchRepository.count();
-        long totalPayments = paymentRepository.count();
-
-        return ResponseEntity.ok(Map.of(
-                "totalStudents", totalStudents,
-                "totalTeachers", totalTeachers,
-                "pendingTeacherApprovals", pendingTeachers,
-                "totalBatches", totalBatches,
-                "totalPayments", totalPayments
-        ));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getDashboard() {
+        Map<String, Object> data = Map.of(
+                "totalStudents", userRepository.countByRole(Role.STUDENT),
+                "totalTeachers", userRepository.countByRole(Role.TEACHER),
+                "pendingTeacherApprovals", userRepository.countByRoleAndIsApproved(Role.TEACHER, false),
+                "totalBatches", batchRepository.count(),
+                "totalPayments", paymentRepository.count());
+        return ResponseEntity.ok(ApiResponse.success(data, "Dashboard data fetched"));
     }
 
+    // ==================== TEACHER MANAGEMENT ====================
+
     @GetMapping("/teachers")
-    public ResponseEntity<List<User>> getAllTeachers() {
-        return ResponseEntity.ok(userRepository.findByRole(Role.TEACHER));
+    public ResponseEntity<ApiResponse<List<User>>> getAllTeachers() {
+        return ResponseEntity.ok(ApiResponse.success(teacherManagementService.getAllTeachers(), "Teachers fetched"));
     }
 
     @GetMapping("/teachers/pending")
-    public ResponseEntity<List<User>> getPendingTeachers() {
-        return ResponseEntity.ok(userRepository.findByRoleAndIsApproved(Role.TEACHER, false));
+    public ResponseEntity<ApiResponse<List<User>>> getPendingTeachers() {
+        return ResponseEntity
+                .ok(ApiResponse.success(teacherManagementService.getPendingTeachers(), "Pending teachers fetched"));
     }
 
     @PutMapping("/teachers/{id}/approve")
-    public ResponseEntity<Map<String, String>> approveTeacher(@PathVariable Long id) {
-        User teacher = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found"));
-        teacher.setIsApproved(true);
-        userRepository.save(teacher);
-        return ResponseEntity.ok(Map.of("message", "Teacher approved successfully"));
+    public ResponseEntity<ApiResponse<Void>> approveTeacher(@PathVariable Long id) {
+        teacherManagementService.approveTeacher(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Teacher approved successfully"));
     }
 
     @PutMapping("/teachers/{id}/reject")
-    public ResponseEntity<Map<String, String>> rejectTeacher(@PathVariable Long id) {
-        User teacher = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found"));
-        teacher.setIsApproved(false);
-        teacher.setIsActive(false);
-        userRepository.save(teacher);
-        return ResponseEntity.ok(Map.of("message", "Teacher rejected"));
+    public ResponseEntity<ApiResponse<Void>> rejectTeacher(@PathVariable Long id) {
+        teacherManagementService.rejectTeacher(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Teacher rejected"));
     }
+
+    // ==================== STUDENT MANAGEMENT ====================
 
     @GetMapping("/students")
-    public ResponseEntity<List<User>> getAllStudents() {
-        return ResponseEntity.ok(userRepository.findByRole(Role.STUDENT));
-    }
-
-    @GetMapping("/batches")
-    public ResponseEntity<?> getAllBatches() {
-        return ResponseEntity.ok(batchRepository.findAll());
+    public ResponseEntity<ApiResponse<List<User>>> getAllStudents() {
+        return ResponseEntity.ok(ApiResponse.success(studentManagementService.getAllStudents(), "Students fetched"));
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<Map<String, String>> deactivateUser(@PathVariable Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        user.setIsActive(false);
-        userRepository.save(user);
-        return ResponseEntity.ok(Map.of("message", "User deactivated"));
+    public ResponseEntity<ApiResponse<Void>> deactivateUser(@PathVariable Long id) {
+        studentManagementService.toggleUserStatus(id, false);
+        return ResponseEntity.ok(ApiResponse.success(null, "User deactivated"));
     }
 
     @PutMapping("/users/{id}/activate")
-    public ResponseEntity<Map<String, String>> activateUser(@PathVariable Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        user.setIsActive(true);
-        userRepository.save(user);
-        return ResponseEntity.ok(Map.of("message", "User activated"));
+    public ResponseEntity<ApiResponse<Void>> activateUser(@PathVariable Long id) {
+        studentManagementService.toggleUserStatus(id, true);
+        return ResponseEntity.ok(ApiResponse.success(null, "User activated"));
     }
+
+    // ==================== BATCH MANAGEMENT ====================
+
+    @GetMapping("/batches")
+    public ResponseEntity<ApiResponse<List<Batch>>> getAllBatches() {
+        return ResponseEntity.ok(ApiResponse.success(batchRepository.findAll(), "Batches fetched"));
+    }
+
     @PostMapping("/batches/{batchId}/students/{studentId}")
-    public ResponseEntity<Map<String, String>> assignStudentToBatch(@PathVariable Long batchId, @PathVariable Long studentId) {
-        com.tuitionhub.backend.model.Batch batch = batchRepository.findById(batchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Batch not found"));
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
-
-        if (batch.getStudents().contains(student)) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Student already in this batch"));
-        }
-
-        if (batch.getStudents().size() >= batch.getMaxStudents()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Batch is full"));
-        }
-
-        batch.getStudents().add(student);
-        batchRepository.save(batch);
-        return ResponseEntity.ok(Map.of("message", "Student assigned to batch successfully"));
+    public ResponseEntity<ApiResponse<Void>> assignStudentToBatch(@PathVariable Long batchId,
+            @PathVariable Long studentId) {
+        studentManagementService.assignStudentToBatch(batchId, studentId);
+        return ResponseEntity.ok(ApiResponse.success(null, "Student assigned to batch successfully"));
     }
 
     @DeleteMapping("/batches/{batchId}/students/{studentId}")
-    public ResponseEntity<Map<String, String>> removeStudentFromBatch(@PathVariable Long batchId, @PathVariable Long studentId) {
-        com.tuitionhub.backend.model.Batch batch = batchRepository.findById(batchId)
-                .orElseThrow(() -> new ResourceNotFoundException("Batch not found"));
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
-
-        batch.getStudents().remove(student);
-        batchRepository.save(batch);
-        return ResponseEntity.ok(Map.of("message", "Student removed from batch"));
+    public ResponseEntity<ApiResponse<Void>> removeStudentFromBatch(@PathVariable Long batchId,
+            @PathVariable Long studentId) {
+        studentManagementService.removeStudentFromBatch(batchId, studentId);
+        return ResponseEntity.ok(ApiResponse.success(null, "Student removed from batch"));
     }
 
+    // ==================== ASSIGNMENT REQUESTS ====================
+
     @GetMapping("/assignment-requests")
-    public ResponseEntity<List<AssignmentRequest>> getPendingRequests() {
-        List<AssignmentRequest> requests = requestRepository.findByStatus(AssignmentRequest.RequestStatus.PENDING);
-        return ResponseEntity.ok(requests);
+    public ResponseEntity<ApiResponse<List<AssignmentRequest>>> getPendingRequests() {
+        return ResponseEntity
+                .ok(ApiResponse.success(assignmentRequestService.getPendingRequests(), "Pending requests fetched"));
     }
 
     @PostMapping("/requests/{requestId}/assign-teacher/{teacherId}")
-    public ResponseEntity<Map<String, String>> assignTeacher(@PathVariable Long requestId, @PathVariable Long teacherId) {
-        AssignmentRequest request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
-        User teacher = userRepository.findById(teacherId)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found"));
-
-        // Conflict Detection
-        List<com.tuitionhub.backend.model.Batch> teacherBatches = batchRepository.findByTeacher(teacher);
-        String conflictMessage = checkConflicts(request.getPreferredTimings(), teacherBatches);
-
-        request.setAssignedTeacher(teacher);
-        request.setStatus(AssignmentRequest.RequestStatus.ASSIGNED);
-        requestRepository.save(request);
-
-        // Auto-create/join a Batch for this assignment so it shows in Student's "My Mentors"
-        String tFrom = "04:00 PM";
-        String tTo = "05:00 PM";
-        if (request.getPreferredTimings() != null && request.getPreferredTimings().contains(" - ")) {
-            try {
-                String[] times = request.getPreferredTimings().split(" - ");
-                tFrom = times[0];
-                tTo = times[1];
-            } catch (Exception e) {
-                // handle error
-            }
-        }
-        final String finalTimingFrom = tFrom;
-        final String finalTimingTo = tTo;
-
-        // ALWAYS create a NEW Batch for this assignment for Individual (1-on-1) classes
-        com.tuitionhub.backend.model.Batch batch = com.tuitionhub.backend.model.Batch.builder()
-                .name(request.getSubjects() + " - " + request.getStudent().getName())
-                .subject(request.getSubjects())
-                .teacher(teacher)
-                .targetClass(request.getStudent().getStudentClass())
-                .timingFrom(finalTimingFrom)
-                .timingTo(finalTimingTo)
-                .days("Daily")
-                .monthlyFees(10.0) // Set to 10 for testing as requested
-                .maxStudents(1) 
-                .liveClassLink("https://meet.jit.si/TuitionHub_" + teacher.getName().replace(" ", "") + "_" + request.getStudent().getName().replace(" ", ""))
-                .liveClassPlatform("JITSI")
-                .isActive(true)
-                .students(new java.util.ArrayList<>(java.util.List.of(request.getStudent())))
-                .build();
-        
-        batchRepository.save(batch);
+    public ResponseEntity<ApiResponse<Void>> assignTeacher(@PathVariable Long requestId, @PathVariable Long teacherId) {
+        String conflictMessage = assignmentRequestService.assignTeacher(requestId, teacherId);
 
         String message = "Teacher assigned successfully.";
         if (conflictMessage != null) {
             message += " ⚠️ Warning: " + conflictMessage;
         }
-
-        return ResponseEntity.ok(Map.of("message", message));
+        return ResponseEntity.ok(ApiResponse.success(null, message));
     }
 
     // ==================== SUBJECT MANAGEMENT ====================
+
     @GetMapping("/subjects")
-    public ResponseEntity<List<com.tuitionhub.backend.model.Subject>> getAllSubjects() {
-        return ResponseEntity.ok(subjectRepository.findAll());
+    public ResponseEntity<ApiResponse<List<Subject>>> getAllSubjects() {
+        return ResponseEntity.ok(ApiResponse.success(subjectService.getAllSubjects(), "Subjects fetched"));
     }
 
     @PostMapping("/subjects")
-    public ResponseEntity<?> addSubject(@RequestBody com.tuitionhub.backend.model.Subject subject) {
-        if (subjectRepository.existsByNameIgnoreCase(subject.getName())) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Subject already exists"));
-        }
-        return ResponseEntity.ok(subjectRepository.save(subject));
+    public ResponseEntity<ApiResponse<Subject>> addSubject(@RequestBody Subject subject) {
+        return ResponseEntity.ok(ApiResponse.success(subjectService.addSubject(subject), "Subject added"));
     }
 
     @DeleteMapping("/subjects/{id}")
-    public ResponseEntity<?> deleteSubject(@PathVariable Long id) {
-        subjectRepository.deleteById(id);
-        return ResponseEntity.ok(Map.of("message", "Subject deleted"));
+    public ResponseEntity<ApiResponse<Void>> deleteSubject(@PathVariable Long id) {
+        subjectService.deleteSubject(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Subject deleted"));
     }
 
     // ==================== WALLET & SESSION MANAGEMENT ====================
 
     @PostMapping("/wallet/adjust")
-    public ResponseEntity<?> adjustWallet(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<ApiResponse<Void>> adjustWallet(@RequestBody Map<String, Object> request) {
         Long userId = Long.valueOf(request.get("userId").toString());
         Double amount = Double.valueOf(request.get("amount").toString());
         boolean isCredit = (boolean) request.getOrDefault("isCredit", true);
         String description = (String) request.getOrDefault("description", "Admin adjustment");
 
         if (isCredit) {
-            walletService.addCredits(userId, amount, com.tuitionhub.backend.model.WalletTransaction.TransactionSource.PROMO, description, false);
+            walletService.addCredits(userId, amount, WalletTransaction.TransactionSource.PROMO, description, false);
         } else {
             walletService.deductBalance(userId, amount, description, "ADMIN_ADJ");
         }
-        return ResponseEntity.ok(Map.of("message", "Wallet adjusted successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Wallet adjusted successfully"));
     }
 
     @GetMapping("/wallet/transactions")
-    public ResponseEntity<?> getAllWalletTransactions() {
-        return ResponseEntity.ok(walletTransactionRepository.findAll());
+    public ResponseEntity<ApiResponse<List<WalletTransaction>>> getAllWalletTransactions() {
+        return ResponseEntity.ok(ApiResponse.success(walletTransactionRepository.findAll(), "Transactions fetched"));
     }
 
     @GetMapping("/sessions")
-    public ResponseEntity<?> getAllSessions() {
-        return ResponseEntity.ok(sessionRepository.findAll());
+    public ResponseEntity<ApiResponse<List<Session>>> getAllSessions() {
+        return ResponseEntity.ok(ApiResponse.success(sessionRepository.findAll(), "Sessions fetched"));
     }
 
     @PutMapping("/sessions/{id}/payout")
-    public ResponseEntity<?> updatePayoutStatus(@PathVariable Long id, @RequestBody Map<String, String> request) {
-        com.tuitionhub.backend.model.Session session = sessionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Session not found"));
-        
-        com.tuitionhub.backend.model.Session.PayoutStatus status = com.tuitionhub.backend.model.Session.PayoutStatus.valueOf(request.get("status"));
+    public ResponseEntity<ApiResponse<Void>> updatePayoutStatus(@PathVariable Long id,
+            @RequestBody Map<String, String> request) {
+        Session session = sessionRepository.findById(id)
+                .orElseThrow(() -> new com.tuitionhub.backend.exception.ResourceNotFoundException("Session not found"));
+
+        Session.PayoutStatus status = Session.PayoutStatus.valueOf(request.get("status"));
         session.setPayoutStatus(status);
         sessionRepository.save(session);
-        
-        return ResponseEntity.ok(Map.of("message", "Payout status updated to " + status));
-    }
 
-    private String checkConflicts(String requestedTime, List<com.tuitionhub.backend.model.Batch> batches) {
-        if (requestedTime == null || !requestedTime.contains("-")) return null;
-        
-        try {
-            String[] times = requestedTime.split(" - ");
-            java.time.LocalTime reqStart = java.time.LocalTime.parse(times[0]);
-            java.time.LocalTime reqEnd = java.time.LocalTime.parse(times[1]);
-
-            for (com.tuitionhub.backend.model.Batch b : batches) {
-                if (b.getTimingFrom() == null || b.getTimingTo() == null) continue;
-                
-                java.time.LocalTime bStart = java.time.LocalTime.parse(b.getTimingFrom());
-                java.time.LocalTime bEnd = java.time.LocalTime.parse(b.getTimingTo());
-
-                // Overlap check: (StartA < EndB) and (EndA > StartB)
-                if (reqStart.isBefore(bEnd) && reqEnd.isAfter(bStart)) {
-                    return "Teacher already has a batch '" + b.getName() + "' at " + b.getTimingFrom() + "-" + b.getTimingTo();
-                }
-            }
-        } catch (Exception e) {
-            // handle error
-        }
-        return null;
+        return ResponseEntity.ok(ApiResponse.success(null, "Payout status updated to " + status));
     }
 }

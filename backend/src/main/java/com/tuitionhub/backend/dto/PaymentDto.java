@@ -7,20 +7,31 @@ public class PaymentDto {
 
     @Data
     public static class CreateOrderRequest {
+        @jakarta.validation.constraints.NotNull(message = "Batch ID is required")
         private Long batchId;
+        
+        @jakarta.validation.constraints.NotNull(message = "Month is required")
         private LocalDate forMonth;
     }
 
     @Data
     public static class VerifyRequest {
+        @jakarta.validation.constraints.NotNull(message = "Payment ID is required")
         private Long paymentId;
+        
+        @jakarta.validation.constraints.NotBlank(message = "Order ID is required")
         private String razorpayOrderId;
+        
+        @jakarta.validation.constraints.NotBlank(message = "Payment ID is required")
         private String razorpayPaymentId;
+        
+        @jakarta.validation.constraints.NotBlank(message = "Signature is required")
         private String razorpaySignature;
     }
 
     @Data
     public static class FailureRequest {
+        @jakarta.validation.constraints.NotNull(message = "Payment ID is required")
         private Long paymentId;
         private String errorCode;
         private String errorDescription;

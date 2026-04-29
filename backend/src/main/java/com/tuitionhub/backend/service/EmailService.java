@@ -45,4 +45,54 @@ public class EmailService {
             log.error("❌ Failed to send HTML email to {}: {}", to, e.getMessage());
         }
     }
+
+    public void sendPaymentConfirmation(com.tuitionhub.backend.model.Payment payment) {
+        String to = payment.getStudent().getEmail();
+        if (to == null || to.isEmpty()) return;
+
+        String batchName = payment.getBatch() != null ? payment.getBatch().getName() : "Wallet Topup";
+        String subject = "Payment Confirmation - " + batchName;
+        
+        String monthStr = payment.getForMonth() != null 
+            ? payment.getForMonth().format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy")) 
+            : "N/A";
+
+        String htmlContent = String.format(
+                """
+                <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                        <h2 style="color: #4CAF50;">Payment Successful!</h2>
+                        <p>Hello <strong>%s</strong>,</p>
+                        <p>Your payment for <strong>%s</strong> has been received successfully.</p>
+                        <table style="width: 100%%; border-collapse: collapse; margin: 20px 0;">
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Amount:</strong></td>
+                                <td style="padding: 8px; border-bottom: 1px solid #eee;">%s %s</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>For Month:</strong></td>
+                                <td style="padding: 8px; border-bottom: 1px solid #eee;">%s</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Transaction ID:</strong></td>
+                                <td style="padding: 8px; border-bottom: 1px solid #eee;">%s</td>
+                            </tr>
+                        </table>
+                        <p>Thank you for choosing TuitionHub.</p>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p style="font-size: 0.8em; color: #777;">This is an automated email. Please do not reply.</p>
+                    </div>
+                </body>
+                </html>
+                """,
+                payment.getStudent().getName(),
+                batchName,
+                payment.getCurrency(),
+                payment.getAmount(),
+                monthStr,
+                payment.getRazorpayPaymentId());
+
+        sendHtmlEmail(to, subject, htmlContent);
+    }
 }

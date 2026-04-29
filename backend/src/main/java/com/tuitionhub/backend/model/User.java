@@ -40,18 +40,12 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    // Student fields
-    private String studentClass;   // e.g. "10"
-    private String board;          // CBSE / ICSE / State
+    // Role-specific Profiles
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private StudentProfile studentProfile;
 
-    // Teacher fields
-    private String subject;
-    private String qualification;
-    private String bio;
-    private Double fees;            // monthly fee
-    private String timingFrom;      // e.g. "06:00 PM"
-    private String timingTo;        // e.g. "08:00 PM"
-    private String availableDays;   // "MON,TUE,WED,THU,FRI"
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private TeacherProfile teacherProfile;
 
     // Common
     private String profilePhoto;

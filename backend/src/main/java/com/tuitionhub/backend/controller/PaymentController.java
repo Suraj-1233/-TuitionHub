@@ -20,14 +20,14 @@ public class PaymentController {
     @PostMapping("/api/student/payments/create-order")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<PaymentDto.Response> createOrder(
-            @RequestBody PaymentDto.CreateOrderRequest request,
+            @jakarta.validation.Valid @RequestBody PaymentDto.CreateOrderRequest request,
             @AuthenticationPrincipal User student) {
         return ResponseEntity.ok(paymentService.createPaymentOrder(request, student));
     }
 
     @PostMapping("/api/student/payments/verify")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<PaymentDto.Response> verifyPayment(@RequestBody PaymentDto.VerifyRequest request) {
+    public ResponseEntity<PaymentDto.Response> verifyPayment(@jakarta.validation.Valid @RequestBody PaymentDto.VerifyRequest request) {
         return ResponseEntity.ok(paymentService.verifyAndUpdatePayment(request));
     }
 

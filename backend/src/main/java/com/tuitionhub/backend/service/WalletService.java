@@ -45,6 +45,7 @@ public class WalletService {
     }
 
     @Transactional
+    @com.tuitionhub.backend.security.Auditable(action = "WALLET_CREDIT")
     public void addCredits(Long userId, Double amount, WalletTransaction.TransactionSource source, String description, boolean isWithdrawable) {
         Wallet wallet = getOrCreateWallet(userId);
         
@@ -95,6 +96,7 @@ public class WalletService {
     }
 
     @Transactional
+    @com.tuitionhub.backend.security.Auditable(action = "WALLET_DEBIT")
     public void deductBalance(Long userId, Double amount, String description, String referenceId) {
         Wallet wallet = getWalletByUserId(userId);
 
