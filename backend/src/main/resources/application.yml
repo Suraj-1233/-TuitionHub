@@ -59,9 +59,6 @@ app:
     key-id: ${RAZORPAY_KEY_ID:rzp_test_SiPBsXu0irnw9K}
     key-secret: ${RAZORPAY_KEY_SECRET:EW9l7u1pyDst72EG6DPhJo23}
 
-  stripe:
-    secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
-    publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_placeholder}
 
 logging:
   level:

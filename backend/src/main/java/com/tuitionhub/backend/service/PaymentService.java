@@ -39,7 +39,6 @@ public class PaymentService {
     private final EmailService emailService;
     private final WalletService walletService;
     private final CurrencyService currencyService;
-    private final StripeService stripeService;
 
     @Value("${app.razorpay.key-id}")
     private String razorpayKeyId;
@@ -71,14 +70,9 @@ public class PaymentService {
                 throw new BadRequestException("Batch monthly fees not set");
             }
 
-            String country = student.getCountry();
-            String gateway = "India".equalsIgnoreCase(country) ? "RAZORPAY" : "STRIPE";
-            String currency = "India".equalsIgnoreCase(country) ? "INR" : "USD";
-
+            String gateway = "RAZORPAY";
+            String currency = "INR";
             double finalAmount = batch.getMonthlyFees();
-            if (!"INR".equalsIgnoreCase(currency)) {
-                finalAmount = currencyService.convert(batch.getMonthlyFees(), currency);
-            }
 
             Payment payment = Payment.builder()
                     .student(student)
@@ -90,25 +84,16 @@ public class PaymentService {
                     .status(Payment.PaymentStatus.PENDING)
                     .build();
 
-            if ("RAZORPAY".equals(gateway)) {
-                try {
-                    RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId.trim(), razorpayKeySecret.trim());
-                    JSONObject orderRequest = new JSONObject();
-                    orderRequest.put("amount", (int) (finalAmount * 100));
-                    orderRequest.put("currency", currency);
-                    orderRequest.put("receipt", "rcpt_" + System.currentTimeMillis());
-                    Order razorpayOrder = razorpayClient.orders.create(orderRequest);
-                    payment.setRazorpayOrderId(razorpayOrder.get("id"));
-                } catch (RazorpayException e) {
-                    throw new BadRequestException("Razorpay Error: " + e.getMessage());
-                }
-            } else {
-                try {
-                    Map<String, String> intent = stripeService.createPaymentIntent(finalAmount, currency);
-                    payment.setStripePaymentIntentId(intent.get("id"));
-                } catch (Exception e) {
-                    throw new BadRequestException("Stripe Error: " + e.getMessage());
-                }
+            try {
+                RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId.trim(), razorpayKeySecret.trim());
+                JSONObject orderRequest = new JSONObject();
+                orderRequest.put("amount", (int) (finalAmount * 100));
+                orderRequest.put("currency", currency);
+                orderRequest.put("receipt", "rcpt_" + System.currentTimeMillis());
+                Order razorpayOrder = razorpayClient.orders.create(orderRequest);
+                payment.setRazorpayOrderId(razorpayOrder.get("id"));
+            } catch (RazorpayException e) {
+                throw new BadRequestException("Razorpay Error: " + e.getMessage());
             }
 
             payment = paymentRepository.save(payment);
@@ -128,14 +113,10 @@ public class PaymentService {
                 throw new BadRequestException("Amount must be at least 1 INR");
             }
 
-            String country = student.getCountry();
-            String gateway = "India".equalsIgnoreCase(country) ? "RAZORPAY" : "STRIPE";
-            String currency = "India".equalsIgnoreCase(country) ? "INR" : "USD";
+            String gateway = "RAZORPAY";
+            String currency = "INR";
 
             double finalAmount = amount;
-            if (!"INR".equalsIgnoreCase(currency)) {
-                finalAmount = currencyService.convert(amount, currency);
-            }
 
             Payment payment = Payment.builder()
                     .student(student)
@@ -146,25 +127,16 @@ public class PaymentService {
                     .paymentMethod("TOPUP")
                     .build();
 
-            if ("RAZORPAY".equals(gateway)) {
-                try {
-                    RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId.trim(), razorpayKeySecret.trim());
-                    JSONObject orderRequest = new JSONObject();
-                    orderRequest.put("amount", (int) (finalAmount * 100));
-                    orderRequest.put("currency", currency);
-                    orderRequest.put("receipt", "topup_" + System.currentTimeMillis());
-                    Order razorpayOrder = razorpayClient.orders.create(orderRequest);
-                    payment.setRazorpayOrderId(razorpayOrder.get("id"));
-                } catch (RazorpayException e) {
-                    throw new BadRequestException("Razorpay Error: " + e.getMessage());
-                }
-            } else {
-                try {
-                    Map<String, String> intent = stripeService.createPaymentIntent(finalAmount, currency);
-                    payment.setStripePaymentIntentId(intent.get("id"));
-                } catch (Exception e) {
-                    throw new BadRequestException("Stripe Error: " + e.getMessage());
-                }
+            try {
+                RazorpayClient razorpayClient = new RazorpayClient(razorpayKeyId.trim(), razorpayKeySecret.trim());
+                JSONObject orderRequest = new JSONObject();
+                orderRequest.put("amount", (int) (finalAmount * 100));
+                orderRequest.put("currency", currency);
+                orderRequest.put("receipt", "topup_" + System.currentTimeMillis());
+                Order razorpayOrder = razorpayClient.orders.create(orderRequest);
+                payment.setRazorpayOrderId(razorpayOrder.get("id"));
+            } catch (RazorpayException e) {
+                throw new BadRequestException("Razorpay Error: " + e.getMessage());
             }
 
             payment = paymentRepository.save(payment);
@@ -395,14 +367,6 @@ public class PaymentService {
         res.setCurrency(p.getCurrency());
         res.setGateway(p.getGateway());
 
-        if ("STRIPE".equals(p.getGateway()) && p.getStatus() == Payment.PaymentStatus.PENDING) {
-            try {
-                res.setStripeClientSecret(stripeService.getClientSecret(p.getStripePaymentIntentId()));
-                res.setStripePublishableKey(stripeService.getPublishableKey());
-            } catch (Exception e) {
-                log.error("Error fetching stripe client secret: {}", e.getMessage());
-            }
-        }
 
         res.setForMonth(p.getForMonth() != null
                 ? p.getForMonth().format(DateTimeFormatter.ofPattern("MMMM yyyy"))

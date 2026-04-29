@@ -108,12 +108,6 @@ import { ToastService } from '../../shared/services/toast.service';
               <input type="number" [(ngModel)]="topupAmount" placeholder="0.00" [disabled]="loading">
             </div>
             
-            <!-- Stripe Element Container -->
-            <div id="stripe-container" [hidden]="!showStripeElement" class="mt-4 p-4 border rounded-xl bg-slate-50" style="margin-top: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc;">
-              <label style="font-size: 0.875rem; font-weight: 600; color: #475569; margin-bottom: 0.5rem; display: block;">Card Details</label>
-              <div id="card-element"></div>
-              <div id="card-errors" role="alert" style="color: #ef4444; font-size: 0.75rem; margin-top: 0.5rem;"></div>
-            </div>
 
             <div class="modal-actions">
               <button class="secondary-btn" (click)="showTopupModal = false">Cancel</button>
@@ -231,10 +225,6 @@ export class WalletComponent implements OnInit {
   topupAmount: number = 0;
   currencySymbol = '';
   loading = false;
-  showStripeElement = false;
-  stripe: any;
-  card: any;
-  originalHandleTopup: any;
 
   constructor(
     private paymentService: PaymentService,
@@ -289,11 +279,7 @@ export class WalletComponent implements OnInit {
     // 1. Create order on backend
     this.paymentService.createTopupOrder(this.topupAmount).subscribe({
       next: (order: any) => {
-        if (order.gateway === 'RAZORPAY') {
-          this.openRazorpayCheckout(order, user);
-        } else if (order.gateway === 'STRIPE') {
-          this.initStripe(order);
-        }
+        this.openRazorpayCheckout(order, user);
       },
       error: (err) => {
         this.loading = false;
@@ -302,56 +288,6 @@ export class WalletComponent implements OnInit {
     });
   }
 
-  initStripe(order: any) {
-    this.showStripeElement = true;
-    this.loading = false; 
-    
-    // Use a timeout to ensure DOM is ready
-    setTimeout(() => {
-      if (!this.stripe) {
-        // @ts-ignore
-        this.stripe = Stripe(order.stripePublishableKey);
-        const elements = this.stripe.elements();
-        this.card = elements.create('card');
-        this.card.mount('#card-element');
-      }
-      
-      this.toastService.info('Please enter your card details below');
-      
-      // Store original method and swap
-      if (!this.originalHandleTopup) {
-        this.originalHandleTopup = this.handleTopup;
-      }
-      this.handleTopup = () => this.confirmStripePayment(order);
-    }, 100);
-  }
-
-  confirmStripePayment(order: any) {
-    this.loading = true;
-    this.stripe.confirmCardPayment(order.stripeClientSecret, {
-      payment_method: {
-        card: this.card,
-        billing_details: {
-          name: this.authService.getCurrentUser()?.name,
-          email: this.authService.getCurrentUser()?.email
-        }
-      }
-    }).then((result: any) => {
-      if (result.error) {
-        this.toastService.error(result.error.message);
-        this.loading = false;
-      } else {
-        if (result.paymentIntent.status === 'succeeded') {
-          this.verifyStripePayment(result.paymentIntent, order.id);
-        }
-      }
-    });
-  }
-
-  verifyStripePayment(intent: any, paymentId: number) {
-    this.toastService.success('Payment Succeeded!');
-    setTimeout(() => window.location.reload(), 1500);
-  }
 
   openRazorpayCheckout(order: any, user: any) {
     // Fetch key first

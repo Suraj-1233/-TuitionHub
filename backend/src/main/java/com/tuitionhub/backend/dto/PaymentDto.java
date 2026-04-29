@@ -41,9 +41,7 @@ public class PaymentDto {
         private String razorpayOrderId;
         private String razorpayPaymentId;
         private String razorpayKeyId;
-        private String gateway; // RAZORPAY or STRIPE
-        private String stripeClientSecret;
-        private String stripePublishableKey;
+        private String gateway; // RAZORPAY
         private String paidAt;
 
         // Extra details

@@ -110,21 +110,8 @@ import { ToastService } from '../../shared/services/toast.service';
               </div>
             </div>
 
-            <!-- Stripe Element Container -->
-            <div id="stripe-container" *ngIf="showStripeElement" class="mt-4 p-4 border rounded-xl bg-slate-50" style="margin-top: 1rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; text-align: left;">
-              <label style="font-size: 0.875rem; font-weight: 600; color: #475569; margin-bottom: 0.5rem; display: block;">Card Details</label>
-              <div id="card-element"></div>
-              <div id="card-errors" role="alert" style="color: #ef4444; font-size: 0.75rem; margin-top: 0.5rem;"></div>
-            </div>
 
-            <div class="modal-actions" *ngIf="showStripeElement" style="margin-top: 1rem;">
-              <button class="btn-pay" (click)="confirmStripePayment()" [disabled]="loading" style="width: 100%;">
-                <span *ngIf="!loading">Confirm & Pay via Stripe</span>
-                <span *ngIf="loading">Processing...</span>
-              </button>
-            </div>
-
-            <button class="cancel-link" (click)="selectedSession = null; showStripeElement = false">Cancel</button>
+            <button class="cancel-link" (click)="selectedSession = null">Cancel</button>
           </div>
         </div>
       </div>
@@ -197,10 +184,6 @@ export class StudentPaymentsComponent implements OnInit {
   ) {}
 
   loading = false;
-  showStripeElement = false;
-  stripe: any;
-  card: any;
-  stripeOrder: any;
 
   ngOnInit() {
     this.loadData();
@@ -245,11 +228,7 @@ export class StudentPaymentsComponent implements OnInit {
     
     this.paymentService.createTopupOrder(session.amount).subscribe({
       next: (order: any) => {
-        if (order.gateway === 'RAZORPAY') {
-          this.openRazorpay(order);
-        } else {
-          this.initStripe(order);
-        }
+        this.openRazorpay(order);
       },
       error: (err) => {
         this.loading = false;
@@ -281,38 +260,6 @@ export class StudentPaymentsComponent implements OnInit {
     });
   }
 
-  initStripe(order: any) {
-    this.stripeOrder = order;
-    this.showStripeElement = true;
-    this.loading = false;
-    
-    setTimeout(() => {
-      if (!this.stripe) {
-        // @ts-ignore
-        this.stripe = Stripe(order.stripePublishableKey);
-        const elements = this.stripe.elements();
-        this.card = elements.create('card');
-        this.card.mount('#card-element');
-      }
-    }, 100);
-  }
-
-  confirmStripePayment() {
-    this.loading = true;
-    this.stripe.confirmCardPayment(this.stripeOrder.stripeClientSecret, {
-      payment_method: { card: this.card }
-    }).then((result: any) => {
-      if (result.error) {
-        this.toast.error(result.error.message);
-        this.loading = false;
-      } else {
-        this.toast.success('Stripe Payment Succeeded!');
-        this.selectedSession = null;
-        this.showStripeElement = false;
-        this.loadData();
-      }
-    });
-  }
 
   payPartial(session: any) {
     this.paymentService.payForSession(session.id, 'PARTIAL').subscribe({

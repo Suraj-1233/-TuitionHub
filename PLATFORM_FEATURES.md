@@ -11,7 +11,7 @@ Implemented a secure and scalable internal economy for students and tutors.
 - **Promo vs. Real Balance**: System distinguishes between withdrawable "Real Money" and non-withdrawable "Promo Credits".
 - **Multi-Mode Payments**:
     - **Full Wallet Payment**: Pay using existing balance.
-    - **Direct Gateway**: Pay via Stripe/PayPal/Razorpay.
+    - **Direct Gateway**: Pay via Razorpay.
     - **Partial Payment**: Use remaining wallet balance and pay the rest via gateway.
 - **Transaction Logs**: Granular history for every credit, debit, referral, and top-up.
 

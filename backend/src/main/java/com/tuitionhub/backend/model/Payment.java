@@ -36,8 +36,7 @@ public class Payment {
     @Builder.Default
     private String currency = "INR";
 
-    private String gateway; // RAZORPAY, STRIPE, WALLET
-    private String stripePaymentIntentId;
+    private String gateway; // RAZORPAY, WALLET
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
