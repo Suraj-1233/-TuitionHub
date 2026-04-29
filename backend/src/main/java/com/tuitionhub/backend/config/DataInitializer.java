@@ -50,6 +50,9 @@ public class DataInitializer implements CommandLineRunner {
         createIfNotExists("super@tuitionhub.com", "Main Super Admin", Role.SUPER_ADMIN, "super123", "TUI-SUPER", "USD", "9000000002");
         createIfNotExists("teacher@tuitionhub.com", "Dr. Amit Sharma", Role.TEACHER, "teacher123", "TUI-TEACH", "INR", "9000000003");
         createIfNotExists("surajkannujiya517@gmail.com", "Suraj Kannujiya", Role.STUDENT, "suraj123", "TUI-SURAJ", "USD", "9000000004");
+        
+        // Force refresh parent
+        userRepository.findByEmail("parent@tuitionhub.com").ifPresent(u -> userRepository.delete(u));
         createIfNotExists("parent@tuitionhub.com", "Rajesh Kannujiya", Role.PARENT, "parent123", "TUI-PARENT", "INR", "9000000005");
 
         // Link Parent to Student
@@ -83,17 +86,26 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void createIfNotExists(String email, String name, Role role, String password, String referral, String currency, String mobile) {
-        if (!userRepository.existsByEmail(email)) {
-            User user = User.builder()
-                    .name(name).email(email).mobile(mobile)
-                    .password(passwordEncoder.encode(password))
-                    .role(role).isActive(true).isApproved(true).referralCode(referral)
-                    .currency(currency)
-                    .build();
-            userRepository.save(user);
-            walletService.getOrCreateWallet(user.getId());
-            log.info("👤 Created User: {} with currency: {}", email, currency);
-        }
+        userRepository.findByEmail(email).ifPresentOrElse(
+            user -> {
+                if (user.getRole() != role) {
+                    user.setRole(role);
+                    userRepository.save(user);
+                    log.info("🔄 Updated role for {} to {}", email, role);
+                }
+            },
+            () -> {
+                User user = User.builder()
+                        .name(name).email(email).mobile(mobile)
+                        .password(passwordEncoder.encode(password))
+                        .role(role).isActive(true).isApproved(true).referralCode(referral)
+                        .currency(currency)
+                        .build();
+                userRepository.save(user);
+                walletService.getOrCreateWallet(user.getId());
+                log.info("👤 Created User: {} with currency: {}", email, currency);
+            }
+        );
     }
 
     private void seedSubjects() {

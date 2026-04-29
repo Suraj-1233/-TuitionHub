@@ -203,6 +203,7 @@ export class LoginComponent implements OnInit {
           this.authService.logout();
           return;
         }
+        console.log('[LoginComponent] Success! Role:', res.role);
         this.toast.success('Login successful!');
         this.authService.navigateByRole(res.role);
       },

@@ -46,6 +46,8 @@ public class AuthService {
             throw new BadRequestException("Incorrect password. Please try again.");
         }
 
+        log.info("User {} logged in with role: {} (isApproved: {})", user.getEmail(), user.getRole(), user.getIsApproved());
+
         if (user.getRole() == Role.TEACHER && !user.getIsApproved()) {
             throw new BadRequestException("Your teacher account is pending admin approval. Please wait for approval.");
         }
