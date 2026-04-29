@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardLayoutComponent } from '../../shared/components/layout/dashboard-layout.component';
 import { RouterLink } from '@angular/router';
+import { ParentService } from '../../shared/services/parent.service';
 
 @Component({
   selector: 'app-parent-dashboard',
@@ -87,11 +88,21 @@ export class ParentDashboardComponent implements OnInit {
   childrenCount = 0;
   activeBatchesCount = 0;
   totalPendingFees = 0;
+  isLoading = true;
+
+  constructor(private parentService: ParentService) {}
 
   ngOnInit() {
-    // Mock data for now, will connect to ParentService later
-    this.childrenCount = 1;
-    this.activeBatchesCount = 2;
-    this.totalPendingFees = 1500;
+    this.parentService.getDashboardSummary().subscribe({
+      next: (data) => {
+        this.childrenCount = data.childrenCount;
+        this.activeBatchesCount = data.activeBatchesCount;
+        this.totalPendingFees = data.totalPendingFees;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+      }
+    });
   }
 }

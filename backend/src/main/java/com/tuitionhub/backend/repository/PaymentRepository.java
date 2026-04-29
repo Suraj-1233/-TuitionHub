@@ -14,6 +14,8 @@ import java.util.Optional;
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findByStudent(User student);
+    List<Payment> findByStudentAndStatus(User student, Payment.PaymentStatus status);
+    List<Payment> findByStudentParent(User parent);
     List<Payment> findByBatch(Batch batch);
     List<Payment> findByStatus(Payment.PaymentStatus status);
     List<Payment> findByStudentAndBatchAndForMonth(User student, Batch batch, LocalDate forMonth);

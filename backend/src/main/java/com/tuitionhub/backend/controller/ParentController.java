@@ -4,6 +4,8 @@ import com.tuitionhub.backend.dto.ApiResponse;
 import com.tuitionhub.backend.model.*;
 import com.tuitionhub.backend.repository.BatchRepository;
 import com.tuitionhub.backend.repository.UserRepository;
+import com.tuitionhub.backend.dto.ParentDto;
+import com.tuitionhub.backend.service.ParentService;
 import com.tuitionhub.backend.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,12 @@ public class ParentController {
     private final UserRepository userRepository;
     private final BatchRepository batchRepository;
     private final PaymentService paymentService;
+    private final ParentService parentService;
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<ApiResponse<ParentDto.DashboardSummary>> getDashboard(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(ApiResponse.success(parentService.getDashboardSummary(token.replace("Bearer ", "")), "Dashboard fetched"));
+    }
 
     @GetMapping("/children")
     public ResponseEntity<ApiResponse<List<User>>> getChildren(@AuthenticationPrincipal User parent) {

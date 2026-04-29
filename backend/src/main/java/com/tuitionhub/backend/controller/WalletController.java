@@ -1,5 +1,6 @@
 package com.tuitionhub.backend.controller;
 
+import com.tuitionhub.backend.model.User;
 import com.tuitionhub.backend.model.Wallet;
 import com.tuitionhub.backend.model.WalletTransaction;
 import com.tuitionhub.backend.service.WalletService;
@@ -19,13 +20,13 @@ public class WalletController {
     private final WalletService walletService;
 
     @GetMapping("/balance")
-    public ResponseEntity<Wallet> getBalance(@RequestParam Long userId) {
-        return ResponseEntity.ok(walletService.getOrCreateWallet(userId));
+    public ResponseEntity<Wallet> getBalance(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(walletService.getOrCreateWallet(user.getId()));
     }
 
     @GetMapping("/transactions")
-    public ResponseEntity<List<WalletTransaction>> getTransactions(@RequestParam Long userId) {
-        return ResponseEntity.ok(walletService.getTransactionHistory(userId));
+    public ResponseEntity<List<WalletTransaction>> getTransactions(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(walletService.getTransactionHistory(user.getId()));
     }
 
     @PostMapping("/topup")

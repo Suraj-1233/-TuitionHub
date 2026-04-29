@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardLayoutComponent } from '../../shared/components/layout/dashboard-layout.component';
 import { FormsModule } from '@angular/forms';
+import { ParentService } from '../../shared/services/parent.service';
+import { ToastService } from '../../shared/services/toast.service';
+
+declare var Razorpay: any;
 
 @Component({
   selector: 'app-parent-wallet',
@@ -31,7 +35,38 @@ import { FormsModule } from '@angular/forms';
             <span class="currency">₹</span>
             <input type="number" [(ngModel)]="topupAmount" placeholder="Enter amount">
           </div>
-          <button class="btn btn-primary btn-block mt-4" (click)="onTopup()">Top-up Now</button>
+          <button class="btn btn-primary btn-block mt-4" (click)="onTopup()" [disabled]="isLoading">
+            {{ isLoading ? 'Processing...' : 'Top-up Now' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="transactions-section mt-8 animate-slide">
+        <h2 class="section-title">Recent Transactions</h2>
+        <div class="table-container glass">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Source</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let tx of transactions">
+                <td>{{ tx.createdAt | date:'short' }}</td>
+                <td>{{ tx.description }}</td>
+                <td><span class="badge">{{ tx.source }}</span></td>
+                <td [class.text-success]="tx.amount > 0" [class.text-danger]="tx.amount < 0">
+                  {{ tx.amount > 0 ? '+' : '' }}₹{{ tx.amount.toFixed(2) }}
+                </td>
+              </tr>
+              <tr *ngIf="transactions.length === 0">
+                <td colspan="4" class="text-center py-8">No transactions found</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </app-dashboard-layout>
@@ -47,19 +82,99 @@ import { FormsModule } from '@angular/forms';
     .balance { font-size: 3rem; font-weight: 800; margin: 0.5rem 0 0; }
     .card-icon { font-size: 4rem; opacity: 0.2; }
 
-    .topup-card { padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); }
+    .topup-card { padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); background: white; }
     .amount-input-group { display: flex; align-items: center; background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 0.5rem 1rem; }
     .currency { font-size: 1.25rem; font-weight: 700; color: var(--text-secondary); }
     .amount-input-group input { border: none; background: transparent; padding: 0.5rem; font-size: 1.25rem; font-weight: 700; width: 100%; outline: none; }
+
+    .text-success { color: #10B981; font-weight: 700; }
+    .text-danger { color: #EF4444; font-weight: 700; }
+    .badge { padding: 0.25rem 0.5rem; background: #F1F5F9; border-radius: 6px; font-size: 0.75rem; font-weight: 700; color: #64748B; }
   `]
 })
 export class WalletComponent implements OnInit {
   balance = 0;
   topupAmount = 500;
+  transactions: any[] = [];
+  isLoading = false;
 
-  ngOnInit() {}
+  constructor(private parentService: ParentService, private toast: ToastService) {}
+
+  ngOnInit() {
+    this.loadWalletData();
+  }
+
+  loadWalletData() {
+    this.parentService.getWalletBalance().subscribe(w => this.balance = w.balance);
+    this.parentService.getWalletTransactions().subscribe(txs => this.transactions = txs);
+  }
 
   onTopup() {
-    alert('Top-up logic will be connected to Razorpay');
+    if (this.topupAmount < 1) {
+      this.toast.error('Please enter a valid amount');
+      return;
+    }
+
+    this.isLoading = true;
+    this.parentService.getRazorpayKey().subscribe(keyRes => {
+      this.parentService.createTopupOrder(this.topupAmount).subscribe({
+        next: (order) => {
+          this.initRazorpay(order, keyRes.keyId);
+        },
+        error: (err) => {
+          this.toast.error('Failed to create order');
+          this.isLoading = false;
+        }
+      });
+    });
+  }
+
+  initRazorpay(order: any, keyId: string) {
+    const options = {
+      key: keyId,
+      amount: order.amount * 100,
+      currency: order.currency,
+      name: 'TuitionHub Wallet',
+      description: 'Wallet Top-up',
+      order_id: order.razorpayOrderId,
+      handler: (response: any) => {
+        this.verifyTopup(order.id, response);
+      },
+      prefill: {
+        name: '',
+        email: ''
+      },
+      theme: {
+        color: '#6366F1'
+      },
+      modal: {
+        ondismiss: () => {
+          this.isLoading = false;
+        }
+      }
+    };
+    const rzp = new Razorpay(options);
+    rzp.open();
+  }
+
+  verifyTopup(paymentId: number, razorpayResponse: any) {
+    const verifyReq = {
+      paymentId: paymentId,
+      razorpayOrderId: razorpayResponse.razorpay_order_id,
+      razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+      razorpaySignature: razorpayResponse.razorpay_signature
+    };
+
+    this.parentService.verifyTopup(verifyReq).subscribe({
+      next: () => {
+        this.toast.success('Wallet topped up successfully!');
+        this.loadWalletData();
+        this.isLoading = false;
+      },
+      error: () => {
+        this.toast.error('Payment verification failed');
+        this.isLoading = false;
+      }
+    });
   }
 }

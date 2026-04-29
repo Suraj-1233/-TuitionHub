@@ -224,10 +224,7 @@ public class PaymentService {
     }
 
     public List<PaymentDto.Response> getParentPayments(User parent) {
-        // Find all payments where student's parent is this user
-        return paymentRepository.findAll().stream()
-                .filter(p -> p.getStudent() != null && p.getStudent().getParent() != null 
-                        && p.getStudent().getParent().getId().equals(parent.getId()))
+        return paymentRepository.findByStudentParent(parent).stream()
                 .map(paymentMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
