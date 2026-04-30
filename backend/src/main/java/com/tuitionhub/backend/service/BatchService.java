@@ -138,40 +138,6 @@ public class BatchService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public BatchDto.Response proposeReschedule(Long batchId, String newTiming, User user) {
-        Batch batch = findBatch(batchId);
-        // Only teacher or students in the batch can propose
-        boolean isTeacher = batch.getTeacher().getId().equals(user.getId());
-        boolean isStudent = batch.getStudents().stream().anyMatch(s -> s.getId().equals(user.getId()));
-
-        if (!isTeacher && !isStudent) {
-            throw new BadRequestException("Not authorized");
-        }
-
-        batch.setProposedTiming(newTiming);
-        batch.setProposedByRole(isTeacher ? "TEACHER" : "STUDENT");
-        batch.setIsTimeChangeProposed(true);
-        return mapToResponse(batchRepository.save(batch));
-    }
-
-    @Transactional
-    public BatchDto.Response respondToReschedule(Long batchId, boolean accept, User user) {
-        Batch batch = findBatch(batchId);
-        if (!batch.getIsTimeChangeProposed()) {
-            throw new BadRequestException("No reschedule proposed");
-        }
-
-        if (accept) {
-            batch.setTimingFrom(batch.getProposedTiming());
-        }
-
-        batch.setProposedTiming(null);
-        batch.setProposedByRole(null);
-        batch.setIsTimeChangeProposed(false);
-        return mapToResponse(batchRepository.save(batch));
-    }
-
     // ---- Mapper ----
     private BatchDto.Response mapToResponse(Batch batch) {
         BatchDto.Response res = new BatchDto.Response();

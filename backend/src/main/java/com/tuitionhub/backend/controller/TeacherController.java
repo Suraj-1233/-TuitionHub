@@ -17,11 +17,6 @@ public class TeacherController {
 
     private final UserRepository userRepository;
 
-    @GetMapping("/list")
-    public ResponseEntity<ApiResponse<List<User>>> getApprovedTeachers() {
-        return ResponseEntity.ok(ApiResponse.success(userRepository.findByRoleAndIsApproved(Role.TEACHER, true), "Approved teachers fetched"));
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<User>> getTeacherProfile(@PathVariable Long id) {
         User teacher = userRepository.findById(id)

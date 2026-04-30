@@ -16,4 +16,8 @@ export class FeedbackService {
   getFeedbackForSession(sessionId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/feedback/session/${sessionId}`);
   }
+
+  getAllFeedbacks(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/feedback/all`);
+  }
 }

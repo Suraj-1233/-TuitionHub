@@ -40,4 +40,9 @@ public class FeedbackService {
     public SessionFeedback getFeedbackForSession(Long sessionId) {
         return feedbackRepository.findBySessionId(sessionId).orElse(null);
     }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public java.util.List<SessionFeedback> getAllFeedbacks() {
+        return feedbackRepository.findAllWithDetails();
+    }
 }

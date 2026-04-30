@@ -15,10 +15,6 @@ export class TeacherService {
     return this.http.put<ApiResponse<User>>(`${this.apiUrl}/profile`, profileData);
   }
 
-  getApprovedTeachers(): Observable<ApiResponse<User[]>> {
-    return this.http.get<ApiResponse<User[]>>(`${this.apiUrl}/list`);
-  }
-
   getTeacherProfile(id: number): Observable<ApiResponse<User>> {
     return this.http.get<ApiResponse<User>>(`${this.apiUrl}/${id}`);
   }

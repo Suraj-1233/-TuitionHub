@@ -95,23 +95,4 @@ public class BatchController {
         String msg = batchService.leavesBatch(batchId, student);
         return ResponseEntity.ok(ApiResponse.success(Map.of("message", msg), "Left batch"));
     }
-
-    // ---- Rescheduling (Mutual) ----
-    @PostMapping("/api/batches/{id}/propose-reschedule")
-    @PreAuthorize("hasAnyRole('TEACHER', 'STUDENT')")
-    public ResponseEntity<ApiResponse<BatchDto.Response>> proposeReschedule(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> payload,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(ApiResponse.success(batchService.proposeReschedule(id, payload.get("newTiming"), user), "Reschedule proposed"));
-    }
-
-    @PostMapping("/api/batches/{id}/respond-reschedule")
-    @PreAuthorize("hasAnyRole('TEACHER', 'STUDENT')")
-    public ResponseEntity<ApiResponse<BatchDto.Response>> respondReschedule(
-            @PathVariable Long id,
-            @RequestParam boolean accept,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(ApiResponse.success(batchService.respondToReschedule(id, accept, user), "Reschedule response sent"));
-    }
 }

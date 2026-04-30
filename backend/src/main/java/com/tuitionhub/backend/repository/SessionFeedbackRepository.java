@@ -9,4 +9,7 @@ import java.util.Optional;
 @Repository
 public interface SessionFeedbackRepository extends JpaRepository<SessionFeedback, Long> {
     Optional<SessionFeedback> findBySessionId(Long sessionId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT f FROM SessionFeedback f JOIN FETCH f.session s JOIN FETCH s.teacher JOIN FETCH s.student ORDER BY f.id DESC")
+    java.util.List<SessionFeedback> findAllWithDetails();
 }

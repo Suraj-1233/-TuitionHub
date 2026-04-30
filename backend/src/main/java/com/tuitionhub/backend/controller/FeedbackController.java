@@ -37,4 +37,10 @@ public class FeedbackController {
         }
         return ResponseEntity.ok(feedback);
     }
+
+    @GetMapping("/all")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getAllFeedbacks() {
+        return ResponseEntity.ok(feedbackService.getAllFeedbacks());
+    }
 }
