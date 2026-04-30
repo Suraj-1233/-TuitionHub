@@ -75,6 +75,11 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(studentManagementService.getAllStudents(), "Students fetched"));
     }
 
+    @GetMapping("/parents")
+    public ResponseEntity<ApiResponse<List<User>>> getAllParents() {
+        return ResponseEntity.ok(ApiResponse.success(userRepository.findByRole(Role.PARENT), "Parents fetched"));
+    }
+
     @DeleteMapping("/users/{id}")
     public ResponseEntity<ApiResponse<Void>> deactivateUser(@PathVariable Long id) {
         studentManagementService.toggleUserStatus(id, false);

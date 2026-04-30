@@ -278,6 +278,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
         { path: '/admin/requests', label: 'Tuition Requests', icon: '📩' },
         { path: '/admin/teachers', label: 'Teacher Directory', icon: '👨‍🏫' },
         { path: '/admin/students', label: 'Student Directory', icon: '👨‍🎓' },
+        { path: '/admin/parents', label: 'Parent Directory', icon: '👨‍👩‍👧‍👦' },
         { path: '/admin/wallet', label: 'Wallet Management', icon: '👛' },
         { path: '/admin/payments', label: 'Global Revenue', icon: '💳' },
       ];

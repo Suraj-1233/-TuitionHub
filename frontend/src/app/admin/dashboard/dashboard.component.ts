@@ -95,7 +95,15 @@ import { AdminService } from '../../shared/services/admin.service';
               </div>
             </a>
 
-            <a routerLink="/admin/subjects" class="op-card-hand tilt-right">
+            <a routerLink="/admin/parents" class="op-card-hand tilt-right">
+              <div class="op-icon">👨‍👩‍👧‍👦</div>
+              <div class="op-text">
+                <span class="op-name">Guardian Management</span>
+                <span class="op-desc">View and manage registered parents</span>
+              </div>
+            </a>
+
+            <a routerLink="/admin/subjects" class="op-card-hand tilt">
               <div class="op-icon">📚</div>
               <div class="op-text">
                 <span class="op-name">Academic Catalog</span>
