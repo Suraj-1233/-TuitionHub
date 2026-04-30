@@ -80,6 +80,13 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(userRepository.findByRole(Role.PARENT), "Parents fetched"));
     }
 
+    @GetMapping("/parents/{id}/children")
+    public ResponseEntity<ApiResponse<List<User>>> getChildrenOfParent(@PathVariable Long id) {
+        User parent = userRepository.findById(id)
+                .orElseThrow(() -> new com.tuitionhub.backend.exception.ResourceNotFoundException("Parent not found"));
+        return ResponseEntity.ok(ApiResponse.success(userRepository.findByParent(parent), "Children fetched"));
+    }
+
     @DeleteMapping("/users/{id}")
     public ResponseEntity<ApiResponse<Void>> deactivateUser(@PathVariable Long id) {
         studentManagementService.toggleUserStatus(id, false);

@@ -38,6 +38,10 @@ export class AdminService {
     return this.http.get<ApiResponse<User[]>>(`${this.apiUrl}/admin/parents`).pipe(map(res => res.data));
   }
 
+  getParentChildren(parentId: number): Observable<User[]> {
+    return this.http.get<ApiResponse<User[]>>(`${this.apiUrl}/admin/parents/${parentId}/children`).pipe(map(res => res.data));
+  }
+
   getAllBatches(): Observable<any[]> {
     return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/admin/batches`).pipe(map(res => res.data));
   }
