@@ -153,14 +153,14 @@ export class TeacherProfileComponent implements OnInit {
   }
 
   loadProfile() {
-    if (!this.currentUser?.id) return;
+    if (!this.currentUser?.userId) return;
     
     // Fallback initialize
     this.profileData.name = this.currentUser.name;
     this.profileData.city = this.currentUser.city || '';
 
     // Fetch from backend
-    this.teacherService.getTeacherProfile(this.currentUser.id).subscribe({
+    this.teacherService.getTeacherProfile(this.currentUser.userId).subscribe({
       next: (res) => {
         if (res.data) {
           const t = res.data;
