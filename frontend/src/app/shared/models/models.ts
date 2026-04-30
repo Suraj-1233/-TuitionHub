@@ -39,6 +39,8 @@ export interface User {
   isActive: boolean;
   isApproved: boolean;
   referralCode?: string;
+  teacherProfile?: any;
+  studentProfile?: any;
 }
 
 export interface Batch {

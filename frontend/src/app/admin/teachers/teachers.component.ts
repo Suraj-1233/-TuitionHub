@@ -29,11 +29,14 @@ import { AuthService } from '../../shared/services/auth.service';
       </div>
 
       <div class="tabs-container animate-fade">
+        <button class="tab-btn" [class.active]="activeTab === 'approved'" (click)="setTab('approved')">
+          Active Educators
+          <span class="count-pill-green" *ngIf="approvedTeachers.length > 0">{{ approvedTeachers.length }}</span>
+        </button>
         <button class="tab-btn" [class.active]="activeTab === 'pending'" (click)="setTab('pending')">
           Pending Review
-          <span class="count-pill" *ngIf="pendingTeachers.length > 0">{{ pendingTeachers.length }}</span>
+          <span class="count-pill-red" *ngIf="pendingTeachers.length > 0">{{ pendingTeachers.length }}</span>
         </button>
-        <button class="tab-btn" [class.active]="activeTab === 'approved'" (click)="setTab('approved')">Active Educators</button>
       </div>
 
       <div class="card glass p-0 animate-fade">
@@ -250,7 +253,8 @@ import { AuthService } from '../../shared/services/auth.service';
       transition: var(--transition);
     }
     .tab-btn.active { background: white; color: var(--primary-color); box-shadow: var(--shadow-sm); }
-    .count-pill { background: var(--danger-color); color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 100px; }
+    .count-pill-red { background: #FEE2E2; color: #991B1B; font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 100px; display: inline-flex; align-items: center; justify-content: center; min-width: 20px; }
+    .count-pill-green { background: #DCFCE7; color: #166534; font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 100px; display: inline-flex; align-items: center; justify-content: center; min-width: 20px; }
 
     .premium-table { width: 100%; border-collapse: separate; border-spacing: 0; }
     .premium-table th { padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; background: #F8FAFC; border-bottom: 1px solid var(--border-color); }
@@ -343,7 +347,7 @@ import { AuthService } from '../../shared/services/auth.service';
   `]
 })
 export class AdminTeachersComponent implements OnInit {
-  activeTab = 'pending';
+  activeTab = 'approved';
   searchQuery = '';
   pendingTeachers: User[] = [];
   approvedTeachers: User[] = [];
