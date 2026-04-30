@@ -42,10 +42,9 @@ import { AuthService } from '../../shared/services/auth.service';
           <thead>
             <tr>
                <th>Educator</th>
-               <th>Expertise & City</th>
+               <th>Expertise</th>
                <th>Timezone</th>
                <th>Students 👥</th>
-               <th>Contact Info</th>
                <th>Status</th>
                <th class="text-right">Manage</th>
             </tr>
@@ -65,7 +64,6 @@ import { AuthService } from '../../shared/services/auth.service';
                <td>
                  <div class="expertise-cell">
                    <span class="subject-tag">{{ teacher.subject }}</span>
-                   <span class="city-text">📍 {{ teacher.city }}</span>
                  </div>
                </td>
                <td>
@@ -82,12 +80,6 @@ import { AuthService } from '../../shared/services/auth.service';
                   <div class="text-xs text-secondary mt-1">
                     {{ getTeacherBatchCount(teacher.id) }} Batches
                   </div>
-                </div>
-              </td>
-              <td>
-                <div class="contact-cell">
-                  <div class="phone-link">📱 {{ teacher.mobile }}</div>
-                  <div class="email-text">✉️ {{ teacher.email }}</div>
                 </div>
               </td>
               <td>
@@ -140,6 +132,30 @@ import { AuthService } from '../../shared/services/auth.service';
                 </div>
 
                 <div class="modal-body">
+                  <div class="teacher-info-cards mb-4">
+                    <div class="t-info-card">
+                      <div class="t-info-icon">📍</div>
+                      <div>
+                        <div class="t-info-label">Location</div>
+                        <div class="t-info-value">{{ expandedTeacher.city || 'Not specified' }}</div>
+                      </div>
+                    </div>
+                    <div class="t-info-card">
+                      <div class="t-info-icon">📱</div>
+                      <div>
+                        <div class="t-info-label">Phone</div>
+                        <div class="t-info-value">{{ expandedTeacher.mobile }}</div>
+                      </div>
+                    </div>
+                    <div class="t-info-card">
+                      <div class="t-info-icon">✉️</div>
+                      <div>
+                        <div class="t-info-label">Email</div>
+                        <div class="t-info-value">{{ expandedTeacher.email }}</div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div class="detail-header-row">
                     <span class="icon-wrap">📋</span> Assigned Batches & Students
                   </div>
@@ -278,6 +294,12 @@ import { AuthService } from '../../shared/services/auth.service';
     .close-btn:hover { background: #E2E8F0; color: #0F172A; transform: rotate(90deg); }
 
     .modal-body { padding: 2rem; }
+    .teacher-info-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; background: #F8FAFC; padding: 1.5rem; border-radius: 16px; border: 1px solid #E2E8F0; }
+    .t-info-card { display: flex; align-items: center; gap: 1rem; }
+    .t-info-icon { width: 40px; height: 40px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .t-info-label { font-size: 0.75rem; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
+    .t-info-value { font-size: 0.9375rem; color: #0F172A; font-weight: 600; word-break: break-word; }
+    .mb-4 { margin-bottom: 1.5rem; }
     .detail-header-row { font-size: 1.125rem; font-weight: 800; color: #1E293B; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
     .icon-wrap { background: #F8FAFC; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .empty-state-mini { padding: 3rem; text-align: center; color: #64748B; background: #F8FAFC; border-radius: 16px; border: 1px dashed #CBD5E1; }
