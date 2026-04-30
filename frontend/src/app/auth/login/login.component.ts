@@ -5,176 +5,196 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
 
-
-
-
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   template: `
-    <div class="auth-container">
-      <div class="auth-card glass animate-fade">
-        <div class="text-center mb-6">
-          <div class="logo-container">
-            <div class="logo-icon">TH</div>
-            <h1 class="logo-text">TuitionHub</h1>
-          </div>
-          <p class="subtitle">Welcome back! Sign in to continue.</p>
-        </div>
+    <div class="handcrafted-auth-wrapper">
+      <!-- Decorative background elements -->
+      <div class="blob-top"></div>
+      <div class="blob-bottom"></div>
 
-        <!-- Google Login Removed -->
-
-        <div class="divider">
-          <span>or sign in with email</span>
-        </div>
-
-        <!-- Forgot Password Mode -->
-        <form *ngIf="mode === 'forgot'" (ngSubmit)="forgotPassword()" #forgotForm="ngForm">
-          <p class="text-center mb-4 text-sm text-secondary">
-            Enter your email and we'll send you a password reset link.
-          </p>
-          <div class="form-group">
-            <label class="form-label">Email Address</label>
-            <input type="email" class="form-control" [(ngModel)]="email" name="email"
-                   placeholder="your@email.com" required email>
+      <div class="auth-box-hand animate-hand">
+        <div class="auth-header-hand">
+          <div class="brand-badge-hand">
+            <div class="logo-sq">TH</div>
+            <span class="logo-txt">TuitionHub</span>
           </div>
-          <button type="submit" class="btn btn-primary btn-block" [disabled]="forgotForm.invalid || isLoading">
-            {{ isLoading ? 'Sending...' : '📧 Send Reset Link' }}
-          </button>
-          <div class="text-center mt-4">
-            <a href="javascript:void(0)" (click)="mode = 'login'" class="text-primary text-sm">← Back to Login</a>
-          </div>
-        </form>
-
-        <!-- Forgot Password OTP & New Password Mode -->
-        <div *ngIf="mode === 'forgot-sent'" class="animate-fade">
-          <div class="text-center mb-6">
-            <h3 class="font-bold text-xl">Reset Your Password</h3>
-            <p class="text-sm text-secondary">Enter the OTP sent to <strong>{{ email }}</strong> and your new password.</p>
-          </div>
-
-          <form (ngSubmit)="resetPassword()" #resetForm="ngForm">
-            <div class="form-group">
-              <label class="form-label">6-Digit OTP</label>
-              <input type="text" class="form-control text-center text-xl tracking-widest" [(ngModel)]="otp" name="otp"
-                     placeholder="000000" maxlength="6" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">New Password</label>
-              <input type="password" class="form-control" [(ngModel)]="password" name="password"
-                     placeholder="At least 6 characters" minlength="6" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-block" [disabled]="resetForm.invalid || isLoading">
-              {{ isLoading ? 'Resetting...' : '🔓 Reset Password' }}
-            </button>
-          </form>
-          
-          <div class="text-center mt-4">
-            <a href="javascript:void(0)" (click)="mode = 'login'" class="text-primary text-sm">← Back to Login</a>
-          </div>
+          <h1 class="auth-title">Welcome Back.</h1>
+          <p class="auth-subtitle">Sign in to continue your learning journey.</p>
         </div>
 
         <!-- Normal Login Form -->
-        <form *ngIf="mode === 'login'" (ngSubmit)="loginWithEmail()" #loginForm="ngForm">
+        <form *ngIf="mode === 'login'" (ngSubmit)="loginWithEmail()" #loginForm="ngForm" class="auth-form-hand">
           <div class="form-group">
             <label class="form-label">Email Address</label>
-            <input type="email" class="form-control" [(ngModel)]="email" name="email"
-                   placeholder="your@email.com" required email>
+            <input type="email" class="input-hand" [(ngModel)]="email" name="email"
+                   placeholder="e.g. name@company.com" required email>
           </div>
+          
           <div class="form-group">
-            <div class="label-row">
+            <div class="label-row-hand">
               <label class="form-label">Password</label>
-              <a href="javascript:void(0)" (click)="mode = 'forgot'" class="forgot-link">Forgot password?</a>
+              <a href="javascript:void(0)" (click)="mode = 'forgot'" class="link-hand">Forgot?</a>
             </div>
-            <input type="password" class="form-control" [(ngModel)]="password" name="password"
-                   placeholder="Enter your password" required minlength="6">
+            <input type="password" class="input-hand" [(ngModel)]="password" name="password"
+                   placeholder="••••••••" required minlength="6">
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block" [disabled]="loginForm.invalid || isLoading">
-            {{ isLoading ? 'Signing in...' : 'Sign In' }}
+          <button type="submit" class="btn-hand btn-hand-primary btn-full mt-4" [disabled]="loginForm.invalid || isLoading">
+            {{ isLoading ? 'Authenticating...' : 'Sign In to Dashboard' }}
           </button>
         </form>
 
-        <div class="text-center mt-4 text-sm" *ngIf="mode === 'login'">
-          Don't have an account? <a routerLink="/auth/register" class="text-primary font-bold">Register here</a>
+        <!-- Forgot Password Mode -->
+        <form *ngIf="mode === 'forgot'" (ngSubmit)="forgotPassword()" #forgotForm="ngForm" class="auth-form-hand animate-fade">
+          <p class="form-hint">Enter your email and we'll send you a password reset link.</p>
+          <div class="form-group">
+            <label class="form-label">Account Email</label>
+            <input type="email" class="input-hand" [(ngModel)]="email" name="email"
+                   placeholder="your@email.com" required email>
+          </div>
+          <button type="submit" class="btn-hand btn-hand-primary btn-full" [disabled]="forgotForm.invalid || isLoading">
+            {{ isLoading ? 'Sending...' : 'Send Reset Link' }}
+          </button>
+          <div class="center-link mt-6">
+            <a href="javascript:void(0)" (click)="mode = 'login'" class="link-hand">← Back to Login</a>
+          </div>
+        </form>
+
+        <!-- OTP & New Password Mode -->
+        <div *ngIf="mode === 'forgot-sent'" class="auth-form-hand animate-fade">
+          <p class="form-hint">Enter the code sent to <strong>{{ email }}</strong></p>
+          <form (ngSubmit)="resetPassword()" #resetForm="ngForm">
+            <div class="form-group">
+              <label class="form-label">Security Code</label>
+              <input type="text" class="input-hand text-center-bold" [(ngModel)]="otp" name="otp"
+                     placeholder="000000" maxlength="6" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Secure Password</label>
+              <input type="password" class="input-hand" [(ngModel)]="password" name="password"
+                     placeholder="Min. 6 characters" minlength="6" required>
+            </div>
+            <button type="submit" class="btn-hand btn-hand-primary btn-full" [disabled]="resetForm.invalid || isLoading">
+              {{ isLoading ? 'Updating...' : 'Update Password' }}
+            </button>
+          </form>
+          <div class="center-link mt-6">
+            <a href="javascript:void(0)" (click)="mode = 'login'" class="link-hand">← Back to Login</a>
+          </div>
+        </div>
+
+        <div class="auth-footer-hand" *ngIf="mode === 'login'">
+          <span>New to the platform?</span>
+          <a routerLink="/auth/register" class="link-hand-bold">Create an account</a>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .auth-container {
+    .handcrafted-auth-wrapper {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #312E81 100%);
-      padding: 1rem;
+      background-color: var(--bg-app);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
     }
-    .auth-card {
+    
+    .blob-top {
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 400px;
+      height: 400px;
+      background: var(--primary-light);
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: 0;
+    }
+    
+    .blob-bottom {
+      position: absolute;
+      bottom: -150px;
+      left: -100px;
+      width: 500px;
+      height: 500px;
+      background: var(--accent-soft);
+      border-radius: 50%;
+      filter: blur(100px);
+      z-index: 0;
+    }
+
+    .auth-box-hand {
       width: 100%;
-      max-width: 440px;
-      padding: 2.5rem 2rem;
-      background: rgba(255,255,255,0.95);
-      border-radius: 1.5rem;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      max-width: 480px;
+      background: white;
+      padding: 4rem 3.5rem;
+      border-radius: 3rem;
+      box-shadow: var(--shadow-float);
+      border: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
     }
-    .logo-container { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem; }
-    .logo-icon {
-      width: 48px; height: 48px;
-      background: linear-gradient(135deg, #6366F1, #8B5CF6);
-      border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      color: white; font-weight: 900; font-size: 1.125rem;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+
+    .auth-header-hand { margin-bottom: 3rem; }
+    
+    .brand-badge-hand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
     }
-    .logo-text { font-size: 1.75rem; font-weight: 900; color: #1E293B; margin: 0; }
-    .subtitle { color: #64748B; font-size: 0.875rem; margin-top: 0.25rem; }
-
-    /* Google Login Removed */
-
-    .divider {
-      display: flex; align-items: center; gap: 1rem;
-      margin: 1.5rem 0; color: #94A3B8; font-size: 0.75rem; font-weight: 600;
+    .logo-sq {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      color: white;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
     }
-    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #E2E8F0; }
+    .logo-txt { font-weight: 800; font-family: var(--font-heading); color: var(--text-main); font-size: 1.1rem; }
+    
+    .auth-title { font-size: 2.25rem; font-weight: 800; color: var(--text-main); font-family: var(--font-heading); letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 0.75rem; }
+    .auth-subtitle { color: var(--text-muted); font-weight: 500; font-size: 1rem; }
 
-    .form-group { margin-bottom: 1.25rem; }
-    .form-label { display: block; font-weight: 700; font-size: 0.8125rem; color: #334155; margin-bottom: 0.5rem; }
-    .form-control {
-      width: 100%; padding: 0.8rem 1rem; border-radius: 10px;
-      border: 1.5px solid #E2E8F0; font-size: 0.9375rem;
-      transition: all 0.2s; box-sizing: border-box;
+    .form-hint { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 2rem; }
+    .label-row-hand { display: flex; justify-content: space-between; align-items: baseline; }
+    .link-hand { font-size: 0.8rem; color: var(--primary); font-weight: 700; text-decoration: none; }
+    .link-hand:hover { text-decoration: underline; }
+    
+    .btn-full { width: 100%; padding: 1rem; }
+    .mt-4 { margin-top: 1.5rem; }
+    .mt-6 { margin-top: 2rem; }
+    .center-link { text-align: center; }
+    
+    .text-center-bold { text-align: center; font-weight: 800; font-size: 1.5rem; letter-spacing: 0.25em; }
+
+    .auth-footer-hand {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px dashed var(--border);
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
     }
-    .form-control:focus { border-color: #6366F1; box-shadow: 0 0 0 4px rgba(99,102,241,0.1); outline: none; }
+    .link-hand-bold { color: var(--text-main); font-weight: 800; text-decoration: none; border-bottom: 2px solid var(--primary-light); transition: var(--transition-smooth); }
+    .link-hand-bold:hover { color: var(--primary); border-color: var(--primary); }
 
-    .label-row { display: flex; justify-content: space-between; align-items: center; }
-    .forgot-link { font-size: 0.8125rem; color: #6366F1; text-decoration: none; font-weight: 600; }
-    .forgot-link:hover { text-decoration: underline; }
-
-    .btn { border: none; cursor: pointer; font-weight: 700; border-radius: 12px; font-size: 0.9375rem; transition: all 0.2s; }
-    .btn-primary {
-      background: linear-gradient(135deg, #6366F1, #8B5CF6);
-      color: white; padding: 0.85rem;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    @media (max-width: 500px) {
+      .auth-box-hand { padding: 3rem 2rem; border-radius: 2rem; }
     }
-    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4); }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-outline {
-      background: transparent; border: 1.5px solid #E2E8F0; color: #334155; padding: 0.85rem;
-    }
-    .btn-block { width: 100%; }
-
-    .text-primary { color: #6366F1; text-decoration: none; }
-    .text-primary:hover { text-decoration: underline; }
-    .text-secondary { color: #64748B; }
-    .text-sm { font-size: 0.875rem; }
-    .text-center { text-align: center; }
-    .font-bold { font-weight: 700; }
-
-    .success-icon { font-size: 3rem; margin-bottom: 1rem; }
-    .animate-fade { animation: fadeIn 0.3s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   `]
 })
 export class LoginComponent implements OnInit {
@@ -199,12 +219,11 @@ export class LoginComponent implements OnInit {
       next: (res) => {
         this.isLoading = false;
         if (res.role === 'TEACHER' && !res.isApproved) {
-          this.toast.warning('Your teacher account is pending admin approval. Please wait.');
+          this.toast.warning('Your teacher account is pending admin approval.');
           this.authService.logout();
           return;
         }
-        console.log('[LoginComponent] Success! Role:', res.role);
-        this.toast.success('Login successful!');
+        this.toast.success('Welcome back!');
         this.authService.navigateByRole(res.role);
       },
       error: (err) => {
@@ -214,18 +233,16 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  // Google Login Removed
-
   forgotPassword() {
     this.isLoading = true;
     this.authService.forgotPassword(this.email).subscribe({
       next: () => {
         this.isLoading = false;
         this.mode = 'forgot-sent';
-        this.toast.success('OTP sent to your email!');
+        this.toast.success('Security code sent!');
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Could not send OTP.');
+        this.toast.error(err.error?.message || 'Could not send code.');
         this.isLoading = false;
       }
     });
@@ -237,14 +254,12 @@ export class LoginComponent implements OnInit {
       next: () => {
         this.isLoading = false;
         this.mode = 'login';
-        this.toast.success('Password reset successful! Please login with your new password.');
+        this.toast.success('Password updated successfully!');
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Reset failed. Check your OTP.');
+        this.toast.error(err.error?.message || 'Update failed. Check your code.');
         this.isLoading = false;
       }
     });
   }
-
-  // Google script removed
 }

@@ -11,259 +11,267 @@ import { PublicService } from '../../shared/services/public.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   template: `
-    <div class="auth-container">
-      <div class="auth-card glass animate-fade">
-        <div class="text-center mb-6">
-          <div class="logo-container">
-            <div class="logo-icon">TH</div>
-            <h1 class="logo-text">Join TuitionHub</h1>
+    <div class="handcrafted-auth-wrapper">
+      <div class="blob-top"></div>
+      <div class="blob-bottom"></div>
+
+      <div class="auth-box-hand wide animate-hand">
+        <div class="auth-header-hand">
+          <div class="brand-badge-hand">
+            <div class="logo-sq">TH</div>
+            <span class="logo-txt">TuitionHub</span>
           </div>
-          <p class="subtitle">Create an account to get started</p>
+          <h1 class="auth-title">{{ isVerifying ? 'One Last Step.' : 'Create Your Account.' }}</h1>
+          <p class="auth-subtitle">{{ isVerifying ? 'Verify your email to get started.' : 'Join our community of lifelong learners and educators.' }}</p>
         </div>
 
         <!-- Step 2: OTP Verification -->
         <div *ngIf="isVerifying" class="animate-fade">
-          <div class="text-center mb-6">
-            <div class="success-icon">📧</div>
-            <h3 class="font-bold text-xl">Verify Your Email</h3>
-            <p class="text-sm text-secondary">We sent an OTP to <strong>{{ formData.email }}</strong>. Please enter it below to activate your account.</p>
+          <div class="otp-instruction-hand">
+            <div class="instruction-icon">📩</div>
+            <p>We've sent a 6-digit security code to <strong>{{ formData.email }}</strong>.</p>
           </div>
 
-          <form (ngSubmit)="verifyOtp()" #otpForm="ngForm">
+          <form (ngSubmit)="verifyOtp()" #otpForm="ngForm" class="auth-form-hand">
             <div class="form-group">
-              <label class="form-label">6-Digit OTP</label>
-              <input type="text" class="form-control text-center text-xl tracking-widest" [(ngModel)]="otpValue" name="otp"
+              <label class="form-label">Security Code</label>
+              <input type="text" class="input-hand text-center-bold" [(ngModel)]="otpValue" name="otp"
                      placeholder="000000" maxlength="6" required>
             </div>
-            <button type="submit" class="btn btn-primary btn-block" [disabled]="otpForm.invalid || isLoading">
-              {{ isLoading ? 'Verifying...' : '✅ Verify & Activate' }}
+            <button type="submit" class="btn-hand btn-hand-primary btn-full" [disabled]="otpForm.invalid || isLoading">
+              {{ isLoading ? 'Verifying...' : 'Complete Registration' }}
             </button>
           </form>
           
-          <div class="text-center mt-6">
-            <p class="text-xs text-secondary">Didn't receive code? <a href="javascript:void(0)" (click)="register()" class="text-primary font-bold">Resend OTP</a></p>
+          <div class="auth-footer-hand mt-8">
+            <p>Didn't get the code? <a href="javascript:void(0)" (click)="register()" class="link-hand-bold">Resend it</a></p>
           </div>
         </div>
 
-        <!-- Success: Teacher Pending (After Verification) -->
+        <!-- Success: Teacher Pending -->
         <div *ngIf="teacherPending" class="text-center animate-fade">
-          <div class="pending-icon">⏳</div>
-          <h3 class="mb-2">Email Verified!</h3>
-          <p class="text-sm text-secondary mb-4">
-            Your <strong>Teacher</strong> account is now verified. 
-            <br>However, it still requires <strong>admin approval</strong> before you can login.
-            <br><br>We'll notify you once approved.
+          <div class="pending-badge-hand">
+            <span class="p-icon">⏳</span>
+            <h3 class="p-title">Review in Progress</h3>
+          </div>
+          <p class="p-text">
+            Your teacher profile has been submitted successfully. Our team will review your credentials and get back to you within 24-48 hours.
           </p>
-          <button class="btn btn-primary btn-block" routerLink="/auth/login">← Go to Login</button>
+          <button class="btn-hand btn-hand-primary btn-full mt-6" routerLink="/auth/login">Return to Login</button>
         </div>
 
         <!-- Step 1: Registration Form -->
-        <form *ngIf="!teacherPending && !isVerifying" (ngSubmit)="register()" #regForm="ngForm">
-          <!-- Role Selection -->
-          <div class="role-selector mb-4">
-            <button type="button" class="role-btn" [class.active]="formData.role === 'STUDENT'" (click)="formData.role = 'STUDENT'">
-              <span class="role-icon">🎓</span>
-              <span class="role-label">Student</span>
-            </button>
-            <button type="button" class="role-btn" [class.active]="formData.role === 'TEACHER'" (click)="formData.role = 'TEACHER'">
-              <span class="role-icon">👩‍🏫</span>
-              <span class="role-label">Teacher</span>
-            </button>
-            <button type="button" class="role-btn" [class.active]="formData.role === 'PARENT'" (click)="formData.role = 'PARENT'">
-              <span class="role-icon">👨‍👩‍👧‍👦</span>
-              <span class="role-label">Parent</span>
-            </button>
+        <form *ngIf="!teacherPending && !isVerifying" (ngSubmit)="register()" #regForm="ngForm" class="auth-form-hand">
+          
+          <div class="section-divider-hand">
+            <span>Identify Your Role</span>
           </div>
 
-          <div *ngIf="formData.role === 'TEACHER'" class="approval-notice mb-4">
-            ⚠️ Teacher accounts require <strong>admin approval</strong> before you can access the platform.
+          <div class="role-grid-hand">
+            <div class="role-option-hand" [class.active]="formData.role === 'STUDENT'" (click)="formData.role = 'STUDENT'">
+              <span class="role-emoji">🎓</span>
+              <span class="role-name">Student</span>
+            </div>
+            <div class="role-option-hand" [class.active]="formData.role === 'TEACHER'" (click)="formData.role = 'TEACHER'">
+              <span class="role-emoji">👨‍🏫</span>
+              <span class="role-name">Mentor</span>
+            </div>
+            <div class="role-option-hand" [class.active]="formData.role === 'PARENT'" (click)="formData.role = 'PARENT'">
+              <span class="role-emoji">👨‍👩‍👧‍👦</span>
+              <span class="role-name">Parent</span>
+            </div>
           </div>
 
-          <!-- Basic Info -->
-          <div class="form-group">
-            <label class="form-label">Full Name</label>
-            <input type="text" class="form-control" [(ngModel)]="formData.name" name="name" required placeholder="Enter your full name">
+          <div class="section-divider-hand mt-8">
+            <span>Personal Details</span>
+          </div>
+
+          <div class="form-row-hand">
+            <div class="form-group flex-1">
+              <label class="form-label">Full Legal Name</label>
+              <input type="text" class="input-hand" [(ngModel)]="formData.name" name="name" required placeholder="John Doe">
+            </div>
+            <div class="form-group flex-1">
+              <label class="form-label">Contact Number (Opt)</label>
+              <input type="text" class="input-hand" [(ngModel)]="formData.mobile" name="mobile" placeholder="+1 ...">
+            </div>
           </div>
 
           <div class="form-group">
             <label class="form-label">Email Address</label>
-            <input type="email" class="form-control" [(ngModel)]="formData.email" name="email" required email placeholder="your@email.com">
+            <input type="email" class="input-hand" [(ngModel)]="formData.email" name="email" required email placeholder="hello@example.com">
           </div>
 
           <div class="form-group">
-            <label class="form-label">Password</label>
-            <input type="password" class="form-control" [(ngModel)]="formData.password" name="password" required minlength="6" placeholder="Min 6 characters">
+            <label class="form-label">Create Password</label>
+            <input type="password" class="input-hand" [(ngModel)]="formData.password" name="password" required minlength="6" placeholder="••••••••">
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Country</label>
-            <select class="form-control" [(ngModel)]="formData.country" name="country" required (change)="onCountryChange()">
-              <option value="">-- Select Country --</option>
-              <option value="IN">🇮🇳 India</option>
-              <option value="US">🇺🇸 United States</option>
-              <option value="GB">🇬🇧 United Kingdom</option>
-              <option value="CA">🇨🇦 Canada</option>
-              <option value="AU">🇦🇺 Australia</option>
-              <option value="AE">🇦🇪 UAE</option>
-              <option value="SG">🇸🇬 Singapore</option>
-              <option value="DE">🇩🇪 Germany</option>
-              <option value="FR">🇫🇷 France</option>
-              <option value="JP">🇯🇵 Japan</option>
-              <option value="KR">🇰🇷 South Korea</option>
-              <option value="NZ">🇳🇿 New Zealand</option>
-              <option value="SA">🇸🇦 Saudi Arabia</option>
-              <option value="QA">🇶🇦 Qatar</option>
-              <option value="KW">🇰🇼 Kuwait</option>
-              <option value="NP">🇳🇵 Nepal</option>
-              <option value="BD">🇧🇩 Bangladesh</option>
-              <option value="LK">🇱🇰 Sri Lanka</option>
-              <option value="OTHER">🌍 Other</option>
-            </select>
-          </div>
-
-          <div class="form-row">
+          <div class="form-row-hand">
+            <div class="form-group flex-1">
+              <label class="form-label">Country</label>
+              <select class="input-hand" [(ngModel)]="formData.country" name="country" required (change)="onCountryChange()">
+                <option value="">Select...</option>
+                <option value="IN">🇮🇳 India</option>
+                <option value="US">🇺🇸 United States</option>
+                <option value="GB">🇬🇧 United Kingdom</option>
+                <option value="CA">🇨🇦 Canada</option>
+                <option value="AU">🇦🇺 Australia</option>
+                <option value="AE">🇦🇪 UAE</option>
+                <option value="SG">🇸🇬 Singapore</option>
+                <option value="OTHER">🌍 Other</option>
+              </select>
+            </div>
             <div class="form-group flex-1">
               <label class="form-label">City</label>
-              <input type="text" class="form-control" [(ngModel)]="formData.city" name="city" required placeholder="e.g. Mumbai, New York">
-            </div>
-            <div class="form-group flex-1">
-              <label class="form-label">Mobile (Optional)</label>
-              <input type="text" class="form-control" [(ngModel)]="formData.mobile" name="mobile" placeholder="Phone number">
+              <input type="text" class="input-hand" [(ngModel)]="formData.city" name="city" required placeholder="e.g. London">
             </div>
           </div>
 
-          <div class="timezone-badge" *ngIf="formData.timezone">
-            🌍 Timezone: <strong>{{ formData.timezone }}</strong>
-          </div>
-
-          <ng-container *ngIf="formData.role === 'STUDENT'">
-            <div class="form-row">
+          <!-- Role-specific Sections -->
+          <div class="role-specific-hand animate-fade" *ngIf="formData.role === 'STUDENT'">
+            <div class="section-divider-hand">
+              <span>Academic Link</span>
+            </div>
+            <div class="form-row-hand">
               <div class="form-group flex-1">
-                <label class="form-label">Class/Grade</label>
-                <input type="text" class="form-control" [(ngModel)]="formData.studentClass" name="studentClass" required placeholder="e.g. 10">
+                <label class="form-label">Current Grade</label>
+                <input type="text" class="input-hand" [(ngModel)]="formData.studentClass" name="studentClass" required placeholder="e.g. 10">
               </div>
               <div class="form-group flex-1">
-                <label class="form-label">Parent Email</label>
-                <input type="email" class="form-control" [(ngModel)]="formData.parentEmail" name="parentEmail" required placeholder="parent@email.com">
+                <label class="form-label">Parent's Email</label>
+                <input type="email" class="input-hand" [(ngModel)]="formData.parentEmail" name="parentEmail" required placeholder="guardian@email.com">
               </div>
             </div>
-          </ng-container>
+          </div>
 
-          <!-- Teacher Fields -->
-          <ng-container *ngIf="formData.role === 'TEACHER'">
+          <div class="role-specific-hand animate-fade" *ngIf="formData.role === 'TEACHER'">
+            <div class="section-divider-hand">
+              <span>Professional Profile</span>
+            </div>
             <div class="form-group">
-              <label class="form-label">Subject Expertise</label>
-              <select class="form-control" [(ngModel)]="formData.subject" name="subject" required>
-                <option value="">-- Select Subject --</option>
+              <label class="form-label">Primary Expertise</label>
+              <select class="input-hand" [(ngModel)]="formData.subject" name="subject" required>
+                <option value="">Select a subject...</option>
                 <option *ngFor="let s of subjects" [value]="s.name">{{ s.icon }} {{ s.name }}</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">Qualification</label>
-              <input type="text" class="form-control" [(ngModel)]="formData.qualification" name="qualification" required placeholder="e.g. M.Sc Mathematics">
+              <label class="form-label">Highest Qualification</label>
+              <input type="text" class="input-hand" [(ngModel)]="formData.qualification" name="qualification" required placeholder="e.g. PhD in Physics">
             </div>
-          </ng-container>
-
-          <!-- Parent Fields Removed -->
-
-          <div class="form-group">
-            <label class="form-label">Referral Code (Optional)</label>
-            <input type="text" class="form-control" [(ngModel)]="formData.referralCode" name="referralCode" placeholder="e.g. TUI-ABCD1">
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block mt-4" [disabled]="regForm.invalid || isLoading">
-            {{ isLoading ? 'Creating Account...' : (formData.role === 'TEACHER' ? '📋 Submit for Approval' : '🚀 Create Account') }}
+          <div class="form-group mt-4">
+            <label class="form-label">Referral Code (If any)</label>
+            <input type="text" class="input-hand" [(ngModel)]="formData.referralCode" name="referralCode" placeholder="TUI-XXXXX">
+          </div>
+
+          <button type="submit" class="btn-hand btn-hand-primary btn-full mt-8" [disabled]="regForm.invalid || isLoading">
+            {{ isLoading ? 'Processing...' : (formData.role === 'TEACHER' ? 'Submit Profile for Approval' : 'Create My Account') }}
           </button>
         </form>
 
-        <div class="text-center mt-4 text-sm" *ngIf="!teacherPending && !isVerifying">
-          Already have an account? <a routerLink="/auth/login" class="text-primary font-bold">Login here</a>
+        <div class="auth-footer-hand" *ngIf="!teacherPending && !isVerifying">
+          <span>Already have an account?</span>
+          <a routerLink="/auth/login" class="link-hand-bold">Sign In here</a>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .auth-container {
+    .handcrafted-auth-wrapper {
       min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #312E81 100%);
-      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg-app);
+      padding: 4rem 2rem;
+      position: relative;
+      overflow: hidden;
     }
-    .auth-card {
-      width: 100%; max-width: 500px; padding: 2.5rem 2rem;
-      background: rgba(255,255,255,0.95);
+    
+    .blob-top { position: absolute; top: -100px; right: -100px; width: 400px; height: 400px; background: var(--primary-light); border-radius: 50%; filter: blur(80px); z-index: 0; }
+    .blob-bottom { position: absolute; bottom: -150px; left: -100px; width: 500px; height: 500px; background: var(--accent-soft); border-radius: 50%; filter: blur(100px); z-index: 0; }
+
+    .auth-box-hand {
+      width: 100%;
+      max-width: 520px;
+      background: white;
+      padding: 4rem 3.5rem;
+      border-radius: 3rem;
+      box-shadow: var(--shadow-float);
+      border: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+    }
+    .auth-box-hand.wide { max-width: 600px; }
+
+    .auth-header-hand { margin-bottom: 3rem; }
+    .brand-badge-hand { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem; }
+    .logo-sq { width: 36px; height: 36px; background: var(--primary); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; }
+    .logo-txt { font-weight: 800; font-family: var(--font-heading); color: var(--text-main); font-size: 1.1rem; }
+    
+    .auth-title { font-size: 2.25rem; font-weight: 800; color: var(--text-main); font-family: var(--font-heading); letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 0.75rem; }
+    .auth-subtitle { color: var(--text-muted); font-weight: 500; font-size: 1rem; }
+
+    .section-divider-hand { display: flex; align-items: center; gap: 1rem; margin: 2rem 0 1.5rem; }
+    .section-divider-hand span { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; white-space: nowrap; }
+    .section-divider-hand::after { content: ''; flex: 1; height: 1px; background: var(--border); border-radius: 1px; }
+
+    .role-grid-hand { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .role-option-hand {
+      background: #F8FAFC;
+      border: 2px solid #F1F5F9;
+      padding: 1.25rem 0.5rem;
       border-radius: 1.5rem;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
     }
-    .logo-container { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem; }
-    .logo-icon {
-      width: 48px; height: 48px;
-      background: linear-gradient(135deg, #6366F1, #8B5CF6);
-      border-radius: 14px; display: flex; align-items: center; justify-content: center;
-      color: white; font-weight: 900; font-size: 1.125rem;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-    }
-    .logo-text { font-size: 1.75rem; font-weight: 900; color: #1E293B; margin: 0; }
-    .subtitle { color: #64748B; font-size: 0.875rem; margin-top: 0.25rem; }
+    .role-option-hand:hover { border-color: var(--primary-light); background: white; }
+    .role-option-hand.active { background: var(--primary-light); border-color: var(--primary); transform: translateY(-4px); }
+    .role-emoji { font-size: 1.5rem; }
+    .role-name { font-size: 0.8rem; font-weight: 800; color: var(--text-main); }
+    .role-option-hand.active .role-name { color: var(--primary); }
 
-    .role-selector { display: flex; gap: 0.5rem; }
-    .role-btn {
-      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
-      padding: 0.75rem; border-radius: 12px;
-      border: 2px solid #E2E8F0; background: white;
-      cursor: pointer; transition: all 0.2s;
-      font-weight: 700; font-size: 0.75rem; color: #64748B;
-    }
-    .role-btn.active {
-      border-color: #6366F1; background: #EEF2FF; color: #6366F1;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    }
-    .role-icon { font-size: 1.5rem; }
-
-    .approval-notice {
-      background: #FEF3C7; border: 1px solid #FDE68A;
-      border-radius: 10px; padding: 0.75rem 1rem;
-      font-size: 0.8125rem; color: #92400E; font-weight: 600;
-    }
-
-    .form-group { margin-bottom: 1rem; }
-    .form-label { display: block; font-weight: 700; font-size: 0.8125rem; color: #334155; margin-bottom: 0.4rem; }
-    .form-control {
-      width: 100%; padding: 0.75rem 1rem; border-radius: 10px;
-      border: 1.5px solid #E2E8F0; font-size: 0.9375rem;
-      transition: all 0.2s; box-sizing: border-box;
-    }
-    .form-control:focus { border-color: #6366F1; box-shadow: 0 0 0 4px rgba(99,102,241,0.1); outline: none; }
-
-    .form-row { display: flex; gap: 1rem; }
+    .form-row-hand { display: flex; gap: 1.5rem; }
     .flex-1 { flex: 1; }
 
-    .btn { border: none; cursor: pointer; font-weight: 700; border-radius: 12px; font-size: 0.9375rem; transition: all 0.2s; }
-    .btn-primary {
-      background: linear-gradient(135deg, #6366F1, #8B5CF6);
-      color: white; padding: 0.85rem;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    }
-    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4); }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-block { width: 100%; }
+    .otp-instruction-hand { text-align: center; background: #F8FAFC; padding: 2rem; border-radius: 2rem; margin-bottom: 2.5rem; border: 1px solid var(--border); }
+    .instruction-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .text-center-bold { text-align: center; font-weight: 800; font-size: 1.5rem; letter-spacing: 0.25em; }
 
-    .text-primary { color: #6366F1; text-decoration: none; }
-    .text-primary:hover { text-decoration: underline; }
-    .text-secondary { color: #64748B; }
-    .text-sm { font-size: 0.875rem; }
-    .text-center { text-align: center; }
-    .font-bold { font-weight: 700; }
+    .pending-badge-hand { margin-bottom: 2rem; }
+    .p-icon { font-size: 4rem; display: block; margin-bottom: 1rem; }
+    .p-title { font-size: 1.75rem; font-weight: 800; color: var(--text-main); font-family: var(--font-heading); margin: 0; }
+    .p-text { color: var(--text-muted); font-size: 1rem; line-height: 1.6; }
 
-    .pending-icon { font-size: 3rem; margin-bottom: 1rem; }
-    .timezone-badge {
-      background: #EEF2FF; border: 1px solid #C7D2FE;
-      border-radius: 10px; padding: 0.6rem 1rem;
-      font-size: 0.8125rem; color: #4338CA; font-weight: 600;
-      margin-bottom: 1.25rem; text-align: center;
+    .btn-full { width: 100%; padding: 1rem; }
+    .mt-8 { margin-top: 2.5rem; }
+    
+    .auth-footer-hand {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px dashed var(--border);
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
     }
-    .animate-fade { animation: fadeIn 0.3s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .link-hand-bold { color: var(--text-main); font-weight: 800; text-decoration: none; border-bottom: 2px solid var(--primary-light); transition: var(--transition-smooth); }
+    .link-hand-bold:hover { color: var(--primary); border-color: var(--primary); }
+
+    @media (max-width: 500px) {
+      .auth-box-hand { padding: 3rem 2rem; border-radius: 2rem; }
+      .form-row-hand { flex-direction: column; gap: 0; }
+      .role-grid-hand { grid-template-columns: 1fr; }
+    }
   `]
 })
 export class RegisterComponent implements OnInit {
@@ -298,17 +306,6 @@ export class RegisterComponent implements OnInit {
     'AU': { tz: 'Australia/Sydney', currency: 'AUD' },
     'AE': { tz: 'Asia/Dubai', currency: 'AED' },
     'SG': { tz: 'Asia/Singapore', currency: 'SGD' },
-    'DE': { tz: 'Europe/Berlin', currency: 'EUR' },
-    'FR': { tz: 'Europe/Paris', currency: 'EUR' },
-    'JP': { tz: 'Asia/Tokyo', currency: 'JPY' },
-    'KR': { tz: 'Asia/Seoul', currency: 'KRW' },
-    'NZ': { tz: 'Pacific/Auckland', currency: 'NZD' },
-    'SA': { tz: 'Asia/Riyadh', currency: 'SAR' },
-    'QA': { tz: 'Asia/Qatar', currency: 'QAR' },
-    'KW': { tz: 'Asia/Kuwait', currency: 'KWD' },
-    'NP': { tz: 'Asia/Kathmandu', currency: 'NPR' },
-    'BD': { tz: 'Asia/Dhaka', currency: 'BDT' },
-    'LK': { tz: 'Asia/Colombo', currency: 'LKR' },
     'OTHER': { tz: Intl.DateTimeFormat().resolvedOptions().timeZone, currency: 'USD' }
   };
 
@@ -344,10 +341,10 @@ export class RegisterComponent implements OnInit {
       next: () => {
         this.isLoading = false;
         this.isVerifying = true;
-        this.toast.success('OTP sent to your email. Please verify.');
+        this.toast.success('Security code sent to your email.');
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Registration failed. Please try again.');
+        this.toast.error(err.error?.message || 'Registration failed. Please check your details.');
         this.isLoading = false;
       }
     });
@@ -364,11 +361,11 @@ export class RegisterComponent implements OnInit {
           this.authService.logout();
           return;
         }
-        this.toast.success('Account verified successfully! Welcome to TuitionHub!');
+        this.toast.success('Account verified! Welcome to the family.');
         this.authService.navigateByRole(res.role);
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Verification failed. Invalid OTP.');
+        this.toast.error(err.error?.message || 'Verification failed. Invalid code.');
         this.isLoading = false;
       }
     });
