@@ -1,5 +1,6 @@
 package com.tuitionhub.backend.controller;
 
+import com.tuitionhub.backend.dto.ApiResponse;
 import com.tuitionhub.backend.model.AssignmentRequest;
 import com.tuitionhub.backend.model.User;
 import com.tuitionhub.backend.repository.AssignmentRequestRepository;
@@ -25,7 +26,7 @@ public class StudentController {
     private final JwtTokenProvider tokenProvider;
 
     @PostMapping("/request-tuition")
-    public ResponseEntity<?> requestTuition(@RequestBody Map<String, String> payload, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> requestTuition(@RequestBody Map<String, String> payload, @RequestHeader("Authorization") String token) {
         String email = tokenProvider.getEmailFromToken(token.substring(7));
         User student = userRepository.findByEmail(email).orElseThrow();
 
@@ -39,18 +40,18 @@ public class StudentController {
 
         requestRepository.save(request);
         log.info("📩 New Tuition Request from Student: {}, Subjects: {}", student.getEmail(), request.getSubjects());
-        return ResponseEntity.ok(Map.of("message", "Request submitted to Admin successfully"));
+        return ResponseEntity.ok(ApiResponse.success(Map.of("message", "Request submitted to Admin successfully"), "Request submitted"));
     }
 
     @GetMapping("/my-requests")
-    public ResponseEntity<List<AssignmentRequest>> getMyRequests(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse<List<AssignmentRequest>>> getMyRequests(@RequestHeader("Authorization") String token) {
         String email = tokenProvider.getEmailFromToken(token.substring(7));
         User student = userRepository.findByEmail(email).orElseThrow();
-        return ResponseEntity.ok(requestRepository.findByStudent(student));
+        return ResponseEntity.ok(ApiResponse.success(requestRepository.findByStudent(student), "Requests fetched"));
     }
 
     @GetMapping("/referrals")
-    public ResponseEntity<List<Map<String, Object>>> getReferrals(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getReferrals(@RequestHeader("Authorization") String token) {
         String email = tokenProvider.getEmailFromToken(token.substring(7));
         User student = userRepository.findByEmail(email).orElseThrow();
         
@@ -62,6 +63,6 @@ public class StudentController {
                 "isApproved", u.getIsApproved()
             )).toList();
             
-        return ResponseEntity.ok(referrals);
+        return ResponseEntity.ok(ApiResponse.success(referrals, "Referrals fetched"));
     }
 }

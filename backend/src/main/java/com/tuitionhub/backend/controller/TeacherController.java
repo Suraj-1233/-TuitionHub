@@ -1,5 +1,6 @@
 package com.tuitionhub.backend.controller;
 
+import com.tuitionhub.backend.dto.ApiResponse;
 import com.tuitionhub.backend.model.*;
 import com.tuitionhub.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,20 +18,21 @@ public class TeacherController {
     private final UserRepository userRepository;
 
     @GetMapping("/list")
-    public ResponseEntity<List<User>> getApprovedTeachers() {
-        return ResponseEntity.ok(userRepository.findByRoleAndIsApproved(Role.TEACHER, true));
+    public ResponseEntity<ApiResponse<List<User>>> getApprovedTeachers() {
+        return ResponseEntity.ok(ApiResponse.success(userRepository.findByRoleAndIsApproved(Role.TEACHER, true), "Approved teachers fetched"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getTeacherProfile(@PathVariable Long id) {
-        return ResponseEntity.ok(userRepository.findById(id)
-                .orElseThrow(() -> new com.tuitionhub.backend.exception.ResourceNotFoundException("Teacher not found")));
+    public ResponseEntity<ApiResponse<User>> getTeacherProfile(@PathVariable Long id) {
+        User teacher = userRepository.findById(id)
+                .orElseThrow(() -> new com.tuitionhub.backend.exception.ResourceNotFoundException("Teacher not found"));
+        return ResponseEntity.ok(ApiResponse.success(teacher, "Teacher profile fetched"));
     }
 
     @PutMapping("/profile")
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('TEACHER')")
     @org.springframework.transaction.annotation.Transactional
-    public ResponseEntity<User> updateProfile(
+    public ResponseEntity<ApiResponse<User>> updateProfile(
             @RequestBody User updatedProfile,
             @AuthenticationPrincipal User teacher) {
         
@@ -55,6 +57,6 @@ public class TeacherController {
             profile.setAvailableDays(updatedP.getAvailableDays());
         }
 
-        return ResponseEntity.ok(userRepository.save(teacher));
+        return ResponseEntity.ok(ApiResponse.success(userRepository.save(teacher), "Profile updated successfully"));
     }
 }

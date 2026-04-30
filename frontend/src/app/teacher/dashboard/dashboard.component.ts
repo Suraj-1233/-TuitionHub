@@ -203,8 +203,14 @@ export class TeacherDashboardComponent implements OnInit {
   }
 
   loadData() {
-    this.batchService.getTeacherBatches().subscribe((b: Batch[]) => this.myBatches = b);
-    this.batchService.getPendingRequests().subscribe((r: BatchJoinRequest[]) => this.pendingRequests = r);
+    this.batchService.getTeacherBatches().subscribe({
+      next: (b) => this.myBatches = b || [],
+      error: () => this.myBatches = []
+    });
+    this.batchService.getPendingRequests().subscribe({
+      next: (r) => this.pendingRequests = r || [],
+      error: () => this.pendingRequests = []
+    });
   }
 
   respondRequest(id: number, approve: boolean) {

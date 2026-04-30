@@ -168,7 +168,13 @@ export class AdminDashboardComponent implements OnInit {
   constructor(private adminService: AdminService) {}
 
   ngOnInit() {
-    this.adminService.getDashboard().subscribe(s => this.stats = s);
-    this.adminService.getAllBatches().subscribe(b => this.batches = b);
+    this.adminService.getDashboard().subscribe({
+      next: (s) => this.stats = s,
+      error: () => this.stats = null
+    });
+    this.adminService.getAllBatches().subscribe({
+      next: (b) => this.batches = b || [],
+      error: () => this.batches = []
+    });
   }
 }

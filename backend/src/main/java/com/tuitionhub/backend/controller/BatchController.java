@@ -1,5 +1,6 @@
 package com.tuitionhub.backend.controller;
 
+import com.tuitionhub.backend.dto.ApiResponse;
 import com.tuitionhub.backend.dto.BatchDto;
 import com.tuitionhub.backend.model.BatchJoinRequest;
 import com.tuitionhub.backend.model.User;
@@ -21,96 +22,96 @@ public class BatchController {
 
     // ---- Public ----
     @GetMapping("/api/batches")
-    public ResponseEntity<List<BatchDto.Response>> getAllBatches() {
-        return ResponseEntity.ok(batchService.getAllActiveBatches());
+    public ResponseEntity<ApiResponse<List<BatchDto.Response>>> getAllBatches() {
+        return ResponseEntity.ok(ApiResponse.success(batchService.getAllActiveBatches(), "Batches fetched"));
     }
 
     @GetMapping("/api/batches/{id}")
-    public ResponseEntity<BatchDto.Response> getBatch(@PathVariable Long id) {
-        return ResponseEntity.ok(batchService.getBatchById(id));
+    public ResponseEntity<ApiResponse<BatchDto.Response>> getBatch(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(batchService.getBatchById(id), "Batch fetched"));
     }
 
     // ---- Teacher ----
     @PostMapping("/api/teacher/batches")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<BatchDto.Response> createBatch(
+    public ResponseEntity<ApiResponse<BatchDto.Response>> createBatch(
             @RequestBody BatchDto.CreateRequest request,
             @AuthenticationPrincipal User teacher) {
-        return ResponseEntity.ok(batchService.createBatch(request, teacher));
+        return ResponseEntity.ok(ApiResponse.success(batchService.createBatch(request, teacher), "Batch created"));
     }
 
     @GetMapping("/api/teacher/batches")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<List<BatchDto.Response>> getMyBatches(@AuthenticationPrincipal User teacher) {
-        return ResponseEntity.ok(batchService.getTeacherBatches(teacher));
+    public ResponseEntity<ApiResponse<List<BatchDto.Response>>> getMyBatches(@AuthenticationPrincipal User teacher) {
+        return ResponseEntity.ok(ApiResponse.success(batchService.getTeacherBatches(teacher), "Teacher batches fetched"));
     }
 
     @PutMapping("/api/teacher/batches/{id}/live-link")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<BatchDto.Response> updateLiveLink(
+    public ResponseEntity<ApiResponse<BatchDto.Response>> updateLiveLink(
             @PathVariable Long id,
             @RequestBody BatchDto.UpdateLiveLink request,
             @AuthenticationPrincipal User teacher) {
-        return ResponseEntity.ok(batchService.updateLiveClassLink(id, request, teacher));
+        return ResponseEntity.ok(ApiResponse.success(batchService.updateLiveClassLink(id, request, teacher), "Live link updated"));
     }
 
     @GetMapping("/api/teacher/join-requests")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<List<BatchJoinRequest>> getPendingRequests(@AuthenticationPrincipal User teacher) {
-        return ResponseEntity.ok(batchService.getPendingRequests(teacher));
+    public ResponseEntity<ApiResponse<List<BatchJoinRequest>>> getPendingRequests(@AuthenticationPrincipal User teacher) {
+        return ResponseEntity.ok(ApiResponse.success(batchService.getPendingRequests(teacher), "Join requests fetched"));
     }
 
     @PostMapping("/api/teacher/join-requests/{requestId}/respond")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<Map<String, String>> respondToRequest(
+    public ResponseEntity<ApiResponse<Map<String, String>>> respondToRequest(
             @PathVariable Long requestId,
             @RequestParam boolean approve,
             @AuthenticationPrincipal User teacher) {
         String msg = batchService.respondToJoinRequest(requestId, approve, teacher);
-        return ResponseEntity.ok(Map.of("message", msg));
+        return ResponseEntity.ok(ApiResponse.success(Map.of("message", msg), "Response sent"));
     }
 
     // ---- Student ----
     @GetMapping("/api/student/batches")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<List<BatchDto.Response>> getStudentBatches(@AuthenticationPrincipal User student) {
-        return ResponseEntity.ok(batchService.getStudentBatches(student));
+    public ResponseEntity<ApiResponse<List<BatchDto.Response>>> getStudentBatches(@AuthenticationPrincipal User student) {
+        return ResponseEntity.ok(ApiResponse.success(batchService.getStudentBatches(student), "Student batches fetched"));
     }
 
     @PostMapping("/api/student/batches/{batchId}/join")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<Map<String, String>> joinBatch(
+    public ResponseEntity<ApiResponse<Map<String, String>>> joinBatch(
             @PathVariable Long batchId,
             @AuthenticationPrincipal User student) {
         String msg = batchService.requestJoin(batchId, student);
-        return ResponseEntity.ok(Map.of("message", msg));
+        return ResponseEntity.ok(ApiResponse.success(Map.of("message", msg), "Join request sent"));
     }
 
     @DeleteMapping("/api/student/batches/{batchId}/leave")
     @PreAuthorize("hasRole('STUDENT')")
-    public ResponseEntity<Map<String, String>> leaveBatch(
+    public ResponseEntity<ApiResponse<Map<String, String>>> leaveBatch(
             @PathVariable Long batchId,
             @AuthenticationPrincipal User student) {
         String msg = batchService.leavesBatch(batchId, student);
-        return ResponseEntity.ok(Map.of("message", msg));
+        return ResponseEntity.ok(ApiResponse.success(Map.of("message", msg), "Left batch"));
     }
 
     // ---- Rescheduling (Mutual) ----
     @PostMapping("/api/batches/{id}/propose-reschedule")
     @PreAuthorize("hasAnyRole('TEACHER', 'STUDENT')")
-    public ResponseEntity<BatchDto.Response> proposeReschedule(
+    public ResponseEntity<ApiResponse<BatchDto.Response>> proposeReschedule(
             @PathVariable Long id,
             @RequestBody Map<String, String> payload,
             @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(batchService.proposeReschedule(id, payload.get("newTiming"), user));
+        return ResponseEntity.ok(ApiResponse.success(batchService.proposeReschedule(id, payload.get("newTiming"), user), "Reschedule proposed"));
     }
 
     @PostMapping("/api/batches/{id}/respond-reschedule")
     @PreAuthorize("hasAnyRole('TEACHER', 'STUDENT')")
-    public ResponseEntity<BatchDto.Response> respondReschedule(
+    public ResponseEntity<ApiResponse<BatchDto.Response>> respondReschedule(
             @PathVariable Long id,
             @RequestParam boolean accept,
             @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(batchService.respondToReschedule(id, accept, user));
+        return ResponseEntity.ok(ApiResponse.success(batchService.respondToReschedule(id, accept, user), "Reschedule response sent"));
     }
 }

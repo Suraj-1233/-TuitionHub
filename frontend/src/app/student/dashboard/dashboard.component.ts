@@ -281,11 +281,19 @@ export class StudentDashboardComponent implements OnInit {
 
 
   loadData() {
-    this.batchService.getMyBatches().subscribe((b: Batch[]) => this.myBatches = b);
-    this.studentService.getMyRequests().subscribe(r => this.pendingRequests = r);
+    this.batchService.getMyBatches().subscribe({
+      next: (b) => this.myBatches = b || [],
+      error: () => this.myBatches = []
+    });
+    
+    this.studentService.getMyRequests().subscribe({
+      next: (r) => this.pendingRequests = r || [],
+      error: () => this.pendingRequests = []
+    });
 
-    this.studentService.getReferrals().subscribe(ref => {
-      this.referrals = ref;
+    this.studentService.getReferrals().subscribe({
+      next: (ref) => this.referrals = ref || [],
+      error: () => this.referrals = []
     });
   }
 
