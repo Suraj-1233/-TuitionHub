@@ -78,7 +78,7 @@ import { RouterLink } from '@angular/router';
               <select [(ngModel)]="selectedTeacherId" class="modal-input">
                 <option [value]="null" disabled>Select a Teacher</option>
                 <option *ngFor="let t of getFilteredTeachers()" [value]="t.id">
-                  {{ t.name }} - {{ t.subject }} ({{ t.qualification }})
+                  {{ t.name }} - {{ t.teacherProfile?.subject || 'No subject' }} ({{ t.teacherProfile?.qualification || 'N/A' }})
                 </option>
               </select>
             </div>
@@ -184,12 +184,15 @@ export class AdminRequestsComponent implements OnInit {
 
   getFilteredTeachers() {
     if (!this.selectedRequest) return [];
-    const subj = this.selectedRequest.subjects;
-    if (subj === 'Other' || !subj) return this.allTeachers;
-    
-    return this.allTeachers.filter(t => 
-      t.subject?.toLowerCase().includes(subj.toLowerCase())
+    const subj = (this.selectedRequest.subjects || '').toLowerCase().trim();
+    if (!subj || subj === 'other') return this.allTeachers;
+
+    // match against teacherProfile.subject
+    const matched = this.allTeachers.filter(t =>
+      t.teacherProfile?.subject?.toLowerCase().includes(subj)
     );
+    // If no match at all, show everyone so admin can still pick
+    return matched.length > 0 ? matched : this.allTeachers;
   }
 
   confirmAssignment() {
