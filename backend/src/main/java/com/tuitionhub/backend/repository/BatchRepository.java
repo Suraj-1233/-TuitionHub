@@ -19,4 +19,7 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 
     @Query("SELECT b FROM Batch b WHERE b.teacher.id = :teacherId")
     List<Batch> findByTeacherId(Long teacherId);
+
+    @Query("SELECT DISTINCT b FROM Batch b LEFT JOIN FETCH b.teacher LEFT JOIN FETCH b.students")
+    List<Batch> findAllWithTeacherAndStudents();
 }

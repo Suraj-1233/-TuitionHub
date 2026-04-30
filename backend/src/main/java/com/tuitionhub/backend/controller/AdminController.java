@@ -102,8 +102,9 @@ public class AdminController {
     // ==================== BATCH MANAGEMENT ====================
 
     @GetMapping("/batches")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<Batch>>> getAllBatches() {
-        return ResponseEntity.ok(ApiResponse.success(batchRepository.findAll(), "Batches fetched"));
+        return ResponseEntity.ok(ApiResponse.success(batchRepository.findAllWithTeacherAndStudents(), "Batches fetched"));
     }
 
     @PostMapping("/batches/{batchId}/students/{studentId}")

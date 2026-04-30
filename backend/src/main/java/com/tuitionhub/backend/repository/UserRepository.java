@@ -23,4 +23,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByReferredBy(User referrer);
     List<User> findByParent(User parent);
     List<User> findByTempParentEmail(String email);
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.teacherProfile WHERE u.role = :role")
+    List<User> findByRoleWithProfile(@org.springframework.data.repository.query.Param("role") Role role);
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.teacherProfile WHERE u.role = :role AND u.isApproved = :isApproved")
+    List<User> findByRoleAndIsApprovedWithProfile(@org.springframework.data.repository.query.Param("role") Role role, @org.springframework.data.repository.query.Param("isApproved") Boolean isApproved);
 }

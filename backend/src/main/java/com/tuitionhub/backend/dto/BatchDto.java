@@ -45,7 +45,19 @@ public class BatchDto {
         private Boolean isTimeChangeProposed;
         private TeacherSummary teacher;
         private Boolean isActive;
-        private String currency; // INR, USD, GBP, etc.
+        private String currency;
+        private java.util.List<StudentSummary> students;
+    }
+
+    @Data
+    public static class StudentSummary {
+        private Long id;
+        private String name;
+        private String email;
+        private String city;
+        private String country;
+        private String timezone;
+        private String currency;
     }
 
     @Data

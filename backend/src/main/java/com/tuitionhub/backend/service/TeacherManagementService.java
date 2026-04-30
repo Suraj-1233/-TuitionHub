@@ -16,12 +16,14 @@ public class TeacherManagementService {
 
     private final UserRepository userRepository;
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<User> getAllTeachers() {
-        return userRepository.findByRole(Role.TEACHER);
+        return userRepository.findByRoleWithProfile(Role.TEACHER);
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<User> getPendingTeachers() {
-        return userRepository.findByRoleAndIsApproved(Role.TEACHER, false);
+        return userRepository.findByRoleAndIsApprovedWithProfile(Role.TEACHER, false);
     }
 
     @Transactional

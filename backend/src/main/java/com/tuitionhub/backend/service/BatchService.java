@@ -210,6 +210,20 @@ public class BatchService {
         
         res.setTeacher(ts);
 
+        // Map students
+        List<BatchDto.StudentSummary> studentSummaries = batch.getStudents().stream().map(s -> {
+            BatchDto.StudentSummary ss = new BatchDto.StudentSummary();
+            ss.setId(s.getId());
+            ss.setName(s.getName());
+            ss.setEmail(s.getEmail());
+            ss.setCity(s.getCity());
+            ss.setCountry(s.getCountry());
+            ss.setTimezone(s.getTimezone());
+            ss.setCurrency(s.getCurrency());
+            return ss;
+        }).collect(Collectors.toList());
+        res.setStudents(studentSummaries);
+
         return res;
     }
 

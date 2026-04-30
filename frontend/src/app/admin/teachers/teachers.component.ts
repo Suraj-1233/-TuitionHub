@@ -66,7 +66,8 @@ import { AuthService } from '../../shared/services/auth.service';
               </td>
                <td>
                  <div class="expertise-cell">
-                   <span class="subject-tag">{{ teacher.subject }}</span>
+                   <span class="subject-tag" *ngIf="teacher.teacherProfile?.subject">{{ teacher.teacherProfile?.subject }}</span>
+                   <span class="text-secondary text-sm" *ngIf="!teacher.teacherProfile?.subject">Not set</span>
                  </div>
                </td>
                <td>
@@ -128,7 +129,7 @@ import { AuthService } from '../../shared/services/auth.service';
                     <div class="modal-avatar">{{ expandedTeacher.name.charAt(0) }}</div>
                     <div>
                       <h3>{{ expandedTeacher.name }}</h3>
-                      <p>{{ expandedTeacher.qualification }} • {{ expandedTeacher.subject }}</p>
+                      <p>{{ expandedTeacher.teacherProfile?.qualification || 'No qualification set' }} • {{ expandedTeacher.teacherProfile?.subject || 'No subject set' }}</p>
                     </div>
                   </div>
                   <button class="close-btn" (click)="expandedTeacher = null">×</button>
