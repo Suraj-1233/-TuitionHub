@@ -46,7 +46,6 @@ import { AuthService } from '../../shared/services/auth.service';
             <tr>
                <th>Educator</th>
                <th>Expertise</th>
-               <th>Timezone</th>
                <th>Students 👥</th>
                <th>Status</th>
                <th class="text-right">Manage</th>
@@ -70,11 +69,7 @@ import { AuthService } from '../../shared/services/auth.service';
                    <span class="text-secondary text-sm" *ngIf="!teacher.teacherProfile?.subject">Not set</span>
                  </div>
                </td>
-               <td>
-                 <div class="timezone-cell">
-                   <span class="text-sm font-bold">🌍 {{ teacher.timezone || 'Not detected' }}</span>
-                 </div>
-               </td>
+
               <td>
                 <div class="student-count-cell">
                   <div class="student-count-badge" [ngClass]="getTeacherStudentCount(teacher.id) === 0 ? 'zero' : 'has-students'">
