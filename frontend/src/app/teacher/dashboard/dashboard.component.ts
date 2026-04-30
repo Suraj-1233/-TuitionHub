@@ -82,8 +82,8 @@ import { AuthService } from '../../shared/services/auth.service';
 
             <div *ngIf="myBatches.length === 0" class="empty-state">
               <div class="empty-icon">📂</div>
-              <p>You haven't created any batches.</p>
-              <button class="btn btn-primary btn-sm" routerLink="/teacher/batches">Create New Batch</button>
+              <p>You have no assigned classes yet.</p>
+              <p class="text-xs text-secondary">Classes are assigned to you by the platform administrator.</p>
             </div>
 
             <div class="batch-summary-list" *ngIf="myBatches.length > 0">

@@ -16,9 +16,8 @@ import { RouterLink } from '@angular/router';
       <div class="page-header animate-slide">
         <div>
           <h1 class="page-title">My Teaching Classes 📚</h1>
-          <p class="subtitle text-secondary">Manage your 1-on-1 active classes and live sessions.</p>
+          <p class="subtitle text-secondary">Manage your 1-on-1 assigned classes and live sessions.</p>
         </div>
-        <button class="btn-setup" (click)="showCreateModal = true">+ Setup New Class</button>
       </div>
 
       <div class="classes-grid">
@@ -68,50 +67,6 @@ import { RouterLink } from '@angular/router';
         </div>
       </div>
 
-      <!-- Setup Modal -->
-      <div class="modal-overlay" *ngIf="showCreateModal" (click)="showCreateModal = false">
-        <div class="modal-content glass animate-pop" (click)="$event.stopPropagation()">
-          <h2>Setup New 1-on-1 Class</h2>
-          <form (ngSubmit)="createClass()" #createForm="ngForm">
-            <div class="form-group">
-              <label>Class Name</label>
-              <input type="text" [(ngModel)]="newClass.name" name="name" required placeholder="e.g. Advanced Physics 101">
-            </div>
-            
-            <div class="row">
-              <div class="form-group">
-                <label>Subject</label>
-                <input type="text" [(ngModel)]="newClass.subject" name="subject" required>
-              </div>
-              <div class="form-group">
-                <label>Grade/Class</label>
-                <input type="text" [(ngModel)]="newClass.targetClass" name="targetClass" required>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="form-group">
-                <label>From Time</label>
-                <input type="time" [(ngModel)]="newClass.timingFrom" name="timingFrom" required>
-              </div>
-              <div class="form-group">
-                <label>To Time</label>
-                <input type="time" [(ngModel)]="newClass.timingTo" name="timingTo" required>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Working Days (e.g. MON, WED, FRI)</label>
-              <input type="text" [(ngModel)]="newClass.days" name="days" required>
-            </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn-cancel" (click)="showCreateModal = false">Cancel</button>
-              <button type="submit" class="btn-submit" [disabled]="createForm.invalid">Create Class</button>
-            </div>
-          </form>
-        </div>
-      </div>
     </app-dashboard-layout>
   `,
   styles: [`
@@ -162,8 +117,6 @@ import { RouterLink } from '@angular/router';
 })
 export class TeacherClassesComponent implements OnInit {
   myClasses: Class[] = [];
-  showCreateModal = false;
-  newClass: any = { name: '', subject: '', targetClass: '', timingFrom: '', timingTo: '', days: '' };
 
   constructor(private batchService: BatchService, private toast: ToastService) {}
 
@@ -175,17 +128,6 @@ export class TeacherClassesComponent implements OnInit {
     this.batchService.getTeacherBatches().subscribe((c: Class[]) => this.myClasses = c);
   }
 
-  createClass() {
-    this.batchService.createBatch(this.newClass).subscribe({
-      next: () => {
-        this.toast.success('1-on-1 Class setup successfully');
-        this.showCreateModal = false;
-        this.loadClasses();
-        this.newClass = { name: '', subject: '', targetClass: '', timingFrom: '', timingTo: '', days: '' };
-      },
-      error: (err) => this.toast.error(err.error?.message || 'Error setting up class')
-    });
-  }
 
   generateMeetLink(cls: Class) {
     const roomName = `TuitionHub-${cls.id}-${Math.random().toString(36).substring(7)}`;
