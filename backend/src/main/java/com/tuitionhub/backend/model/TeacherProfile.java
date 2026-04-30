@@ -2,6 +2,7 @@ package com.tuitionhub.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "teacher_profiles")
@@ -18,6 +19,7 @@ public class TeacherProfile {
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     private String subject;
