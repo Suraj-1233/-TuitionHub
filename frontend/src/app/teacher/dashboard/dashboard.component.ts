@@ -5,7 +5,6 @@ import { DashboardLayoutComponent } from '../../shared/components/layout/dashboa
 import { BatchService } from '../../shared/services/batch.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { Batch, BatchJoinRequest } from '../../shared/models/models';
-import { AuthService } from '../../shared/services/auth.service';
 
 @Component({
   selector: 'app-teacher-dashboard',
@@ -33,13 +32,6 @@ import { AuthService } from '../../shared/services/auth.service';
           <div class="stat-info">
             <div class="stat-value text-warning">{{ pendingRequests.length }}</div>
             <div class="stat-label">New Requests</div>
-          </div>
-        </div>
-        <div class="stat-card glass highlight">
-          <div class="stat-icon success">💰</div>
-          <div class="stat-info">
-            <div class="stat-value text-success">{{ authService.getCurrencySymbolFor(myBatches.length > 0 ? myBatches[0].currency : undefined) }}{{ totalEarnings }}</div>
-            <div class="stat-label">Monthly Revenue</div>
           </div>
         </div>
       </div>
@@ -116,7 +108,7 @@ import { AuthService } from '../../shared/services/auth.service';
     .page-title { font-size: 2rem; font-weight: 800; margin: 0; }
     .subtitle { opacity: 0.9; margin-top: 0.5rem; color: white; }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
     .stat-card {
       padding: 1.5rem;
       display: flex;
@@ -196,7 +188,7 @@ export class TeacherDashboardComponent implements OnInit {
   myBatches: Batch[] = [];
   pendingRequests: BatchJoinRequest[] = [];
 
-  constructor(private batchService: BatchService, private toast: ToastService, public authService: AuthService) { }
+  constructor(private batchService: BatchService, private toast: ToastService) { }
 
   ngOnInit() {
     this.loadData();
@@ -221,9 +213,5 @@ export class TeacherDashboardComponent implements OnInit {
       },
       error: (err) => this.toast.error(err.error?.message || 'Error processing request')
     });
-  }
-
-  get totalEarnings() {
-    return this.myBatches.reduce((acc, b) => acc + (b.monthlyFees * b.currentStudents), 0);
   }
 }

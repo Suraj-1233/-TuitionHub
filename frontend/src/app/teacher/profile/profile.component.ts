@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { DashboardLayoutComponent } from '../../shared/components/layout/dashboard-layout.component';
 import { AuthService } from '../../shared/services/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { TeacherService } from '../../shared/services/teacher.service';
-import { AdminService } from '../../shared/services/admin.service';
 import { User } from '../../shared/models/models';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-teacher-profile',
@@ -141,7 +142,7 @@ export class TeacherProfileComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private teacherService: TeacherService,
-    private adminService: AdminService,
+    private http: HttpClient,
     private toast: ToastService
   ) {}
 
@@ -155,7 +156,7 @@ export class TeacherProfileComponent implements OnInit {
   }
 
   loadSubjects() {
-    this.adminService.getSubjects().subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/public/subjects`).subscribe({
       next: (s) => this.subjects = s || [],
       error: () => this.subjects = []
     });
