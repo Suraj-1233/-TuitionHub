@@ -194,10 +194,15 @@ export class StudentPaymentsComponent implements OnInit {
     this.currencySymbol = this.authService.getCurrencySymbol();
     if (user) {
       this.paymentService.getStudentSessions(user.userId).subscribe((s: any[]) => {
+        if (!s) {
+          this.sessions = [];
+          this.unpaidSessions = [];
+          return;
+        }
         this.sessions = s.sort((a: any, b: any) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
         this.unpaidSessions = s.filter((session: any) => !session.isPaid && session.status !== 'CANCELLED');
       });
-      this.paymentService.getWalletBalance(user.userId).subscribe((w: any) => this.walletBalance = w.balance);
+      this.paymentService.getWalletBalance(user.userId).subscribe((w: any) => this.walletBalance = w ? w.balance : 0);
     }
   }
 

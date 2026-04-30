@@ -200,8 +200,10 @@ export class StudentScheduleComponent implements OnInit {
   }
 
   getItemsForSlot(day: string, timeSlot: string): any[] {
+    if (!this.combinedItems || !Array.isArray(this.combinedItems)) return [];
+    
     return this.combinedItems.filter(item => {
-      if (!item.startTime) return false;
+      if (!item || !item.startTime) return false;
 
       const sessionDate = new Date(item.startTime);
       const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
