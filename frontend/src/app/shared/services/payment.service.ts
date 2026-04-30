@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Payment } from '../models/models';
+import { Observable, map } from 'rxjs';
+import { Payment, ApiResponse } from '../models/models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -11,75 +11,75 @@ export class PaymentService {
   constructor(private http: HttpClient) { }
 
   createOrder(batchId: number, forMonth: string): Observable<Payment> {
-    return this.http.post<Payment>(`${this.apiUrl}/student/payments/create-order`, {
+    return this.http.post<ApiResponse<Payment>>(`${this.apiUrl}/student/payments/create-order`, {
       batchId,
       forMonth
-    });
+    }).pipe(map(res => res.data));
   }
 
   verifyPayment(request: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/student/payments/verify`, request);
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/student/payments/verify`, request).pipe(map(res => res.data));
   }
 
   notifyFailure(request: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/student/payments/notify-failure`, request);
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/student/payments/notify-failure`, request).pipe(map(res => res.data));
   }
 
   getStudentPayments(): Observable<Payment[]> {
-    return this.http.get<Payment[]>(`${this.apiUrl}/student/payments`);
+    return this.http.get<ApiResponse<Payment[]>>(`${this.apiUrl}/student/payments`).pipe(map(res => res.data));
   }
 
   getTeacherPayments(): Observable<Payment[]> {
-    return this.http.get<Payment[]>(`${this.apiUrl}/teacher/payments`);
+    return this.http.get<ApiResponse<Payment[]>>(`${this.apiUrl}/teacher/payments`).pipe(map(res => res.data));
   }
 
   getAllPayments(): Observable<Payment[]> {
-    return this.http.get<Payment[]>(`${this.apiUrl}/admin/payments`);
+    return this.http.get<ApiResponse<Payment[]>>(`${this.apiUrl}/admin/payments`).pipe(map(res => res.data));
   }
 
   markAsPaid(paymentId: number, remark: string): Observable<Payment> {
-    return this.http.post<Payment>(`${this.apiUrl}/admin/payments/${paymentId}/mark-as-paid?remark=${remark}`, {});
+    return this.http.post<ApiResponse<Payment>>(`${this.apiUrl}/admin/payments/${paymentId}/mark-as-paid?remark=${remark}`, {}).pipe(map(res => res.data));
   }
 
   // Wallet Methods
   getWalletBalance(userId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/wallet/balance?userId=${userId}`);
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/wallet/balance?userId=${userId}`).pipe(map(res => res.data));
   }
 
   getWalletTransactions(userId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/wallet/transactions?userId=${userId}`);
+    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/wallet/transactions?userId=${userId}`).pipe(map(res => res.data));
   }
 
   topupWallet(userId: number, amount: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/wallet/topup`, { userId, amount });
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/wallet/topup`, { userId, amount }).pipe(map(res => res.data));
   }
 
   createTopupOrder(amount: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/student/wallet/topup/create-order?amount=${amount}`, {});
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/student/wallet/topup/create-order?amount=${amount}`, {}).pipe(map(res => res.data));
   }
 
   verifyTopup(request: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/student/wallet/topup/verify`, request);
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/student/wallet/topup/verify`, request).pipe(map(res => res.data));
   }
 
   // Session Methods
   bookSession(request: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/sessions/book`, request);
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/sessions/book`, request).pipe(map(res => res.data));
   }
 
   payForSession(sessionId: number, method: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/sessions/${sessionId}/pay`, { method });
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/sessions/${sessionId}/pay`, { method }).pipe(map(res => res.data));
   }
 
   getRazorpayKey(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/config/razorpay-key`);
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/config/razorpay-key`).pipe(map(res => res.data));
   }
 
   confirmGateway(sessionId: number, ref: string, amount: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/sessions/${sessionId}/confirm-gateway`, { paymentReference: ref, amount });
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/sessions/${sessionId}/confirm-gateway`, { paymentReference: ref, amount }).pipe(map(res => res.data));
   }
 
   getStudentSessions(studentId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/sessions/student?studentId=${studentId}`);
+    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/sessions/student?studentId=${studentId}`).pipe(map(res => res.data));
   }
 }

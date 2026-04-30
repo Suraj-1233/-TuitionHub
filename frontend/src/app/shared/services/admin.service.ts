@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { User } from '../models/models';
+import { Observable, map } from 'rxjs';
+import { User, ApiResponse } from '../models/models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -11,15 +11,15 @@ export class AdminService {
   constructor(private http: HttpClient) {}
 
   getDashboard(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/admin/dashboard`);
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/admin/dashboard`).pipe(map(res => res.data));
   }
 
   getAllTeachers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/admin/teachers`);
+    return this.http.get<ApiResponse<User[]>>(`${this.apiUrl}/admin/teachers`).pipe(map(res => res.data));
   }
 
   getPendingTeachers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/admin/teachers/pending`);
+    return this.http.get<ApiResponse<User[]>>(`${this.apiUrl}/admin/teachers/pending`).pipe(map(res => res.data));
   }
 
   approveTeacher(id: number): Observable<{ message: string }> {
@@ -31,11 +31,11 @@ export class AdminService {
   }
 
   getAllStudents(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/admin/students`);
+    return this.http.get<ApiResponse<User[]>>(`${this.apiUrl}/admin/students`).pipe(map(res => res.data));
   }
 
   getAllBatches(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/admin/batches`);
+    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/admin/batches`).pipe(map(res => res.data));
   }
 
   deactivateUser(id: number): Observable<{ message: string }> {
@@ -54,7 +54,7 @@ export class AdminService {
   }
 
   getAssignmentRequests(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/admin/assignment-requests`);
+    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/admin/assignment-requests`).pipe(map(res => res.data));
   }
 
   fulfillRequest(requestId: number, batchId: number): Observable<any> {
@@ -71,7 +71,7 @@ export class AdminService {
 
   // Subject Management
   getSubjects(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/admin/subjects`);
+    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/admin/subjects`).pipe(map(res => res.data));
   }
 
   addSubject(subject: any): Observable<any> {
@@ -88,11 +88,11 @@ export class AdminService {
   }
 
   getAllWalletTransactions(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/admin/wallet/transactions`);
+    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/admin/wallet/transactions`).pipe(map(res => res.data));
   }
 
   getAllSessions(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/admin/sessions`);
+    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/admin/sessions`).pipe(map(res => res.data));
   }
 
   updatePayoutStatus(id: number, status: string): Observable<any> {
