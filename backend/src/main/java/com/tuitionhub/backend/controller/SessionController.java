@@ -1,5 +1,6 @@
 package com.tuitionhub.backend.controller;
 
+import com.tuitionhub.backend.dto.ApiResponse;
 import com.tuitionhub.backend.model.Session;
 import com.tuitionhub.backend.service.SessionService;
 import lombok.RequiredArgsConstructor;
@@ -18,36 +19,41 @@ public class SessionController {
     private final SessionService sessionService;
 
     @PostMapping("/book")
-    public ResponseEntity<Session> bookSession(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<ApiResponse<Session>> bookSession(@RequestBody Map<String, Object> request) {
         Long teacherId = Long.valueOf(request.get("teacherId").toString());
         Long studentId = Long.valueOf(request.get("studentId").toString());
         LocalDateTime startTime = LocalDateTime.parse(request.get("startTime").toString());
         LocalDateTime endTime = LocalDateTime.parse(request.get("endTime").toString());
         Double amount = Double.valueOf(request.get("amount").toString());
 
-        return ResponseEntity.ok(sessionService.createSession(teacherId, studentId, startTime, endTime, amount));
+        Session session = sessionService.createSession(teacherId, studentId, startTime, endTime, amount);
+        return ResponseEntity.ok(ApiResponse.success(session, "Session booked successfully"));
     }
 
     @PostMapping("/{id}/pay")
-    public ResponseEntity<Session> payForSession(@PathVariable Long id, @RequestBody Map<String, String> request) {
+    public ResponseEntity<ApiResponse<Session>> payForSession(@PathVariable Long id, @RequestBody Map<String, String> request) {
         Session.PaymentMethod method = Session.PaymentMethod.valueOf(request.get("method"));
-        return ResponseEntity.ok(sessionService.payForSession(id, method));
+        Session session = sessionService.payForSession(id, method);
+        return ResponseEntity.ok(ApiResponse.success(session, "Payment processed"));
     }
 
     @PostMapping("/{id}/confirm-gateway")
-    public ResponseEntity<Session> confirmGateway(@PathVariable Long id, @RequestBody Map<String, Object> request) {
+    public ResponseEntity<ApiResponse<Session>> confirmGateway(@PathVariable Long id, @RequestBody Map<String, Object> request) {
         String ref = (String) request.get("paymentReference");
         Double amount = Double.valueOf(request.get("amount").toString());
-        return ResponseEntity.ok(sessionService.confirmGatewayPayment(id, ref, amount));
+        Session session = sessionService.confirmGatewayPayment(id, ref, amount);
+        return ResponseEntity.ok(ApiResponse.success(session, "Payment confirmed"));
     }
 
     @GetMapping("/student")
-    public ResponseEntity<List<Session>> getStudentSessions(@RequestParam Long studentId) {
-        return ResponseEntity.ok(sessionService.getStudentSessions(studentId));
+    public ResponseEntity<ApiResponse<List<Session>>> getStudentSessions(@RequestParam Long studentId) {
+        List<Session> sessions = sessionService.getStudentSessions(studentId);
+        return ResponseEntity.ok(ApiResponse.success(sessions, "Student sessions fetched"));
     }
 
     @GetMapping("/teacher")
-    public ResponseEntity<List<Session>> getTeacherSessions(@RequestParam Long teacherId) {
-        return ResponseEntity.ok(sessionService.getTeacherSessions(teacherId));
+    public ResponseEntity<ApiResponse<List<Session>>> getTeacherSessions(@RequestParam Long teacherId) {
+        List<Session> sessions = sessionService.getTeacherSessions(teacherId);
+        return ResponseEntity.ok(ApiResponse.success(sessions, "Teacher sessions fetched"));
     }
 }

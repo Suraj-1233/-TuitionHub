@@ -164,6 +164,10 @@ export class StudentScheduleComponent implements OnInit {
 
     // Load Sessions Only
     this.paymentService.getStudentSessions(user.userId).subscribe(s => {
+      if (!s) {
+        this.combinedItems = [];
+        return;
+      }
       this.combinedItems = s.sort((a: any, b: any) => {
         return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
       });
