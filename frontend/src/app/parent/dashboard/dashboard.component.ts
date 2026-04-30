@@ -4,6 +4,9 @@ import { DashboardLayoutComponent } from '../../shared/components/layout/dashboa
 import { RouterLink } from '@angular/router';
 import { ParentService } from '../../shared/services/parent.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { ToastService } from '../../shared/services/toast.service';
+
+declare var Razorpay: any;
 
 @Component({
   selector: 'app-parent-dashboard',
@@ -11,60 +14,104 @@ import { AuthService } from '../../shared/services/auth.service';
   imports: [CommonModule, DashboardLayoutComponent, RouterLink],
   template: `
     <app-dashboard-layout role="PARENT">
-      <div class="welcome-section animate-hand">
-        <div class="welcome-text">
-          <h1 class="page-title">Welcome back, {{ userName }}! 👋</h1>
-          <p class="subtitle">Here's how your children's learning journey is looking today.</p>
+      <div class="page-header animate-slide">
+        <div>
+          <h1 class="page-title">Parent Dashboard</h1>
+          <p class="subtitle">Monitor and manage your children's learning</p>
         </div>
       </div>
 
-      <div class="handcrafted-grid">
-        <!-- Main Stats - Asymmetrical -->
-        <div class="stats-asymmetric">
-          <div class="stat-card-hand tilt">
-            <div class="stat-icon-blob">👨‍👩‍👧‍👦</div>
-            <div class="stat-info-hand">
-              <span class="stat-value-hand">{{ childrenCount }}</span>
-              <span class="stat-label-hand">Little Learners</span>
-            </div>
+      <div class="stats-grid animate-fade">
+        <div class="stat-card card">
+          <span class="stat-icon">👨‍👩‍👧‍👦</span>
+          <div class="stat-info">
+            <span class="stat-value">{{ childrenCount }}</span>
+            <span class="stat-label">Children Enrolled</span>
           </div>
-          
-          <div class="stat-card-hand offset-card">
-            <div class="stat-icon-blob accent">📚</div>
-            <div class="stat-info-hand">
-              <span class="stat-value-hand">{{ activeBatchesCount }}</span>
-              <span class="stat-label-hand">Active Batches</span>
+        </div>
+        <div class="stat-card card">
+          <span class="stat-icon">📚</span>
+          <div class="stat-info">
+            <span class="stat-value">{{ activeBatchesCount }}</span>
+            <span class="stat-label">Active Batches</span>
+          </div>
+        </div>
+        <div class="stat-card card" style="border-left: 4px solid #E11D48;">
+          <span class="stat-icon">💳</span>
+          <div class="stat-info">
+            <span class="stat-value text-danger">₹{{ totalPendingFees }}</span>
+            <span class="stat-label">Pending Fees</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid mt-8 animate-fade">
+        <!-- Children & Their Classes -->
+        <div class="main-column">
+          <h2 class="section-title">My Children & Classes</h2>
+          <div *ngFor="let child of children" class="child-overview-card card mb-4">
+            <div class="child-header">
+              <div class="flex items-center gap-3">
+                <div class="avatar-mini">{{ child.name.charAt(0) }}</div>
+                <div>
+                  <h3 class="child-name">{{ child.name }}</h3>
+                  <p class="child-meta">Grade {{ child.studentClass }} • {{ child.board }}</p>
+                </div>
+              </div>
+              <span class="badge badge-success">Active</span>
+            </div>
+
+            <div class="batches-list mt-4">
+              <div *ngIf="child.activeBatches.length === 0" class="empty-mini">
+                No active classes for {{ child.name }} yet.
+              </div>
+              <div *ngFor="let batch of child.activeBatches" class="batch-item">
+                <div class="batch-main">
+                  <span class="batch-icon">📚</span>
+                  <div class="batch-details">
+                    <span class="b-name">{{ batch.name }}</span>
+                    <span class="b-subj">{{ batch.subject }}</span>
+                  </div>
+                </div>
+                <div class="batch-fee">
+                  <span class="fee-amt">₹{{ batch.monthlyFees }} / month</span>
+                  <button class="btn btn-primary btn-sm" (click)="payNow(child, batch)">
+                    Pay Current Month
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="stat-card-hand tilt-right">
-            <div class="stat-icon-blob warning">💰</div>
-            <div class="stat-info-hand">
-              <span class="stat-value-hand">₹{{ totalPendingFees }}</span>
-              <span class="stat-label-hand">Pending Dues</span>
-            </div>
+          <div *ngIf="children.length === 0" class="empty-state card">
+            <p>No children linked to your account. Ask your child to add your email ({{ parentEmail }}) during registration.</p>
           </div>
         </div>
 
-        <!-- Quick Actions - Handcrafted feel -->
-        <div class="actions-section animate-slide">
-          <div class="section-header-hand">
-            <h2 class="section-title-hand">Quick Links</h2>
-            <div class="title-underline"></div>
-          </div>
-          
-          <div class="action-buttons-hand">
-            <button class="btn-hand btn-hand-primary" routerLink="/parent/children">
-              <span>View Children</span>
-              <span class="btn-icon">→</span>
+        <!-- Sidebar / Actions -->
+        <div class="side-column">
+          <h2 class="section-title">Quick Actions</h2>
+          <div class="action-list">
+            <button class="action-item card" routerLink="/parent/children">
+              <span class="act-icon">👨‍👩‍👧‍👦</span>
+              <div class="act-info">
+                <span class="act-title">Manage Children</span>
+                <span class="act-desc">View profiles and progress</span>
+              </div>
             </button>
-            <button class="btn-hand btn-hand-accent" routerLink="/parent/payments">
-              <span>Pay Fees</span>
-              <span class="btn-icon">💳</span>
+            <button class="action-item card" routerLink="/parent/payments">
+              <span class="act-icon">💳</span>
+              <div class="act-info">
+                <span class="act-title">Payment History</span>
+                <span class="act-desc">View receipts and invoices</span>
+              </div>
             </button>
-            <button class="btn-hand btn-hand-outline" routerLink="/parent/wallet">
-              <span>Top-up Wallet</span>
-              <span class="btn-icon">👛</span>
+            <button class="action-item card" routerLink="/parent/wallet">
+              <span class="act-icon">👛</span>
+              <div class="act-info">
+                <span class="act-title">My Wallet</span>
+                <span class="act-desc">Add funds for easy payments</span>
+              </div>
             </button>
           </div>
         </div>
@@ -72,78 +119,147 @@ import { AuthService } from '../../shared/services/auth.service';
     </app-dashboard-layout>
   `,
   styles: [`
-    .welcome-section { margin-bottom: 4rem; position: relative; }
-    .handcrafted-grid { display: flex; flex-direction: column; gap: 4rem; }
+    .page-header { margin-bottom: 2rem; }
+    .page-title { font-size: 2rem; font-weight: 800; color: #0F172A; margin: 0; }
+    .subtitle { color: #64748B; margin-top: 0.5rem; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .stat-icon { font-size: 2rem; }
+    .stat-info { display: flex; flex-direction: column; }
+    .stat-value { font-size: 1.5rem; font-weight: 800; color: #6366F1; }
+    .stat-label { font-size: 0.8rem; color: #64748B; font-weight: 600; }
+
+    .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+    .section-title { font-size: 1.1rem; font-weight: 800; color: #0F172A; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .child-overview-card { padding: 1.5rem; }
+    .child-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F5F9; padding-bottom: 1rem; }
+    .avatar-mini { width: 40px; height: 40px; border-radius: 12px; background: #EEF2FF; color: #6366F1; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+    .child-name { font-size: 1.1rem; font-weight: 700; color: #1E293B; margin: 0; }
+    .child-meta { font-size: 0.8rem; color: #64748B; margin: 0; }
+
+    .batch-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #F8FAFC; border-radius: 12px; margin-top: 0.75rem; border: 1px solid #F1F5F9; }
+    .batch-main { display: flex; align-items: center; gap: 1rem; }
+    .batch-icon { font-size: 1.25rem; }
+    .b-name { display: block; font-weight: 700; color: #1E293B; font-size: 0.9rem; }
+    .b-subj { font-size: 0.75rem; color: #64748B; font-weight: 600; }
+    .batch-fee { text-align: right; }
+    .fee-amt { display: block; font-weight: 800; color: #0F172A; font-size: 0.9rem; margin-bottom: 4px; }
     
-    .stats-asymmetric { 
-      display: flex; 
-      gap: 2rem; 
-      flex-wrap: wrap;
-      padding: 1rem 0;
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
+
+    .action-list { display: flex; flex-direction: column; gap: 1rem; }
+    .action-item { 
+      display: flex; align-items: center; gap: 1rem; padding: 1.25rem; text-align: left;
+      width: 100%; cursor: pointer; transition: all 0.2s;
     }
-    
-    .stat-card-hand {
-      background: white;
-      padding: 2rem;
-      border-radius: 2rem;
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      min-width: 300px;
-      flex: 1;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-hand);
-      transition: var(--transition-smooth);
+    .action-item:hover { transform: translateX(5px); border-color: #6366F1; }
+    .act-icon { font-size: 1.5rem; }
+    .act-title { display: block; font-weight: 700; color: #1E293B; font-size: 0.9rem; }
+    .act-desc { font-size: 0.75rem; color: #64748B; }
+
+    .empty-state { padding: 3rem; text-align: center; color: #64748B; }
+    .empty-mini { padding: 1rem; color: #64748B; font-size: 0.875rem; font-style: italic; }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
     }
-    .stat-card-hand:hover { transform: translateY(-8px) rotate(0deg) !important; box-shadow: var(--shadow-float); }
-    
-    .stat-icon-blob {
-      width: 64px;
-      height: 64px;
-      background: var(--primary-light);
-      border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      color: var(--primary);
-    }
-    .stat-icon-blob.accent { background: var(--accent-soft); color: var(--accent); border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-    .stat-icon-blob.warning { background: #FEF3C7; color: var(--warning); border-radius: 50% 50% 30% 70% / 50% 70% 30% 50%; }
-    
-    .stat-info-hand { display: flex; flex-direction: column; }
-    .stat-value-hand { font-size: 2.25rem; font-weight: 800; color: var(--text-main); font-family: var(--font-heading); line-height: 1; }
-    .stat-label-hand { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; margin-top: 4px; }
-    
-    .section-header-hand { margin-bottom: 2rem; }
-    .section-title-hand { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem; }
-    .title-underline { width: 40px; height: 4px; background: var(--primary); border-radius: 2px; }
-    
-    .action-buttons-hand { display: flex; gap: 1.5rem; flex-wrap: wrap; }
-    .btn-icon { font-size: 1.25rem; }
   `]
 })
 export class ParentDashboardComponent implements OnInit {
   childrenCount = 0;
   activeBatchesCount = 0;
   totalPendingFees = 0;
-  isLoading = true;
-  userName = '';
+  children: any[] = [];
+  parentEmail = '';
+  isLoading = false;
 
-  constructor(private parentService: ParentService, private authService: AuthService) {}
+  constructor(
+    private parentService: ParentService, 
+    private authService: AuthService,
+    private toast: ToastService
+  ) {}
 
   ngOnInit() {
     const user = this.authService.getCurrentUser();
-    this.userName = user?.name || 'Parent';
+    if (user) this.parentEmail = user.email;
+    this.loadData();
+  }
 
+  loadData() {
     this.parentService.getDashboardSummary().subscribe({
       next: (data) => {
         this.childrenCount = data.childrenCount;
         this.activeBatchesCount = data.activeBatchesCount;
         this.totalPendingFees = data.totalPendingFees;
+        this.children = data.children;
         this.isLoading = false;
       },
       error: () => {
+        this.isLoading = false;
+      }
+    });
+  }
+
+  payNow(child: any, batch: any) {
+    if (this.isLoading) return;
+    this.isLoading = true;
+
+    // Create payment order for current month
+    const currentMonth = new Date().toISOString().substring(0, 7) + "-01";
+    
+    this.parentService.createOrder(child.id, batch.id, currentMonth).subscribe({
+      next: (order) => {
+        this.parentService.getRazorpayKey().subscribe(keyRes => {
+          this.initRazorpay(order, keyRes.keyId, child.name, batch.name);
+        });
+      },
+      error: (err) => {
+        this.toast.error(err.error?.message || 'Failed to create payment order');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  initRazorpay(order: any, keyId: string, studentName: string, batchName: string) {
+    const options = {
+      key: keyId,
+      amount: order.amount * 100,
+      currency: order.currency || 'INR',
+      name: 'TuitionHub',
+      description: `Fees for ${studentName} - ${batchName}`,
+      order_id: order.razorpayOrderId,
+      handler: (response: any) => {
+        this.verifyPayment(order.id, response);
+      },
+      theme: { color: '#6366F1' },
+      modal: {
+        ondismiss: () => {
+          this.isLoading = false;
+        }
+      }
+    };
+    const rzp = new Razorpay(options);
+    rzp.open();
+  }
+
+  verifyPayment(paymentId: number, razorpayResponse: any) {
+    const verifyReq = {
+      paymentId: paymentId,
+      razorpayOrderId: razorpayResponse.razorpay_order_id,
+      razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+      razorpaySignature: razorpayResponse.razorpay_signature
+    };
+
+    this.parentService.verifyPayment(verifyReq).subscribe({
+      next: () => {
+        this.toast.success('Payment successful!');
+        this.loadData();
+        this.isLoading = false;
+      },
+      error: () => {
+        this.toast.error('Payment verification failed');
         this.isLoading = false;
       }
     });

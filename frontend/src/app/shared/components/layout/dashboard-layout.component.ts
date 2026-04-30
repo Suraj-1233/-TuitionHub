@@ -12,15 +12,18 @@ import { AuthService } from '../../services/auth.service';
       <aside class="sidebar">
         <div class="sidebar-brand">
           <div class="logo-box">TH</div>
-          <div class="brand-text">
-            <span class="brand-name">TuitionHub</span>
-            <span class="brand-tag">Premium Learning</span>
-          </div>
+          <span class="brand-name">TuitionHub</span>
         </div>
 
-        <div class="status-indicator animate-hand">
-          <div class="status-dot"></div>
-          <span class="status-text">System Online</span>
+        <div class="sidebar-clocks">
+          <div class="clock-item">
+            <span class="clock-label">📍 Your Time ({{ userTimezoneName }})</span>
+            <span class="clock-value">{{ localTime }}</span>
+          </div>
+          <div class="clock-item" *ngIf="userTimezone !== 'Asia/Kolkata'">
+            <span class="clock-label">🇮🇳 India (IST)</span>
+            <span class="clock-value">{{ indiaTime }}</span>
+          </div>
         </div>
 
         <nav class="sidebar-nav">
@@ -32,38 +35,27 @@ import { AuthService } from '../../services/auth.service';
           </ng-container>
         </nav>
 
-        <div class="sidebar-clocks glass-hand">
-          <div class="clock-item">
-            <span class="clock-label">Local Time</span>
-            <span class="clock-value">{{ localTime }}</span>
-          </div>
-          <div class="clock-divider"></div>
-          <div class="clock-item" *ngIf="userTimezone !== 'Asia/Kolkata'">
-            <span class="clock-label">India (IST)</span>
-            <span class="clock-value">{{ indiaTime }}</span>
-          </div>
-        </div>
-
-        <div class="referral-box-hand" *ngIf="referralCode">
-          <div class="ref-header">
-            <span class="ref-icon">🎁</span>
-            <span class="ref-title">Invite & Earn</span>
-          </div>
-          <div class="ref-body">
+        <div class="referral-box" *ngIf="referralCode">
+          <span class="ref-label">Invite & Earn 🎁</span>
+          <div class="ref-code-container">
             <code class="ref-code">{{ referralCode }}</code>
-            <button class="ref-copy" (click)="copyReferral()">Copy</button>
+            <button class="copy-btn" (click)="copyReferral()" title="Copy Code">📋</button>
           </div>
+          <span class="ref-hint">Share this code with friends!</span>
         </div>
 
         <div class="sidebar-footer">
-          <div class="user-card-hand">
-            <div class="user-avatar-hand">{{ userInitial }}</div>
-            <div class="user-meta-hand">
-              <span class="u-name">{{ userName }}</span>
-              <span class="u-role">{{ role.toLowerCase() }}</span>
+          <div class="user-profile">
+            <div class="user-avatar">{{ userInitial }}</div>
+            <div class="user-details">
+              <span class="user-name">{{ userName }}</span>
+              <span class="user-email">{{ userEmail }}</span>
+              <span class="user-role">{{ role }}</span>
             </div>
-            <button class="logout-mini" (click)="logout()" title="Logout">🚪</button>
           </div>
+          <button class="logout-btn" (click)="logout()">
+            <span class="icon">🚪</span> Logout
+          </button>
         </div>
       </aside>
 
@@ -75,125 +67,130 @@ import { AuthService } from '../../services/auth.service';
     </div>
   `,
   styles: [`
-    .dashboard-layout { display: flex; min-height: 100vh; background: var(--bg-app); }
+    .dashboard-layout { display: flex; min-height: 100vh; background: var(--bg-color); }
     .sidebar {
       width: 280px;
-      padding: 2.5rem 1.5rem;
+      padding: 2rem 1.5rem;
       display: flex;
       flex-direction: column;
       position: sticky;
       top: 0;
       height: 100vh;
       background: white;
-      border-right: 1px solid var(--border);
+      border-right: 1px solid #E2E8F0;
     }
     .sidebar-brand {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      margin-bottom: 3rem;
-      padding-left: 0.5rem;
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+      padding: 0 0.5rem;
     }
     .logo-box {
-      background: var(--primary);
+      background: var(--gradient-primary);
       color: white;
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-family: var(--font-heading);
-      box-shadow: 0 8px 16px rgba(67, 56, 202, 0.2);
+      box-shadow: var(--shadow-md);
     }
-    .brand-text { display: flex; flex-direction: column; }
-    .brand-name { font-size: 1.25rem; font-weight: 800; color: var(--text-main); font-family: var(--font-heading); line-height: 1; }
-    .brand-tag { font-size: 0.65rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+    .brand-name { font-size: 1.25rem; font-weight: 700; color: #1E293B; }
     
-    .status-indicator { display: flex; align-items: center; gap: 0.5rem; background: #F0FDF4; padding: 0.5rem 1rem; border-radius: 100px; width: fit-content; margin-bottom: 2.5rem; border: 1px solid #DCFCE7; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #10B981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
-    .status-text { font-size: 0.7rem; font-weight: 800; color: #065F46; text-transform: uppercase; }
-
-    .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 0.75rem; }
+    .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
     .nav-link {
       display: flex;
       align-items: center;
-      gap: 1.25rem;
-      padding: 0.875rem 1.25rem;
-      border-radius: 1rem;
-      color: var(--text-muted);
+      gap: 1rem;
+      padding: 0.875rem 1rem;
+      border-radius: 0.75rem;
+      color: #64748B;
       text-decoration: none;
-      font-weight: 700;
-      font-size: 0.9375rem;
-      transition: var(--transition-smooth);
+      font-weight: 500;
+      transition: var(--transition);
     }
-    .nav-link:hover { background: var(--primary-light); color: var(--primary); transform: translateX(5px); }
+    .nav-link:hover { background: #F8FAFC; color: #6366F1; }
     .nav-link.active {
-      background: var(--primary);
+      background: #6366F1;
       color: white;
-      box-shadow: 0 10px 20px -5px rgba(67, 56, 202, 0.4);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
     .nav-icon { font-size: 1.25rem; }
  
     .sidebar-clocks {
-      margin: 2rem 0;
-      padding: 1.25rem;
-      border-radius: 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      text-align: center;
-    }
-    .clock-item { display: flex; flex-direction: column; gap: 2px; }
-    .clock-label { font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .clock-value { font-size: 1.125rem; font-weight: 800; color: var(--primary); font-family: var(--font-heading); }
-    .clock-divider { width: 1px; height: 30px; background: var(--border); }
-
-    .referral-box-hand {
       margin-bottom: 2rem;
-      padding: 1.25rem;
-      background: var(--primary-light);
-      border-radius: 1.25rem;
-      border: 1px dashed var(--primary);
-    }
-    .ref-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
-    .ref-icon { font-size: 1.25rem; }
-    .ref-title { font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
-    .ref-body { display: flex; align-items: center; justify-content: space-between; background: white; padding: 0.5rem 0.75rem; border-radius: 10px; }
-    .ref-code { font-family: 'Monaco', monospace; font-weight: 800; color: var(--text-main); font-size: 0.875rem; }
-    .ref-copy { background: var(--primary); color: white; border: none; padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.7rem; font-weight: 700; cursor: pointer; }
-
-    .sidebar-footer { padding-top: 1.5rem; border-top: 1px solid var(--border); }
-    .user-card-hand {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+      padding: 1rem;
+      border-radius: 1rem;
       background: #F8FAFC;
-      padding: 0.75rem;
-      border-radius: 1.25rem;
-      position: relative;
+      border: 1px solid #E2E8F0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
     }
-    .user-avatar-hand {
+    .clock-item { display: flex; flex-direction: column; }
+    .clock-label { font-size: 0.65rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+    .clock-value { font-size: 1.1rem; font-weight: 800; color: var(--primary-color); }
+
+    .sidebar-footer { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
+    .user-profile { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
+    .user-avatar {
       width: 44px;
       height: 44px;
-      border-radius: 14px;
-      background: var(--primary);
-      color: white;
+      border-radius: 12px;
+      background: #F1F5F9;
+      color: var(--primary-color);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 1.25rem;
-      box-shadow: 0 4px 10px rgba(67, 56, 202, 0.2);
+      font-weight: 700;
+      font-size: 1.125rem;
+      border: 2px solid white;
+      box-shadow: var(--shadow-sm);
     }
-    .user-meta-hand { display: flex; flex-direction: column; }
-    .u-name { font-size: 0.875rem; font-weight: 800; color: var(--text-main); }
-    .u-role { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .logout-mini { position: absolute; right: 0.75rem; background: none; border: none; cursor: pointer; font-size: 1.25rem; opacity: 0.5; transition: var(--transition-smooth); }
-    .logout-mini:hover { opacity: 1; transform: scale(1.1); }
+    .user-details { display: flex; flex-direction: column; }
+    .user-name { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+    .user-email { font-size: 0.7rem; color: var(--text-secondary); width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .user-role { font-size: 0.75rem; color: var(--text-secondary); text-transform: capitalize; }
 
-    .main-content { flex: 1; padding: 3rem 4rem; overflow-y: auto; }
+    .logout-btn {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(239, 68, 68, 0.1);
+      background: transparent;
+      color: var(--danger-color);
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+    }
+    .logout-btn:hover { background: rgba(239, 68, 68, 0.05); border-color: var(--danger-color); }
+
+    .referral-box {
+      margin: 1.5rem 0;
+      padding: 1.25rem;
+      background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+      border: 1px dashed #7DD3FC;
+      border-radius: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .ref-label { font-size: 0.7rem; font-weight: 800; color: #0369A1; text-transform: uppercase; }
+    .ref-code-container { display: flex; align-items: center; justify-content: space-between; background: white; padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid #BAE6FD; }
+    .ref-code { font-family: 'Monaco', monospace; font-weight: 800; color: #0284C7; font-size: 0.9rem; }
+    .copy-btn { background: none; border: none; cursor: pointer; padding: 0; font-size: 1rem; transition: transform 0.2s; }
+    .copy-btn:hover { transform: scale(1.2); }
+    .ref-hint { font-size: 0.65rem; color: #075985; font-weight: 500; }
+
+    .main-content { flex: 1; padding: 2rem 3rem; overflow-y: auto; }
     .content-container { max-width: 1200px; margin: 0 auto; }
   `]
 })
@@ -279,6 +276,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
         { path: '/admin/teachers', label: 'Teacher Directory', icon: '👨‍🏫' },
         { path: '/admin/students', label: 'Student Directory', icon: '👨‍🎓' },
         { path: '/admin/parents', label: 'Parent Directory', icon: '👨‍👩‍👧‍👦' },
+        { path: '/admin/batches', label: 'Active Classes', icon: '🏫' },
         { path: '/admin/wallet', label: 'Wallet Management', icon: '👛' },
         { path: '/admin/payments', label: 'Global Revenue', icon: '💳' },
       ];

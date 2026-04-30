@@ -77,6 +77,10 @@ export class AdminService {
     return this.http.put(`${this.apiUrl}/admin/requests/${requestId}/details`, { negotiatedFees, isIndividual });
   }
 
+  updateBatchFee(batchId: number, monthlyFees: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/admin/batches/${batchId}/fee`, { monthlyFees });
+  }
+
   // Subject Management
   getSubjects(): Observable<any[]> {
     return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/admin/subjects`).pipe(map(res => res.data));

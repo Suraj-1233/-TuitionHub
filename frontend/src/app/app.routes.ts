@@ -138,6 +138,10 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/subjects/subjects.component').then(m => m.AdminSubjectsComponent)
       },
       {
+        path: 'batches',
+        loadComponent: () => import('./admin/batches/batches.component').then(m => m.AdminBatchesComponent)
+      },
+      {
         path: 'wallet',
         loadComponent: () => import('./admin/wallet/wallet.component').then(m => m.AdminWalletComponent)
       },

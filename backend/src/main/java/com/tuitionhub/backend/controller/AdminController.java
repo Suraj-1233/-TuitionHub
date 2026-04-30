@@ -120,6 +120,18 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(null, "Student removed from batch"));
     }
 
+    @PutMapping("/batches/{batchId}/fee")
+    public ResponseEntity<ApiResponse<Void>> updateBatchFee(
+            @PathVariable Long batchId,
+            @RequestBody Map<String, Object> body) {
+        Double fee = Double.valueOf(body.get("monthlyFees").toString());
+        Batch batch = batchRepository.findById(batchId)
+                .orElseThrow(() -> new com.tuitionhub.backend.exception.ResourceNotFoundException("Batch not found"));
+        batch.setMonthlyFees(fee);
+        batchRepository.save(batch);
+        return ResponseEntity.ok(ApiResponse.success(null, "Batch fee updated successfully"));
+    }
+
     // ==================== ASSIGNMENT REQUESTS ====================
 
     @GetMapping("/assignment-requests")

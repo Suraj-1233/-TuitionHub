@@ -13,98 +13,90 @@ import { AuthService } from '../../shared/services/auth.service';
   imports: [CommonModule, DashboardLayoutComponent, RouterLink],
   template: `
     <app-dashboard-layout role="TEACHER">
-      <div class="teacher-hero animate-hand">
-        <div class="hero-content">
-          <h1 class="page-title">Morning, Mentor. 👋</h1>
-          <p class="subtitle">Ready to inspire some minds today? Here's your classroom overview.</p>
+      <div class="welcome-banner animate-slide">
+        <div class="welcome-text">
+          <h1 class="page-title">Teacher Dashboard 👨‍🏫</h1>
+          <p class="subtitle">Empowering the next generation, one class at a time.</p>
         </div>
       </div>
 
-      <div class="handcrafted-stats-asymmetric">
-        <div class="h-stat-card tilt">
-          <div class="h-icon primary">📚</div>
-          <div class="h-details">
-            <span class="h-val">{{ myBatches.length }}</span>
-            <span class="h-lab">Active Batches</span>
+      <div class="stats-grid animate-fade">
+        <div class="stat-card glass">
+          <div class="stat-icon primary">📚</div>
+          <div class="stat-info">
+            <div class="stat-value">{{ myBatches.length }}</div>
+            <div class="stat-label">Active Batches</div>
           </div>
         </div>
-        <div class="h-stat-card offset-card">
-          <div class="h-icon warning">👋</div>
-          <div class="h-details">
-            <span class="h-val" [class.text-warning]="pendingRequests.length > 0">{{ pendingRequests.length }}</span>
-            <span class="h-lab">New Join Requests</span>
+        <div class="stat-card glass">
+          <div class="stat-icon warning">👋</div>
+          <div class="stat-info">
+            <div class="stat-value text-warning">{{ pendingRequests.length }}</div>
+            <div class="stat-label">New Requests</div>
           </div>
         </div>
-        <div class="h-stat-card tilt-right highlight">
-          <div class="h-icon success">💰</div>
-          <div class="h-details">
-            <span class="h-val text-success">{{ authService.getCurrencySymbolFor(myBatches.length > 0 ? myBatches[0].currency : undefined) }}{{ totalEarnings }}</span>
-            <span class="h-lab">Monthly Revenue</span>
+        <div class="stat-card glass highlight">
+          <div class="stat-icon success">💰</div>
+          <div class="stat-info">
+            <div class="stat-value text-success">{{ authService.getCurrencySymbolFor(myBatches.length > 0 ? myBatches[0].currency : undefined) }}{{ totalEarnings }}</div>
+            <div class="stat-label">Monthly Revenue</div>
           </div>
         </div>
       </div>
 
-      <div class="teacher-layout-grid animate-fade">
-        <div class="requests-column">
-          <div class="section-header-hand">
-            <h2 class="section-title-hand">Student Queue</h2>
-            <div class="title-underline"></div>
-          </div>
-          
-          <div *ngIf="pendingRequests.length === 0" class="empty-state-hand glass-hand">
-            <div class="empty-icon">✨</div>
-            <p>Your queue is clear. All students are settled!</p>
-          </div>
+      <div class="dashboard-content animate-fade">
+        <div class="content-left">
+          <div class="card glass">
+            <div class="card-header">
+              <h2 class="card-title">Pending Enrollments</h2>
+              <span class="badge badge-info" *ngIf="pendingRequests.length > 0">{{ pendingRequests.length }} New</span>
+            </div>
+            
+            <div *ngIf="pendingRequests.length === 0" class="empty-state">
+              <div class="empty-icon">✨</div>
+              <p>All caught up! No pending requests.</p>
+            </div>
 
-          <div class="request-stack" *ngIf="pendingRequests.length > 0">
-            <div class="request-card-hand animate-slide" *ngFor="let req of pendingRequests">
-              <div class="r-profile">
-                <div class="r-avatar">{{ req.student.name.charAt(0) }}</div>
-                <div class="r-info">
-                  <span class="r-name">{{ req.student.name }}</span>
-                  <span class="r-meta">Grade {{ req.student.studentClass }} • {{ req.student.board }}</span>
+            <div class="request-list" *ngIf="pendingRequests.length > 0">
+              <div class="request-card" *ngFor="let req of pendingRequests">
+                <div class="request-info">
+                  <div class="student-name">{{ req.student.name }}</div>
+                  <div class="batch-name">Wants to join: <strong>{{ req.batch.name }}</strong></div>
+                  <div class="student-meta">Class {{ req.student.studentClass }} • {{ req.student.board }}</div>
                 </div>
-              </div>
-              <div class="r-batch-info">
-                <span class="r-label">Applied for</span>
-                <span class="r-batch-name">{{ req.batch.name }}</span>
-              </div>
-              <div class="r-actions">
-                <button class="btn-hand btn-hand-primary btn-sm" (click)="respondRequest(req.id, true)">Approve</button>
-                <button class="btn-hand btn-hand-outline btn-sm" (click)="respondRequest(req.id, false)">Decline</button>
+                <div class="request-actions">
+                  <button class="btn-approve" (click)="respondRequest(req.id, true)">Accept</button>
+                  <button class="btn-reject" (click)="respondRequest(req.id, false)">Reject</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="summary-column">
-          <div class="section-header-hand">
-            <h2 class="section-title-hand">Active Batches</h2>
-            <div class="title-underline"></div>
-          </div>
+        <div class="content-right">
+          <div class="card glass">
+            <div class="card-header">
+              <h2 class="card-title">Batch Summary</h2>
+              <a routerLink="/teacher/batches" class="text-link">Manage All ➔</a>
+            </div>
 
-          <div *ngIf="myBatches.length === 0" class="empty-state-hand glass-hand">
-            <div class="empty-icon">📂</div>
-            <p>You haven't created any batches yet.</p>
-            <button class="btn-hand btn-hand-primary btn-sm mt-4" routerLink="/teacher/classes">Create First Batch</button>
-          </div>
+            <div *ngIf="myBatches.length === 0" class="empty-state">
+              <div class="empty-icon">📂</div>
+              <p>You haven't created any batches.</p>
+              <button class="btn btn-primary btn-sm" routerLink="/teacher/batches">Create New Batch</button>
+            </div>
 
-          <div class="batch-summary-stack" *ngIf="myBatches.length > 0">
-            <div class="batch-item-hand animate-slide" *ngFor="let batch of myBatches" [routerLink]="['/teacher/classes', batch.id]">
-              <div class="b-top">
-                <span class="b-title">{{ batch.name }}</span>
-                <div class="b-occupancy">
-                  <div class="progress-bar-mini">
-                    <div class="progress-fill" [style.width.%]="(batch.currentStudents / batch.maxStudents) * 100"></div>
-                  </div>
+            <div class="batch-summary-list" *ngIf="myBatches.length > 0">
+              <div class="batch-summary-item animate-scale" *ngFor="let batch of myBatches" [routerLink]="['/teacher/classes', batch.id]">
+                <div class="b-header">
+                  <span class="b-name">{{ batch.name }}</span>
                   <span class="b-count">{{ batch.currentStudents }}/{{ batch.maxStudents }}</span>
                 </div>
-              </div>
-              <div class="b-bottom">
-                <span class="b-schedule">⏰ {{ batch.timingFrom }} - {{ batch.timingTo }} | {{ batch.days }}</span>
-                <span class="b-status-pill" [class.active]="batch.liveClassLink">
-                  {{ batch.liveClassLink ? 'Live Ready' : 'Setup Link' }}
-                </span>
+                <div class="b-meta">🕒 {{ batch.timingFrom }} - {{ batch.timingTo }} | {{ batch.days }}</div>
+                <div class="b-status">
+                  <span *ngIf="batch.liveClassLink" class="status-ok">● Live Class Configured</span>
+                  <span *ngIf="!batch.liveClassLink" class="status-warn">○ No Live Link</span>
+                </div>
               </div>
             </div>
           </div>
@@ -113,109 +105,90 @@ import { AuthService } from '../../shared/services/auth.service';
     </app-dashboard-layout>
   `,
   styles: [`
-    .teacher-hero { margin-bottom: 4rem; }
-    
-    .handcrafted-stats-asymmetric { 
-      display: flex; 
-      gap: 2rem; 
-      margin-bottom: 4rem;
-      flex-wrap: wrap;
+    .welcome-banner {
+      background: var(--gradient-primary);
+      border-radius: var(--border-radius);
+      padding: 2.5rem;
+      color: white;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-lg);
     }
-    
-    .h-stat-card {
-      background: white;
-      padding: 2rem;
-      border-radius: 2.5rem;
+    .page-title { font-size: 2rem; font-weight: 800; margin: 0; }
+    .subtitle { opacity: 0.9; margin-top: 0.5rem; color: white; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
+    .stat-card {
+      padding: 1.5rem;
       display: flex;
       align-items: center;
-      gap: 1.5rem;
-      flex: 1;
-      min-width: 280px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-hand);
-      transition: var(--transition-smooth);
+      gap: 1.25rem;
+      border-radius: var(--border-radius);
+      transition: var(--transition);
     }
-    .h-stat-card:hover { transform: translateY(-5px) rotate(0deg) !important; box-shadow: var(--shadow-float); }
-    
-    .h-icon {
+    .stat-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-xl); }
+    .stat-card.highlight { background: #EEF2FF; border: 1px solid #C7D2FE; }
+
+    .stat-icon {
       width: 56px;
       height: 56px;
-      border-radius: 18px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.5rem;
     }
-    .h-icon.primary { background: var(--primary-light); color: var(--primary); }
-    .h-icon.warning { background: var(--accent-soft); color: var(--accent); }
-    .h-icon.success { background: #DCFCE7; color: var(--success); }
-    
-    .h-details { display: flex; flex-direction: column; }
-    .h-val { font-size: 2.25rem; font-weight: 800; color: var(--text-main); font-family: var(--font-heading); line-height: 1; }
-    .h-lab { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-top: 4px; }
+    .stat-icon.primary { background: rgba(99, 102, 241, 0.1); color: var(--primary-color); }
+    .stat-icon.warning { background: rgba(245, 158, 11, 0.1); color: var(--accent-color); }
+    .stat-icon.success { background: rgba(16, 185, 129, 0.1); color: var(--secondary-color); }
 
-    .teacher-layout-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 4rem; }
-    
-    .section-header-hand { margin-bottom: 2rem; }
-    .section-title-hand { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem; }
-    .title-underline { width: 40px; height: 4px; background: var(--primary); border-radius: 2px; }
+    .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); line-height: 1.2; }
+    .stat-label { font-size: 0.875rem; color: var(--text-secondary); font-weight: 500; }
 
-    .request-stack { display: flex; flex-direction: column; gap: 1.5rem; }
-    .request-card-hand {
-      background: white;
-      padding: 1.5rem 2rem;
-      border-radius: 2rem;
-      border: 1px solid var(--border);
+    .dashboard-content { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 2rem; }
+    
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); }
+    .card-title { font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+    .text-link { color: var(--primary-color); text-decoration: none; font-weight: 600; font-size: 0.875rem; }
+
+    .request-list { display: flex; flex-direction: column; gap: 1rem; }
+    .request-card {
+      padding: 1.25rem;
+      background: #F8FAFC;
+      border-radius: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: var(--transition-smooth);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
     }
-    .request-card-hand:hover { border-color: var(--primary); transform: translateX(8px); }
+    .request-card:hover { border-color: var(--primary-color); background: white; box-shadow: var(--shadow-md); }
     
-    .r-profile { display: flex; align-items: center; gap: 1.25rem; }
-    .r-avatar { width: 48px; height: 48px; border-radius: 14px; background: #F1F5F9; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.25rem; }
-    .r-info { display: flex; flex-direction: column; }
-    .r-name { font-weight: 800; color: var(--text-main); font-size: 1.125rem; }
-    .r-meta { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
-    
-    .r-batch-info { display: flex; flex-direction: column; text-align: center; }
-    .r-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-    .r-batch-name { font-size: 0.875rem; font-weight: 700; color: var(--primary); }
-    
-    .r-actions { display: flex; gap: 0.75rem; }
-    .btn-sm { padding: 0.5rem 1rem; font-size: 0.75rem; }
+    .student-name { font-weight: 700; color: var(--text-primary); }
+    .batch-name { font-size: 0.875rem; color: var(--text-secondary); margin: 0.25rem 0; }
+    .student-meta { font-size: 0.75rem; color: var(--primary-color); font-weight: 600; }
 
-    .batch-summary-stack { display: flex; flex-direction: column; gap: 1.25rem; }
-    .batch-item-hand {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 1.5rem;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: var(--transition-smooth);
-    }
-    .batch-item-hand:hover { border-color: var(--primary); transform: scale(1.02); }
-    
-    .b-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .b-title { font-weight: 800; color: var(--text-main); font-size: 1rem; }
-    .b-occupancy { display: flex; align-items: center; gap: 0.75rem; }
-    .progress-bar-mini { width: 60px; height: 6px; background: #F1F5F9; border-radius: 100px; overflow: hidden; }
-    .progress-fill { height: 100%; background: var(--primary); border-radius: 100px; }
-    .b-count { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); }
-    
-    .b-bottom { display: flex; justify-content: space-between; align-items: center; }
-    .b-schedule { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
-    .b-status-pill { font-size: 0.65rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 100px; background: #FEE2E2; color: var(--danger); text-transform: uppercase; }
-    .b-status-pill.active { background: #DCFCE7; color: var(--success); }
+    .request-actions { display: flex; gap: 0.5rem; }
+    .btn-approve { background: var(--secondary-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.875rem; cursor: pointer; transition: var(--transition); }
+    .btn-approve:hover { transform: scale(1.05); filter: brightness(1.1); }
+    .btn-reject { background: #FEE2E2; color: var(--danger-color); border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.875rem; cursor: pointer; }
 
-    .empty-state-hand { text-align: center; padding: 4rem 2rem; border-radius: 2.5rem; border: 1px dashed var(--border); }
-    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .batch-summary-list { display: flex; flex-direction: column; gap: 1rem; }
+    .batch-summary-item { padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 16px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .batch-summary-item:hover { background: white; border-color: var(--primary-color); transform: translateX(5px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.05); }
+    .b-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
+    .b-name { font-weight: 700; color: var(--text-primary); }
+    .b-count { font-size: 0.75rem; background: #F1F5F9; padding: 0.2rem 0.5rem; border-radius: 6px; color: var(--text-secondary); font-weight: 700; }
+    .b-meta { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
+    .b-status { font-size: 0.7rem; font-weight: 800; }
+    .status-ok { color: var(--secondary-color); }
+    .status-warn { color: var(--accent-color); }
+
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-secondary); }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 1rem; }
 
     @media (max-width: 1024px) {
-      .teacher-layout-grid { grid-template-columns: 1fr; gap: 3rem; }
-      .request-card-hand { flex-direction: column; gap: 1.5rem; text-align: center; }
-      .r-profile { flex-direction: column; }
+      .dashboard-content { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
     }
   `]
 })
@@ -245,6 +218,6 @@ export class TeacherDashboardComponent implements OnInit {
   }
 
   get totalEarnings() {
-    return this.myBatches.reduce((acc, b) => acc + (b.monthlyFees * (b.currentStudents || 0)), 0);
+    return this.myBatches.reduce((acc, b) => acc + (b.monthlyFees * b.currentStudents), 0);
   }
 }
