@@ -102,10 +102,29 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
                 </div>
                 
                 <div class="a-actions">
-                  <div *ngIf="!mySubmissions[a.id!]" class="submit-box">
-                    <input type="text" class="form-control form-control-sm" [(ngModel)]="submissionLinks[a.id!]" placeholder="Paste link here">
-                    <button class="btn btn-primary btn-sm" (click)="submitHomework(a.id!)">Submit</button>
+                  <div *ngIf="!mySubmissions[a.id!]" class="flex flex-col items-end gap-2">
+                    <div class="flex gap-2">
+                      <input type="file" #fileInput class="hidden" (change)="handleFileUpload($event, a.id!)" accept=".pdf,.doc,.docx,.jpg,.png">
+                      
+                      <!-- Upload Button (Minimalist) -->
+                      <button class="btn-action outline" (click)="fileInput.click()" [disabled]="uploadingAssignmentId === a.id">
+                        {{ uploadingAssignmentId === a.id ? 'Uploading...' : '📁 Upload' }}
+                      </button>
+
+                      <!-- Submit Button (Appears after upload) -->
+                      <button class="btn-action primary" *ngIf="tempUploadUrls[a.id!]" (click)="submitHomework(a.id!)">
+                        Submit 🚀
+                      </button>
+                    </div>
+
+                    <!-- File Name Pill -->
+                    <div *ngIf="tempUploadUrls[a.id!]" class="file-pill">
+                      <span>📄 {{ tempFileNames[a.id!] }}</span>
+                      <button class="remove-file" (click)="tempUploadUrls[a.id!] = ''; tempFileNames[a.id!] = ''">✕</button>
+                    </div>
                   </div>
+
+                  <!-- Success Status -->
                   <div *ngIf="mySubmissions[a.id!]" class="status-badge success">
                     ✔ Submitted {{ mySubmissions[a.id!].marksObtained !== null ? '(' + mySubmissions[a.id!].marksObtained + ' Marks)' : '' }}
                   </div>
@@ -128,9 +147,6 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
     .tab-btn:hover { color: var(--primary-color); }
     .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
 
-    .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); }
-    .card-title { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin: 0; }
-
     .info-row { display: flex; justify-content: space-between; margin-bottom: 1.25rem; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.75rem; }
     .info-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     .info-row .label { font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; }
@@ -150,10 +166,17 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
     .a-meta { display: flex; gap: 1.5rem; margin-top: 0.25rem; }
     .a-meta span { font-size: 0.75rem; color: #64748B; display: flex; align-items: center; gap: 0.4rem; }
     
-    .submit-box { display: flex; gap: 0.5rem; align-items: center; }
-    .submit-box .form-control { width: 220px; height: 34px; font-size: 0.75rem; border-radius: 6px; border: 1px solid #CBD5E1; }
-    .submit-box .form-control:focus { border-color: var(--primary-color); box-shadow: none; }
-    
+    .btn-action { padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
+    .btn-action.outline { background: white; border-color: #CBD5E1; color: #475569; }
+    .btn-action.outline:hover { background: #F1F5F9; border-color: #94A3B8; }
+    .btn-action.primary { background: var(--primary-color); color: white; }
+    .btn-action.primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .file-pill { display: flex; align-items: center; gap: 0.5rem; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 0.25rem 0.6rem; border-radius: 100px; font-size: 0.7rem; color: #64748B; }
+    .remove-file { background: none; border: none; color: #94A3B8; cursor: pointer; padding: 0; font-size: 0.8rem; line-height: 1; }
+    .remove-file:hover { color: #EF4444; }
+
+    .hidden { display: none; }
     .status-badge { padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; }
     .status-badge.success { background: #F0FDF4; color: #16A34A; border: 1px solid #DCFCE7; }
 
@@ -168,7 +191,9 @@ export class StudentBatchDetailsComponent implements OnInit {
   materials: StudyMaterial[] = [];
   assignments: Assignment[] = [];
   mySubmissions: Record<number, Submission> = {};
-  submissionLinks: Record<number, string> = {};
+  tempUploadUrls: Record<number, string> = {};
+  tempFileNames: Record<number, string> = {};
+  uploadingAssignmentId: number | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -207,12 +232,35 @@ export class StudentBatchDetailsComponent implements OnInit {
       if (mySub) this.mySubmissions[assignmentId] = mySub;
     });
   }
+
+  handleFileUpload(event: any, assignmentId: number) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.uploadingAssignmentId = assignmentId;
+    this.materialService.uploadFile(file).subscribe({
+      next: (res) => {
+        this.tempUploadUrls[assignmentId] = res.url;
+        this.tempFileNames[assignmentId] = res.filename;
+        this.uploadingAssignmentId = null;
+        this.toast.success('File uploaded successfully! Click submit to finish.');
+      },
+      error: () => {
+        this.uploadingAssignmentId = null;
+        this.toast.error('File upload failed. Please try again.');
+      }
+    });
+  }
+
   submitHomework(assignmentId: number) {
     const student = this.authService.getCurrentUser();
-    const link = this.submissionLinks[assignmentId];
+    const link = this.tempUploadUrls[assignmentId];
     if (!student || !link) return;
+
     this.assignmentService.submitAssignment(assignmentId, student.userId, link).subscribe(() => {
-      this.toast.success('Submitted!');
+      this.toast.success('Homework submitted successfully! 🚀');
+      delete this.tempUploadUrls[assignmentId];
+      delete this.tempFileNames[assignmentId];
       this.loadMySubmission(assignmentId);
     });
   }
