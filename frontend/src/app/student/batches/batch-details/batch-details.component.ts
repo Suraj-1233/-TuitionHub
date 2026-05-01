@@ -91,26 +91,28 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
         <!-- Assignments -->
         <div *ngIf="activeTab === 'assignments'" class="animate-slide">
            <h3 class="section-title">Homework & Assignments</h3>
-           <div *ngFor="let a of assignments" class="assignment-card glass mb-4 p-5 flex flex-col md:flex-row justify-between items-start md:items-center animate-scale">
-              <div class="flex-1">
-                <h4 class="font-bold text-lg">{{ a.title }}</h4>
-                <div class="flex gap-4 mt-1">
-                  <span class="text-xs text-secondary">📅 Deadline: <strong>{{ a.dueDate | localDate }}</strong></span>
-                  <span class="text-xs text-secondary">📝 Max Marks: {{ a.maxMarks }}</span>
+           <div *ngFor="let a of assignments" class="assignment-card glass mb-4">
+              <div class="a-content">
+                <div class="a-info">
+                  <h4 class="a-title">{{ a.title }}</h4>
+                  <div class="a-meta">
+                    <span>📅 Deadline: <strong>{{ a.dueDate | localDate }}</strong></span>
+                    <span>📝 Max Marks: {{ a.maxMarks }}</span>
+                  </div>
                 </div>
-              </div>
-              
-              <div class="mt-4 md:mt-0 w-full md:w-auto">
-                <div *ngIf="!mySubmissions[a.id!]" class="flex gap-2">
-                  <input type="text" class="form-control" [(ngModel)]="submissionLinks[a.id!]" placeholder="Paste Google Drive/Doc link here">
-                  <button class="btn btn-primary" (click)="submitHomework(a.id!)">Submit</button>
-                </div>
-                <div *ngIf="mySubmissions[a.id!]" class="status-badge success">
-                  ✔ Submitted! {{ mySubmissions[a.id!].marksObtained !== null ? '(Graded: ' + mySubmissions[a.id!].marksObtained + ')' : '(Awaiting Review)' }}
+                
+                <div class="a-actions">
+                  <div *ngIf="!mySubmissions[a.id!]" class="submit-box">
+                    <input type="text" class="form-control form-control-sm" [(ngModel)]="submissionLinks[a.id!]" placeholder="Paste link here">
+                    <button class="btn btn-primary btn-sm" (click)="submitHomework(a.id!)">Submit</button>
+                  </div>
+                  <div *ngIf="mySubmissions[a.id!]" class="status-badge success">
+                    ✔ Submitted {{ mySubmissions[a.id!].marksObtained !== null ? '(' + mySubmissions[a.id!].marksObtained + ' Marks)' : '' }}
+                  </div>
                 </div>
               </div>
            </div>
-           <div *ngIf="assignments.length === 0" class="empty-state">No assignments posted yet. Enjoy!</div>
+           <div *ngIf="assignments.length === 0" class="empty-state">No assignments posted yet.</div>
         </div>
       </div>
     </app-dashboard-layout>
@@ -134,23 +136,28 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
     .info-row .label { font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; }
     .info-row .value { font-weight: 700; color: var(--text-primary); font-size: 0.9rem; }
 
-    .material-card { display: flex; align-items: center; gap: 1rem; background: white; padding: 1.25rem; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 1rem; transition: all 0.2s; }
+    .material-card { display: flex; align-items: center; gap: 1rem; background: white; padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1rem; transition: all 0.2s; }
     .material-card:hover { transform: translateX(5px); border-color: var(--primary-color); box-shadow: var(--shadow-md); }
-    .material-icon { font-size: 1.5rem; background: #F8FAFC; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+    .material-icon { font-size: 1.5rem; background: #F8FAFC; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
     .material-info { flex: 1; }
-    .material-name { display: block; font-weight: 700; color: var(--text-primary); }
+    .material-name { display: block; font-weight: 700; color: var(--text-primary); font-size: 0.9rem; }
     .material-date { font-size: 0.75rem; color: var(--text-secondary); }
 
-    .status-badge { padding: 0.5rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
-    .status-badge.success { background: #DCFCE7; color: #16A34A; }
+    .assignment-card { padding: 0.75rem 1.25rem; border-radius: 12px; transition: all 0.3s; }
+    .assignment-card:hover { border-color: var(--primary-color); transform: translateY(-2px); }
+    .a-content { display: flex; justify-content: space-between; align-items: center; }
+    .a-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+    .a-meta { display: flex; gap: 1.5rem; margin-top: 0.25rem; }
+    .a-meta span { font-size: 0.75rem; color: var(--text-secondary); }
+    
+    .submit-box { display: flex; gap: 0.5rem; align-items: center; }
+    .submit-box .form-control { width: 200px; height: 36px; font-size: 0.8rem; }
+    
+    .status-badge { padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; }
+    .status-badge.success { background: #DCFCE7; color: #16A34A; border: 1px solid #BBF7D0; }
 
-    .bg-blue-50 { background-color: #EFF6FF; }
-    .border-blue-100 { border-color: #DBEAFE; }
-    .status-pill { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 6px; background: #E2E8F0; color: #64748B; }
-    .status-pill.active { background: #6366F1; color: white; }
-
-    .section-title { font-size: 1.25rem; font-weight: 800; color: #0F172A; margin: 2rem 0 1.25rem; }
-    .empty-state { text-align: center; padding: 4rem 2rem; color: #94A3B8; font-style: italic; }
+    .section-title { font-size: 1.1rem; font-weight: 800; color: #0F172A; margin: 2rem 0 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .empty-state { text-align: center; padding: 3rem; color: #94A3B8; font-style: italic; }
   `]
 })
 export class StudentBatchDetailsComponent implements OnInit {
