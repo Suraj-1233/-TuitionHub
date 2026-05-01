@@ -38,22 +38,14 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         log.info("🚀 Initializing System Data...");
 
-        // 0. Database Schema & Cleanup
+        // 0. Database Schema Fixes
         try {
-            log.info("🛠️ Cleaning database and applying schema fixes...");
-            jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-            jdbcTemplate.execute("DELETE FROM sessions");
-            jdbcTemplate.execute("DELETE FROM payments");
-            jdbcTemplate.execute("DELETE FROM wallets");
-            jdbcTemplate.execute("DELETE FROM session_feedbacks");
-            jdbcTemplate.execute("DELETE FROM users WHERE email != 'admin@tuitionhub.com'");
-            jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
-            
+            log.info("🛠️ Applying database schema fixes...");
             jdbcTemplate.execute("ALTER TABLE payments MODIFY batch_id BIGINT NULL");
             jdbcTemplate.execute("ALTER TABLE users MODIFY COLUMN role VARCHAR(50)");
-            log.info("✅ Database cleaned and schema fix applied.");
+            log.info("✅ Database schema fix applied.");
         } catch (Exception e) {
-            log.warn("⚠️ Cleanup/Schema fix warning: {}", e.getMessage());
+            log.warn("⚠️ Schema fix warning: {}", e.getMessage());
         }
 
         // 1. Core Admin Account Only
