@@ -9,7 +9,7 @@ import { Batch, User } from '../../../shared/models/models';
 import { AttendanceService, Attendance } from '../../../shared/services/attendance.service';
 import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
 import { ToastService } from 'src/app/shared/services/toast.service';
-import { Assignment, AssignmentService } from 'src/app/shared/services/assignment.service';
+import { Assignment, AssignmentService, Submission } from 'src/app/shared/services/assignment.service';
 
 @Component({
   selector: 'app-teacher-batch-details',
@@ -158,6 +158,59 @@ import { Assignment, AssignmentService } from 'src/app/shared/services/assignmen
             </div>
            </div>
         </div>
+        <!-- Submissions Modal -->
+        <div class="modal-overlay" *ngIf="showSubmissionsModal" (click)="showSubmissionsModal = false">
+          <div class="modal-content submissions-modal animate-pop" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h2 class="modal-title">Submissions: {{ selectedAssignmentForSub?.title }}</h2>
+              <button class="close-btn" (click)="showSubmissionsModal = false">✕</button>
+            </div>
+            
+            <div class="submissions-list-container">
+              <div *ngIf="isSubmissionsLoading" class="p-8 text-center">Loading submissions...</div>
+              
+              <div *ngIf="!isSubmissionsLoading && assignmentSubmissions.length === 0" class="empty-state">
+                No submissions found for this assignment yet.
+              </div>
+
+              <div class="submission-item" *ngFor="let sub of assignmentSubmissions">
+                <div class="sub-header">
+                  <div class="sub-student">
+                    <div class="avatar-tiny">{{ sub.studentName?.charAt(0) || 'S' }}</div>
+                    <span>{{ sub.studentName || 'Unknown Student' }}</span>
+                  </div>
+                  <span class="sub-date">{{ sub.submittedAt | localDate }}</span>
+                </div>
+                
+                <div class="sub-content">
+                  <p class="text-sm mb-2"><strong>Content:</strong></p>
+                  <div class="content-box">
+                    <a *ngIf="sub.contentUrl?.startsWith('http')" [href]="sub.contentUrl" target="_blank" class="text-link">View Attached File 📎</a>
+                    <p *ngIf="!sub.contentUrl?.startsWith('http')" class="text-sm">{{ sub.contentUrl }}</p>
+                  </div>
+                </div>
+
+                <div class="grading-section mt-4">
+                  <div class="grid grid-cols-2 gap-3 mb-2">
+                    <div class="form-group mb-0">
+                      <label class="form-label text-xs">Marks (Max: {{ selectedAssignmentForSub?.maxMarks }})</label>
+                      <input type="number" class="form-control form-control-sm" [(ngModel)]="sub.marksObtained" [max]="selectedAssignmentForSub?.maxMarks || 100">
+                    </div>
+                    <div class="flex items-end">
+                      <button class="btn btn-primary btn-sm w-full" (click)="saveGrade(sub)">
+                        {{ sub.id ? 'Update Grade' : 'Save Grade' }}
+                      </button>
+                    </div>
+                  </div>
+                  <div class="form-group mb-0">
+                    <label class="form-label text-xs">Teacher Feedback</label>
+                    <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="sub.feedback" placeholder="Great work! Keep it up."></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </app-dashboard-layout>
   `,
@@ -210,6 +263,25 @@ import { Assignment, AssignmentService } from 'src/app/shared/services/assignmen
     .bg-blue-50 { background-color: #EFF6FF; }
     .text-blue-700 { color: #1D4ED8; }
     .border-blue-100 { border-color: #DBEAFE; }
+
+    /* Submissions Modal Styles */
+    .submissions-modal { width: 650px; max-height: 85vh; display: flex; flex-direction: column; padding: 0; }
+    .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 1.25rem; font-weight: 800; margin: 0; }
+    .close-btn { background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-secondary); }
+    
+    .submissions-list-container { flex: 1; overflow-y: auto; padding: 1.5rem; }
+    .submission-item { background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; }
+    .sub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .sub-student { display: flex; align-items: center; gap: 0.75rem; font-weight: 700; color: var(--text-primary); }
+    .avatar-tiny { width: 30px; height: 30px; background: #6366F1; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+    .sub-date { font-size: 0.7rem; color: var(--text-secondary); }
+    
+    .content-box { background: white; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color); max-height: 200px; overflow-y: auto; }
+    .form-control-sm { padding: 0.5rem; font-size: 0.875rem; }
+    
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1100; }
+    .modal-content { background: white; border-radius: 24px; box-shadow: var(--shadow-2xl); position: relative; }
   `]
 })
 export class TeacherBatchDetailsComponent implements OnInit {
@@ -316,9 +388,43 @@ export class TeacherBatchDetailsComponent implements OnInit {
     });
   }
 
+  showSubmissionsModal = false;
+  isSubmissionsLoading = false;
+  assignmentSubmissions: Submission[] = [];
+  selectedAssignmentForSub: Assignment | null = null;
+
   viewSubmissions(assignment: Assignment) {
-    // Navigate or show modal for submissions
-    this.toast.info('Checking for student submissions...');
+    this.selectedAssignmentForSub = assignment;
+    this.showSubmissionsModal = true;
+    this.isSubmissionsLoading = true;
+    this.assignmentSubmissions = [];
+
+    this.assignmentService.getSubmissions(assignment.id!).subscribe({
+      next: (subs) => {
+        this.assignmentSubmissions = subs || [];
+        this.isSubmissionsLoading = false;
+      },
+      error: () => {
+        this.toast.error('Failed to load submissions');
+        this.isSubmissionsLoading = false;
+      }
+    });
+  }
+
+  saveGrade(submission: Submission) {
+    if (!submission.id) return;
+    
+    const marks = submission.marksObtained || 0;
+    const feedback = submission.feedback || '';
+
+    this.assignmentService.gradeSubmission(submission.id, marks, feedback).subscribe({
+      next: () => {
+        this.toast.success('Grade and feedback saved!');
+      },
+      error: () => {
+        this.toast.error('Failed to save grade');
+      }
+    });
   }
 
   getFileUrl(url: string): string {
