@@ -25,6 +25,10 @@ export class PaymentService {
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/student/payments/notify-failure`, request).pipe(map(res => res.data));
   }
 
+  createSessionOrder(sessionId: number): Observable<Payment> {
+    return this.http.post<ApiResponse<Payment>>(`${this.apiUrl}/student/sessions/${sessionId}/create-order`, {}).pipe(map(res => res.data));
+  }
+
   getStudentPayments(): Observable<Payment[]> {
     return this.http.get<ApiResponse<Payment[]>>(`${this.apiUrl}/student/payments`).pipe(map(res => res.data));
   }
@@ -41,26 +45,7 @@ export class PaymentService {
     return this.http.post<ApiResponse<Payment>>(`${this.apiUrl}/admin/payments/${paymentId}/mark-as-paid?remark=${remark}`, {}).pipe(map(res => res.data));
   }
 
-  // Wallet Methods
-  getWalletBalance(userId: number): Observable<any> {
-    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/wallet/balance?userId=${userId}`).pipe(map(res => res.data));
-  }
 
-  getWalletTransactions(userId: number): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/wallet/transactions?userId=${userId}`).pipe(map(res => res.data));
-  }
-
-  topupWallet(userId: number, amount: number): Observable<any> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/wallet/topup`, { userId, amount }).pipe(map(res => res.data));
-  }
-
-  createTopupOrder(amount: number): Observable<any> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/student/wallet/topup/create-order?amount=${amount}`, {}).pipe(map(res => res.data));
-  }
-
-  verifyTopup(request: any): Observable<any> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/student/wallet/topup/verify`, request).pipe(map(res => res.data));
-  }
 
   // Session Methods
   bookSession(request: any): Observable<any> {

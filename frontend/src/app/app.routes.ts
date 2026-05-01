@@ -69,10 +69,7 @@ export const routes: Routes = [
         path: 'payments',
         loadComponent: () => import('./parent/payments/payments.component').then(m => m.ParentPaymentsComponent)
       },
-      {
-        path: 'wallet',
-        loadComponent: () => import('./parent/wallet/wallet.component').then(m => m.WalletComponent)
-      },
+
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
@@ -141,10 +138,7 @@ export const routes: Routes = [
         path: 'batches',
         loadComponent: () => import('./admin/batches/batches.component').then(m => m.AdminBatchesComponent)
       },
-      {
-        path: 'wallet',
-        loadComponent: () => import('./admin/wallet/wallet.component').then(m => m.AdminWalletComponent)
-      },
+
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

@@ -58,8 +58,8 @@ import { RouterModule } from '@angular/router';
           </div>
           <div class="feature-card glass animate-scale">
             <div class="feature-icon">💳</div>
-            <h3>Integrated Payments</h3>
-            <p>Transparent billing via our secure wallet system. Pay only for the sessions you attend.</p>
+            <h3>Secure Payments</h3>
+            <p>Transparent billing via our secure payment gateway. Pay only for the sessions you attend.</p>
           </div>
           <div class="feature-card glass animate-scale">
             <div class="feature-icon">🌍</div>
@@ -71,11 +71,7 @@ import { RouterModule } from '@angular/router';
             <h3>Study Material</h3>
             <p>Access notes, assignments, and recordings directly from your personalized dashboard.</p>
           </div>
-          <div class="feature-card glass animate-scale">
-            <div class="feature-icon">🎁</div>
-            <h3>Referral Rewards</h3>
-            <p>Invite friends and earn wallet credits! Learning together is more rewarding than ever.</p>
-          </div>
+
         </div>
       </section>
 

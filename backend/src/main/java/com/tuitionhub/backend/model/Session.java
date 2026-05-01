@@ -50,9 +50,8 @@ public class Session {
     private Boolean isPaid = false;
 
     @Enumerated(EnumType.STRING)
-    private PaymentMethod paymentMethod; // WALLET, GATEWAY, PARTIAL
+    private PaymentMethod paymentMethod; // GATEWAY, MANUAL
 
-    private Double walletAmountDeducted;
     private Double gatewayAmountPaid;
 
     private String paymentReference; // Gateway payment ID
@@ -72,7 +71,7 @@ public class Session {
     }
 
     public enum PaymentMethod {
-        WALLET, GATEWAY, PARTIAL
+        GATEWAY, MANUAL
     }
 
     public enum PayoutStatus {

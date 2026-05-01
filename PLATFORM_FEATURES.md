@@ -4,17 +4,13 @@ This document tracks the evolution of the TuitionHub platform, documenting all m
 
 ---
 
-## 🏫 1. Payment & Wallet System
-Implemented a secure and scalable internal economy for students and tutors.
+## 🏫 1. Payment System
+Implemented a secure and scalable payment gateway integration.
 
-- **Internal Wallet**: Every user (primarily Parents) has a virtual wallet to store real currency (top-ups) and promotional credits.
-- **Promo vs. Real Balance**: System distinguishes between withdrawable "Real Money" and non-withdrawable "Promo Credits".
-- **Parent-Centric Economy**: Financial responsibility shifted entirely to the **Parent Role**. Students focus on learning, while Parents manage wallets, top-ups, and fee payments for all linked children.
-- **Multi-Mode Payments**:
-    - **Full Wallet Payment**: Pay using existing balance.
-    - **Direct Gateway**: Pay via Razorpay.
-    - **Partial Payment**: Use remaining wallet balance and pay the rest via gateway.
-- **Transaction Logs**: Granular history for every credit, debit, referral, and top-up.
+- **Direct Gateway Payments**: All payments are processed directly via Razorpay, ensuring security and immediate settlement.
+- **Parent-Centric Economy**: Financial responsibility shifted entirely to the **Parent Role**. Students focus on learning, while Parents manage fee payments for all linked children.
+- **Automated Invoicing**: System tracks every transaction, referral, and course fee payment.
+- **Transaction Logs**: Granular history for every gateway payment and course enrollment.
 
 ## 🎟️ 2. Flexible Learning Modes & Dynamic Pricing
 Transitioned from fixed batch sizes to a flexible "Individual vs. Batch" model.
@@ -31,17 +27,12 @@ Transitioned from fixed batch sizes to a flexible "Individual vs. Batch" model.
     - Toggle between Calendar Grid and Upcoming List view.
     - Direct payment integration and "Launch Class" shortcuts.
 
-## 🎁 3. Advanced Referral System
-A robust growth engine integrated with the wallet.
 
-- **Unique Referral Codes**: Every user gets a personalized code (e.g., `TUI-XYZ12`).
-- **Reward Trigger Logic**: Referral rewards are credited **only after** the referred user completes their first successful *paid* session.
-- **Non-Withdrawable Rewards**: Referral bonuses go into "Promo Balance" and can only be used for booking sessions.
 
 ## 🛡️ 4. Admin Command Center
 Enhanced controls for platform administrators.
 
-- **Wallet Adjustments**: Admin can add/remove credits for promotional campaigns.
+
 - **Revenue Dashboard**: Track global platform revenue and transaction flows.
 - **Tutor Approval**: Multi-step verification for new teachers.
 - **Session Oversight**: Track all tutoring sessions and manage payouts.
@@ -49,7 +40,7 @@ Enhanced controls for platform administrators.
 ## 🛡️ 5. Enterprise-Grade Observability (Audit Logging)
 Implemented a robust AOP-based Audit System to track sensitive operations across the platform.
 
-- **@Auditable Annotation**: Custom annotation-driven logging for methods like payment approvals, wallet adjustments, and role changes.
+- **@Auditable Annotation**: Custom annotation-driven logging for methods like payment approvals and role changes.
 - **Tamper-Evident History**: Records who performed what action, when, and on which entity.
 
 ## 📡 6. Standardized Communication (API Contract)

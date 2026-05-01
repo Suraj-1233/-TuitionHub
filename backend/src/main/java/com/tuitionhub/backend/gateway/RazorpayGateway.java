@@ -74,7 +74,7 @@ public class RazorpayGateway implements PaymentGateway {
             payment.setPaymentMethod(rpPayment.get("method"));
             payment.setBankName(rpPayment.get("bank"));
             payment.setCardNetwork(rpPayment.get("card_network"));
-            payment.setWalletName(rpPayment.get("wallet"));
+
             payment.setUpiVpa(rpPayment.get("vpa"));
             payment.setPayerEmail(rpPayment.get("email"));
             payment.setPayerContact(rpPayment.get("contact"));

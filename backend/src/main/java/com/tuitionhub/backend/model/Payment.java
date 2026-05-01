@@ -36,7 +36,7 @@ public class Payment {
     @Builder.Default
     private String currency = "INR";
 
-    private String gateway; // RAZORPAY, WALLET
+    private String gateway; // RAZORPAY
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
@@ -50,7 +50,6 @@ public class Payment {
     private String paymentMethod;      // e.g. upi, card, netbanking
     private String bankName;           // e.g. HDFC, ICICI
     private String cardNetwork;        // e.g. Visa, Mastercard
-    private String walletName;         // e.g. AmazonPay
     private String upiVpa;             // e.g. user@okaxis
     private String payerEmail;
     private String payerContact;

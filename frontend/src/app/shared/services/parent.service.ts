@@ -47,22 +47,7 @@ export class ParentService {
     return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/parent/payments`).pipe(map(res => res.data));
   }
 
-  // Wallet Methods
-  getWalletBalance(): Observable<any> {
-    return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/wallet/balance`).pipe(map(res => res.data));
-  }
 
-  getWalletTransactions(): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/wallet/transactions`).pipe(map(res => res.data));
-  }
-
-  createTopupOrder(amount: number): Observable<any> {
-    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/parent/wallet/topup/create-order?amount=${amount}`, {}).pipe(map(res => res.data));
-  }
-
-  verifyTopup(request: any): Observable<any> {
-    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/parent/wallet/topup/verify`, request).pipe(map(res => res.data));
-  }
 
   getRazorpayKey(): Observable<any> {
     return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/config/razorpay-key`).pipe(map(res => res.data));

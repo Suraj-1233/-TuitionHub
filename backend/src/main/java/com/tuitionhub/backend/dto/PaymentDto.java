@@ -62,7 +62,7 @@ public class PaymentDto {
         private String paymentMethod;
         private String bankName;
         private String cardNetwork;
-        private String walletName;
+
         private String upiVpa;
         private String payerEmail;
         private String payerContact;

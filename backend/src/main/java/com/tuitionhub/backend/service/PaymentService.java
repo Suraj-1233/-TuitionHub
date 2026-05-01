@@ -12,6 +12,7 @@ import com.tuitionhub.backend.repository.BatchRepository;
 import com.tuitionhub.backend.model.Role;
 import com.tuitionhub.backend.repository.UserRepository;
 import com.tuitionhub.backend.repository.PaymentRepository;
+import com.tuitionhub.backend.repository.SessionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class PaymentService {
     private final BatchRepository batchRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
-    private final WalletService walletService;
+
     private final PaymentGateway paymentGateway;
     private final PaymentMapper paymentMapper;
 
@@ -95,43 +96,31 @@ public class PaymentService {
         }
     }
 
-    @Transactional
-    public PaymentDto.Response createTopupOrder(Double amount, User parent) {
-        try {
-            if (amount < 1) {
-                throw new BadRequestException("Amount must be at least 1 INR");
-            }
-
-            String receipt = "topup_" + System.currentTimeMillis();
-            String gatewayOrderId = paymentGateway.createOrder(amount, DEFAULT_CURRENCY, receipt);
-
-            Payment payment = Payment.builder()
-                    .student(parent) // For topup, the user who pays gets the balance
-                    .amount(amount)
-                    .currency(DEFAULT_CURRENCY)
-                    .gateway(paymentGateway.getGatewayName())
-                    .status(Payment.PaymentStatus.PENDING)
-                    .paymentMethod("TOPUP")
-                    .razorpayOrderId(gatewayOrderId)
-                    .build();
-
-            payment = paymentRepository.save(payment);
-            return paymentMapper.mapToResponse(payment);
-        } catch (Exception e) {
-            log.error("Error creating topup order: {}", e.getMessage());
-            throw new BadRequestException("Topup order failed: " + e.getMessage());
-        }
-    }
+    private final SessionRepository sessionRepository;
 
     @Transactional
-    public PaymentDto.Response verifyTopup(PaymentDto.VerifyRequest request, User student) {
-        PaymentDto.Response response = verifyAndUpdatePayment(request);
-        if ("PAID".equals(response.getStatus())) {
-            walletService.addMoneyToWallet(student, response.getAmount(),
-                    "Topup: " + response.getRazorpayPaymentId(), "TOPUP");
-        }
-        return response;
+    public PaymentDto.Response createSessionOrder(Long sessionId, User student) {
+        com.tuitionhub.backend.model.Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Session not found"));
+
+        double amount = session.getAmount();
+        String receipt = "sess_" + sessionId + "_" + System.currentTimeMillis();
+        String gatewayOrderId = paymentGateway.createOrder(amount, DEFAULT_CURRENCY, receipt);
+
+        Payment payment = Payment.builder()
+                .student(student)
+                .amount(amount)
+                .currency(DEFAULT_CURRENCY)
+                .gateway(paymentGateway.getGatewayName())
+                .status(Payment.PaymentStatus.PENDING)
+                .razorpayOrderId(gatewayOrderId)
+                .build();
+
+        payment = paymentRepository.save(payment);
+        return paymentMapper.mapToResponse(payment);
     }
+
+
 
     @Transactional
     public PaymentDto.Response verifyAndUpdatePayment(PaymentDto.VerifyRequest request) {

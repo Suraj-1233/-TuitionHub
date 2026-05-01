@@ -22,14 +22,14 @@ public class AdminController {
     private final StudentManagementService studentManagementService;
     private final AssignmentRequestService assignmentRequestService;
     private final SubjectService subjectService;
-    private final WalletService walletService;
+
 
     // Repositories for simple fetch operations (can also be moved to services if
     // preferred)
     private final BatchRepository batchRepository;
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
-    private final WalletTransactionRepository walletTransactionRepository;
+
     private final SessionRepository sessionRepository;
 
     @GetMapping("/dashboard")
@@ -180,27 +180,7 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(null, "Subject deleted"));
     }
 
-    // ==================== WALLET & SESSION MANAGEMENT ====================
-
-    @PostMapping("/wallet/adjust")
-    public ResponseEntity<ApiResponse<Void>> adjustWallet(@RequestBody Map<String, Object> request) {
-        Long userId = Long.valueOf(request.get("userId").toString());
-        Double amount = Double.valueOf(request.get("amount").toString());
-        boolean isCredit = (boolean) request.getOrDefault("isCredit", true);
-        String description = (String) request.getOrDefault("description", "Admin adjustment");
-
-        if (isCredit) {
-            walletService.addCredits(userId, amount, WalletTransaction.TransactionSource.PROMO, description, false);
-        } else {
-            walletService.deductBalance(userId, amount, description, "ADMIN_ADJ");
-        }
-        return ResponseEntity.ok(ApiResponse.success(null, "Wallet adjusted successfully"));
-    }
-
-    @GetMapping("/wallet/transactions")
-    public ResponseEntity<ApiResponse<List<WalletTransaction>>> getAllWalletTransactions() {
-        return ResponseEntity.ok(ApiResponse.success(walletTransactionRepository.findAll(), "Transactions fetched"));
-    }
+    // ==================== SESSION MANAGEMENT ====================
 
     @GetMapping("/sessions")
     public ResponseEntity<ApiResponse<List<Session>>> getAllSessions() {

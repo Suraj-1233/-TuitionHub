@@ -32,21 +32,15 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success(paymentService.verifyAndUpdatePayment(request), "Payment verified"));
     }
 
-    @PostMapping("/api/parent/wallet/topup/create-order")
-    @PreAuthorize("hasRole('PARENT')")
-    public ResponseEntity<ApiResponse<PaymentDto.Response>> createTopupOrder(
-            @RequestParam Double amount,
-            @AuthenticationPrincipal User parent) {
-        return ResponseEntity.ok(ApiResponse.success(paymentService.createTopupOrder(amount, parent), "Topup order created"));
+    @PostMapping("/api/student/sessions/{sessionId}/create-order")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApiResponse<PaymentDto.Response>> createSessionOrder(
+            @PathVariable Long sessionId,
+            @AuthenticationPrincipal User student) {
+        return ResponseEntity.ok(ApiResponse.success(paymentService.createSessionOrder(sessionId, student), "Session order created"));
     }
 
-    @PostMapping("/api/parent/wallet/topup/verify")
-    @PreAuthorize("hasRole('PARENT')")
-    public ResponseEntity<ApiResponse<PaymentDto.Response>> verifyTopup(
-            @RequestBody PaymentDto.VerifyRequest request,
-            @AuthenticationPrincipal User parent) {
-        return ResponseEntity.ok(ApiResponse.success(paymentService.verifyTopup(request, parent), "Topup verified"));
-    }
+
 
     @PostMapping("/api/parent/payments/notify-failure")
     @PreAuthorize("hasRole('PARENT')")

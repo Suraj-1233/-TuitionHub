@@ -18,10 +18,7 @@ import { ToastService } from '../../shared/services/toast.service';
             <h1 class="page-title">Fees & Payments 💳</h1>
             <p class="subtitle text-secondary">Manage your session fees and transaction history.</p>
           </div>
-          <div class="wallet-summary glass">
-            <span class="label">Wallet Balance</span>
-            <span class="balance">{{ currencySymbol }}{{ walletBalance.toFixed(2) }}</span>
-          </div>
+
         </header>
 
         <!-- Unpaid Sessions (Due Payments) -->
@@ -85,22 +82,6 @@ import { ToastService } from '../../shared/services/toast.service';
             <p>Session Fee: <strong>{{ currencySymbol }}{{ selectedSession.amount }}</strong></p>
             
             <div class="payment-methods">
-              <div class="method-card" [class.disabled]="walletBalance < selectedSession.amount" (click)="payViaWallet(selectedSession)">
-                <div class="method-info">
-                  <strong>Full Wallet Payment</strong>
-                  <span>Use {{ currencySymbol }}{{ selectedSession.amount }} from wallet</span>
-                </div>
-                <span class="icon">👛</span>
-              </div>
-
-              <div class="method-card outline" *ngIf="walletBalance > 0 && walletBalance < selectedSession.amount" (click)="payPartial(selectedSession)">
-                <div class="method-info">
-                  <strong>Wallet + Gateway</strong>
-                  <span>Use {{ currencySymbol }}{{ walletBalance.toFixed(2) }} from wallet & pay rest via Gateway</span>
-                </div>
-                <span class="icon">🌓</span>
-              </div>
-
               <div class="method-card primary" (click)="payViaGateway(selectedSession)">
                 <div class="method-info">
                   <strong>Direct Payment Gateway</strong>
@@ -109,7 +90,6 @@ import { ToastService } from '../../shared/services/toast.service';
                 <span class="icon">💳</span>
               </div>
             </div>
-
 
             <button class="cancel-link" (click)="selectedSession = null">Cancel</button>
           </div>
@@ -121,10 +101,6 @@ import { ToastService } from '../../shared/services/toast.service';
     .payments-wrapper { padding: 1.5rem; }
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
     .page-title { font-size: 2rem; font-weight: 800; color: #1e293b; margin: 0; }
-    
-    .wallet-summary { padding: 1rem 2rem; border-radius: 20px; text-align: right; border: 2px solid #e0e7ff; background: #fdfeff; }
-    .wallet-summary .label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
-    .wallet-summary .balance { font-size: 1.5rem; font-weight: 800; color: #6366f1; }
 
     .section-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem; color: #334155; }
     
@@ -173,7 +149,7 @@ import { ToastService } from '../../shared/services/toast.service';
 export class StudentPaymentsComponent implements OnInit {
   sessions: any[] = [];
   unpaidSessions: any[] = [];
-  walletBalance = 0;
+
   selectedSession: any = null;
   currencySymbol = '₹';
 
@@ -202,7 +178,6 @@ export class StudentPaymentsComponent implements OnInit {
         this.sessions = s.sort((a: any, b: any) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
         this.unpaidSessions = s.filter((session: any) => !session.isPaid && session.status !== 'CANCELLED');
       });
-      this.paymentService.getWalletBalance(user.userId).subscribe((w: any) => this.walletBalance = w ? w.balance : 0);
     }
   }
 
@@ -210,18 +185,7 @@ export class StudentPaymentsComponent implements OnInit {
     this.selectedSession = session;
   }
 
-  payViaWallet(session: any) {
-    if (this.walletBalance < session.amount) return;
 
-    this.paymentService.payForSession(session.id, 'WALLET').subscribe({
-      next: () => {
-        this.toast.success('Paid successfully via Wallet!');
-        this.selectedSession = null;
-        this.loadData();
-      },
-      error: (err: any) => this.toast.error(err.error?.message || 'Wallet payment failed')
-    });
-  }
 
   payViaGateway(session: any) {
     this.loading = true;
@@ -231,7 +195,7 @@ export class StudentPaymentsComponent implements OnInit {
     // For individual sessions, we might need a separate createSessionOrder endpoint
     // But for this demonstration, let's assume we use the gateway switching logic
 
-    this.paymentService.createTopupOrder(session.amount).subscribe({
+    this.paymentService.createSessionOrder(session.id).subscribe({
       next: (order: any) => {
         this.openRazorpay(order);
       },
@@ -266,15 +230,5 @@ export class StudentPaymentsComponent implements OnInit {
   }
 
 
-  payPartial(session: any) {
-    this.paymentService.payForSession(session.id, 'PARTIAL').subscribe({
-      next: () => {
-        const remaining = session.amount - this.walletBalance;
-        this.toast.info(`Wallet balance used. Now pay remaining ${this.currencySymbol}${remaining.toFixed(2)} via Gateway.`);
-        // Follow with gateway flow for remaining amount
-        this.payViaGateway({ ...session, amount: remaining });
-      },
-      error: (err: any) => this.toast.error(err.error?.message || 'Partial payment failed')
-    });
-  }
+
 }

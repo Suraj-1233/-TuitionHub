@@ -4,7 +4,7 @@ import com.tuitionhub.backend.exception.BadRequestException;
 import com.tuitionhub.backend.exception.ResourceNotFoundException;
 import com.tuitionhub.backend.model.Session;
 import com.tuitionhub.backend.model.User;
-import com.tuitionhub.backend.model.Wallet;
+
 import com.tuitionhub.backend.repository.SessionRepository;
 import com.tuitionhub.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class SessionService {
 
     private final SessionRepository sessionRepository;
     private final UserRepository userRepository;
-    private final WalletService walletService;
+
 
     public Session createSession(Long teacherId, Long studentId, LocalDateTime startTime, LocalDateTime endTime, Double amount) {
         User teacher = userRepository.findById(teacherId)
@@ -52,40 +52,7 @@ public class SessionService {
             throw new BadRequestException("Session is already paid.");
         }
 
-        User student = session.getStudent();
-        Double amount = session.getAmount();
-
-        if (method == Session.PaymentMethod.WALLET) {
-            walletService.deductBalance(student.getId(), amount, "Payment for session #" + sessionId, sessionId.toString());
-            session.setIsPaid(true);
-            session.setStatus(Session.SessionStatus.CONFIRMED);
-            session.setPaymentMethod(Session.PaymentMethod.WALLET);
-            session.setWalletAmountDeducted(amount);
-            
-            // Handle Referral Reward if this is the student's first paid session
-            checkAndTriggerReferral(student);
-        } else if (method == Session.PaymentMethod.PARTIAL) {
-            Wallet wallet = walletService.getWalletByUserId(student.getId());
-            Double walletBalance = wallet.getBalance();
-            
-            if (walletBalance <= 0) {
-                throw new BadRequestException("No wallet balance available for partial payment.");
-            }
-
-            Double walletDeduction = Math.min(walletBalance, amount);
-            Double remaining = amount - walletDeduction;
-
-            walletService.deductBalance(student.getId(), walletDeduction, "Partial payment for session #" + sessionId, sessionId.toString());
-            
-            session.setWalletAmountDeducted(walletDeduction);
-            session.setPaymentMethod(Session.PaymentMethod.PARTIAL);
-            
-            // Note: In a real app, we would now trigger a gateway payment for the 'remaining' amount.
-            // For now, we'll assume the caller handles the gateway part and then calls 'confirmGatewayPayment'.
-        } else {
-            session.setPaymentMethod(Session.PaymentMethod.GATEWAY);
-        }
-
+        session.setPaymentMethod(Session.PaymentMethod.GATEWAY);
         return sessionRepository.save(session);
     }
 
@@ -97,25 +64,15 @@ public class SessionService {
         session.setGatewayAmountPaid(amountPaid);
         session.setPaymentReference(paymentReference);
         
-        Double totalPaid = (session.getWalletAmountDeducted() != null ? session.getWalletAmountDeducted() : 0.0) + amountPaid;
-        
-        if (totalPaid >= session.getAmount()) {
+        if (amountPaid >= session.getAmount()) {
             session.setIsPaid(true);
             session.setStatus(Session.SessionStatus.CONFIRMED);
-            
-            // Handle Referral Reward if this is the student's first paid session
-            checkAndTriggerReferral(session.getStudent());
         }
 
         return sessionRepository.save(session);
     }
 
-    private void checkAndTriggerReferral(User student) {
-        List<Session> paidSessions = sessionRepository.findByStudentAndIsPaidTrue(student);
-        if (paidSessions.size() == 1) { // This was the first one
-            walletService.handleReferralReward(student);
-        }
-    }
+
 
     public List<Session> getStudentSessions(Long studentId) {
         User student = userRepository.findById(studentId)

@@ -167,10 +167,7 @@ import { PublicService } from '../../shared/services/public.service';
 
           <!-- Parent Fields Removed -->
 
-          <div class="form-group">
-            <label class="form-label">Referral Code (Optional)</label>
-            <input type="text" class="form-control" [(ngModel)]="formData.referralCode" name="referralCode" placeholder="e.g. TUI-ABCD1">
-          </div>
+
 
           <button type="submit" class="btn btn-primary btn-block mt-4" [disabled]="regForm.invalid || isLoading">
             {{ isLoading ? 'Creating Account...' : (formData.role === 'TEACHER' ? '📋 Submit for Approval' : '🚀 Create Account') }}

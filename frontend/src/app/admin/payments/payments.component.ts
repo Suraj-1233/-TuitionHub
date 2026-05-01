@@ -167,10 +167,7 @@ import { AuthService } from '../../shared/services/auth.service';
                         <span class="label">UPI ID</span>
                         <span class="value">{{ selectedPayment.upiVpa }}</span>
                       </div>
-                      <div class="info-row" *ngIf="selectedPayment.walletName">
-                        <span class="label">Wallet</span>
-                        <span class="value">{{ selectedPayment.walletName }}</span>
-                      </div>
+
                       <div class="info-row">
                         <span class="label">Payer Contact</span>
                         <span class="value">{{ selectedPayment.payerEmail || '---' }}</span>

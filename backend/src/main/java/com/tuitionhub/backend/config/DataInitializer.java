@@ -9,7 +9,7 @@ import com.tuitionhub.backend.repository.SubjectRepository;
 import com.tuitionhub.backend.repository.UserRepository;
 import com.tuitionhub.backend.repository.SessionRepository;
 import com.tuitionhub.backend.repository.PaymentRepository;
-import com.tuitionhub.backend.service.WalletService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -31,7 +31,7 @@ public class DataInitializer implements CommandLineRunner {
     private final SessionRepository sessionRepository;
     private final PaymentRepository paymentRepository;
     private final PasswordEncoder passwordEncoder;
-    private final WalletService walletService;
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override
@@ -75,7 +75,7 @@ public class DataInitializer implements CommandLineRunner {
                         .currency(currency)
                         .build();
                 userRepository.save(user);
-                walletService.getOrCreateWallet(user.getId());
+
                 log.info("👤 Created Admin User: {}", email);
             }
         );

@@ -92,7 +92,7 @@ export interface Payment {
   paymentMethod?: string;
   bankName?: string;
   cardNetwork?: string;
-  walletName?: string;
+
   upiVpa?: string;
   payerEmail?: string;
   payerContact?: string;

@@ -35,14 +35,7 @@ import { AuthService } from '../../services/auth.service';
           </ng-container>
         </nav>
 
-        <div class="referral-box" *ngIf="referralCode">
-          <span class="ref-label">Invite & Earn 🎁</span>
-          <div class="ref-code-container">
-            <code class="ref-code">{{ referralCode }}</code>
-            <button class="copy-btn" (click)="copyReferral()" title="Copy Code">📋</button>
-          </div>
-          <span class="ref-hint">Share this code with friends!</span>
-        </div>
+
 
         <div class="sidebar-footer">
           <div class="user-profile">
@@ -119,7 +112,6 @@ import { AuthService } from '../../services/auth.service';
       box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
     .nav-icon { font-size: 1.25rem; }
- 
     .sidebar-clocks {
       margin-bottom: 2rem;
       padding: 1rem;
@@ -173,22 +165,7 @@ import { AuthService } from '../../services/auth.service';
     }
     .logout-btn:hover { background: rgba(239, 68, 68, 0.05); border-color: var(--danger-color); }
 
-    .referral-box {
-      margin: 1.5rem 0;
-      padding: 1.25rem;
-      background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
-      border: 1px dashed #7DD3FC;
-      border-radius: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .ref-label { font-size: 0.7rem; font-weight: 800; color: #0369A1; text-transform: uppercase; }
-    .ref-code-container { display: flex; align-items: center; justify-content: space-between; background: white; padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid #BAE6FD; }
-    .ref-code { font-family: 'Monaco', monospace; font-weight: 800; color: #0284C7; font-size: 0.9rem; }
-    .copy-btn { background: none; border: none; cursor: pointer; padding: 0; font-size: 1rem; transition: transform 0.2s; }
-    .copy-btn:hover { transform: scale(1.2); }
-    .ref-hint { font-size: 0.65rem; color: #075985; font-weight: 500; }
+
 
     .main-content { flex: 1; padding: 2rem 3rem; overflow-y: auto; }
     .content-container { max-width: 1200px; margin: 0 auto; }
@@ -205,7 +182,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
   indiaTime = '';
   userTimezone = '';
   userTimezoneName = '';
-  referralCode = '';
+
   private timer: any;
 
   constructor(private authService: AuthService) {}
@@ -217,7 +194,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
       this.userName = user.name || 'User';
       this.userEmail = user.email || '';
       this.userInitial = this.userName.charAt(0).toUpperCase();
-      this.referralCode = user.referralCode || '';
+
     }
     this.userTimezone = this.authService.getUserTimezone();
     this.userTimezoneName = this.userTimezone.replace(/_/g, ' ').split('/').pop() || this.userTimezone;
@@ -243,10 +220,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
     });
   }
 
-  copyReferral() {
-    navigator.clipboard.writeText(this.referralCode);
-    alert('Referral code copied to clipboard!');
-  }
+
 
   private calculateNavItems() {
     if (this.role === 'STUDENT') {
@@ -259,8 +233,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
       this.navItems = [
         { path: '/parent/dashboard', label: 'Dashboard', icon: '📊' },
         { path: '/parent/children', label: 'My Children', icon: '👨‍👩‍👧‍👦' },
-        { path: '/parent/payments', label: 'Payments', icon: '💳' },
-        { path: '/parent/wallet', label: 'Wallet', icon: '👛' }
+        { path: '/parent/payments', label: 'Payments', icon: '💳' }
       ];
     } else if (this.role === 'TEACHER') {
       this.navItems = [
@@ -278,8 +251,7 @@ export class DashboardLayoutComponent implements OnInit, OnDestroy {
         { path: '/admin/parents', label: 'Parent Directory', icon: '👨‍👩‍👧‍👦' },
         { path: '/admin/batches', label: 'Active Classes', icon: '🏫' },
         { path: '/admin/subjects', label: 'Manage Subjects', icon: '📚' },
-        { path: '/admin/wallet', label: 'Wallet Management', icon: '👛' },
-        { path: '/admin/payments', label: 'Global Revenue', icon: '💳' },
+        { path: '/admin/payments', label: 'Global Revenue', icon: '💳' }
       ];
     }
   }

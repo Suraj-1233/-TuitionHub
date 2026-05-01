@@ -94,14 +94,7 @@ export class AdminService {
     return this.http.delete(`${this.apiUrl}/admin/subjects/${id}`);
   }
 
-  // Wallet & Session Management
-  adjustWallet(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/admin/wallet/adjust`, data);
-  }
 
-  getAllWalletTransactions(): Observable<any[]> {
-    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/admin/wallet/transactions`).pipe(map(res => res.data));
-  }
 
   getAllSessions(): Observable<any[]> {
     return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/admin/sessions`).pipe(map(res => res.data));

@@ -27,7 +27,6 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final OtpService otpService;
-    private final WalletService walletService;
     private final ReferralService referralService;
     private final UserMapper userMapper;
 
@@ -176,7 +175,7 @@ public class AuthService {
             }
         }
 
-        walletService.getOrCreateWallet(user.getId());
+
 
         String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole().name(), user.getId());
         return userMapper.mapToAuthResponse(user, token);

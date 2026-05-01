@@ -40,8 +40,7 @@ public class PaymentServiceTest {
     @Mock
     private EmailService emailService;
 
-    @Mock
-    private WalletService walletService;
+
 
     @InjectMocks
     private PaymentService paymentService;

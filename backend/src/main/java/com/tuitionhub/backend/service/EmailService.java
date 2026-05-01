@@ -50,7 +50,7 @@ public class EmailService {
         String to = payment.getStudent().getEmail();
         if (to == null || to.isEmpty()) return;
 
-        String batchName = payment.getBatch() != null ? payment.getBatch().getName() : "Wallet Topup";
+        String batchName = payment.getBatch() != null ? payment.getBatch().getName() : "Direct Payment";
         String subject = "Payment Confirmation - " + batchName;
         
         String monthStr = payment.getForMonth() != null 

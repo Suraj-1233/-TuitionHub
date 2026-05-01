@@ -15,7 +15,7 @@ public class PaymentMapper {
         PaymentDto.Response res = new PaymentDto.Response();
         res.setId(p.getId());
         res.setStudentName(p.getStudent().getName());
-        res.setBatchName(p.getBatch() != null ? p.getBatch().getName() : "Wallet Topup");
+        res.setBatchName(p.getBatch() != null ? p.getBatch().getName() : "Direct Payment");
         res.setAmount(p.getAmount());
         res.setCurrency(p.getCurrency());
         res.setGateway(p.getGateway());
@@ -30,7 +30,7 @@ public class PaymentMapper {
         res.setPaymentMethod(p.getPaymentMethod());
         res.setBankName(p.getBankName());
         res.setCardNetwork(p.getCardNetwork());
-        res.setWalletName(p.getWalletName());
+
         res.setUpiVpa(p.getUpiVpa());
         res.setPayerEmail(p.getPayerEmail());
         res.setPayerContact(p.getPayerContact());

@@ -106,13 +106,7 @@ declare var Razorpay: any;
                 <span class="act-desc">View receipts and invoices</span>
               </div>
             </button>
-            <button class="action-item card" routerLink="/parent/wallet">
-              <span class="act-icon">👛</span>
-              <div class="act-info">
-                <span class="act-title">My Wallet</span>
-                <span class="act-desc">Add funds for easy payments</span>
-              </div>
-            </button>
+
           </div>
         </div>
       </div>
