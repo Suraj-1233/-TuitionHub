@@ -155,7 +155,11 @@ import { Assignment, AssignmentService, Submission } from 'src/app/shared/servic
                 <div class="info-row"><span class="label">Student Timezone:</span><span class="value">{{ batch.students![0].timezone }}</span></div>
                 <p class="text-sm text-secondary">The student sees class times converted to their local timezone automatically.</p>
               </div>
-             <!-- Submissions Modal -->
+            </div>
+           </div>
+        </div>
+
+        <!-- Submissions Modal (Outside Tabs) -->
         <div class="modal-overlay" *ngIf="showSubmissionsModal" (click)="showSubmissionsModal = false">
           <div class="modal-content submissions-modal animate-pop" (click)="$event.stopPropagation()">
             <div class="modal-header">
