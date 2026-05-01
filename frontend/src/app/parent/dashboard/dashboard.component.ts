@@ -75,7 +75,12 @@ declare var Razorpay: any;
                 </div>
                 <div class="batch-fee">
                   <span class="fee-amt">₹{{ batch.monthlyFees }} / month</span>
-                  <button class="btn btn-primary btn-sm" (click)="payNow(child, batch)">
+                  
+                  <div *ngIf="batch.isPaid" class="paid-indicator animate-pop">
+                    <span class="paid-badge">✔ Paid for this month</span>
+                  </div>
+
+                  <button *ngIf="!batch.isPaid" class="btn btn-primary btn-sm" (click)="payNow(child, batch)">
                     Pay Current Month
                   </button>
                 </div>
@@ -141,6 +146,13 @@ declare var Razorpay: any;
     .fee-amt { display: block; font-weight: 800; color: #0F172A; font-size: 0.9rem; margin-bottom: 4px; }
     
     .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
+
+    .paid-indicator { display: flex; align-items: center; justify-content: flex-end; }
+    .paid-badge { 
+      background: #DCFCE7; color: #10B981; padding: 0.4rem 0.8rem; 
+      border-radius: 8px; font-size: 0.75rem; font-weight: 800; 
+      border: 1px solid #BBF7D0; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.1);
+    }
 
     .action-list { display: flex; flex-direction: column; gap: 1rem; }
     .action-item { 

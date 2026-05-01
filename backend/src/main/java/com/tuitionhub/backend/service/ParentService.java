@@ -35,15 +35,21 @@ public class ParentService {
             List<Payment> pendingPayments = paymentRepository.findByStudentAndStatus(child, Payment.PaymentStatus.PENDING);
             double pendingFees = pendingPayments.stream().mapToDouble(Payment::getAmount).sum();
 
-            List<ParentDto.BatchSummary> batches = child.getBatches().stream().map(batch -> 
-                ParentDto.BatchSummary.builder()
+            List<ParentDto.BatchSummary> batches = child.getBatches().stream().map(batch -> {
+                // Check if paid for current month
+                java.time.LocalDate now = java.time.LocalDate.now().withDayOfMonth(1);
+                boolean isPaid = paymentRepository.findByStudentAndBatchAndForMonth(child, batch, now)
+                        .stream().anyMatch(p -> p.getStatus() == Payment.PaymentStatus.PAID);
+
+                return ParentDto.BatchSummary.builder()
                         .id(batch.getId())
                         .name(batch.getName())
                         .subject(batch.getSubject())
                         .monthlyFees(batch.getMonthlyFees())
-                        .nextPaymentDue("1st of next month") // Mock for now
-                        .build()
-            ).collect(Collectors.toList());
+                        .nextPaymentDue("1st of next month")
+                        .isPaid(isPaid)
+                        .build();
+            }).collect(Collectors.toList());
 
             return ParentDto.ChildSummary.builder()
                     .id(child.getId())

@@ -43,5 +43,6 @@ public class ParentDto {
         private String subject;
         private double monthlyFees;
         private String nextPaymentDue;
+        private boolean isPaid;
     }
 }
