@@ -36,55 +36,35 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        log.info("🚀 Initializing Demo Data...");
+        log.info("🚀 Initializing System Data...");
 
-        // 0. Database Schema Fixes (Must run before inserts)
+        // 0. Database Schema & Cleanup
         try {
-            log.info("🛠️ Applying database schema fix for payments and users table...");
+            log.info("🛠️ Cleaning database and applying schema fixes...");
+            jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
+            jdbcTemplate.execute("DELETE FROM sessions");
+            jdbcTemplate.execute("DELETE FROM payments");
+            jdbcTemplate.execute("DELETE FROM wallets");
+            jdbcTemplate.execute("DELETE FROM session_feedbacks");
+            jdbcTemplate.execute("DELETE FROM users WHERE email != 'admin@tuitionhub.com'");
+            jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
+            
             jdbcTemplate.execute("ALTER TABLE payments MODIFY batch_id BIGINT NULL");
             jdbcTemplate.execute("ALTER TABLE users MODIFY COLUMN role VARCHAR(50)");
-            log.info("✅ Database schema fix applied.");
+            log.info("✅ Database cleaned and schema fix applied.");
         } catch (Exception e) {
-            log.warn("⚠️ Could not apply database fix: {}", e.getMessage());
+            log.warn("⚠️ Cleanup/Schema fix warning: {}", e.getMessage());
         }
 
-        // 1. Core Accounts
-        createIfNotExists("admin@tuitionhub.com", "Super Admin", Role.ADMIN, "admin123", "TUI-ADMIN", "INR", "9000000001");
-        createIfNotExists("super@tuitionhub.com", "Main Super Admin", Role.SUPER_ADMIN, "super123", "TUI-SUPER", "USD", "9000000002");
-        createIfNotExists("teacher@tuitionhub.com", "Dr. Amit Sharma", Role.TEACHER, "teacher123", "TUI-TEACH", "INR", "9000000003");
-        createIfNotExists("surajkannujiya517@gmail.com", "Suraj Kannujiya", Role.STUDENT, "suraj123", "TUI-SURAJ", "USD", "9000000004");
+        // 1. Core Admin Account Only
+        createIfNotExists("admin@tuitionhub.com", "System Admin", Role.ADMIN, "admin123", "TUI-ADMIN", "INR", "9000000001");
         
-        // Ensure parent exists and has correct role
-        createIfNotExists("parent@tuitionhub.com", "Rajesh Kannujiya", Role.PARENT, "parent123", "TUI-PARENT", "INR", "9000000005");
-
-        // Link Parent to Student
-        User parent = userRepository.findByEmail("parent@tuitionhub.com").orElse(null);
-        User student = userRepository.findByEmail("surajkannujiya517@gmail.com").orElse(null);
-        if (parent != null && student != null) {
-            student.setParent(parent);
-            userRepository.save(student);
-            log.info("👨‍👩‍👧‍👦 Linked Parent ({}) to Student ({})", parent.getEmail(), student.getEmail());
-        }
-
         // 2. Default Subjects
         if (subjectRepository.count() == 0) {
             seedSubjects();
         }
 
-        // 3. Demo Sessions
-        seedSessionsForUser("surajkannujiya517@gmail.com", "teacher@tuitionhub.com");
-
-        // 4. Maintenance: Ensure all users have referral codes
-        userRepository.findAll().forEach(user -> {
-            if (user.getReferralCode() == null || user.getReferralCode().isEmpty()) {
-                String code = "TUI-" + UUID.randomUUID().toString().substring(0, 5).toUpperCase();
-                user.setReferralCode(code);
-                userRepository.save(user);
-                log.info("🎁 Generated missing referral code for: {}", user.getEmail());
-            }
-        });
-
-        log.info("✅ Data Initialization Complete.");
+        log.info("✅ Data Initialization Complete. Database cleaned to 1 Admin.");
     }
 
     private void createIfNotExists(String email, String name, Role role, String password, String referral, String currency, String mobile) {
@@ -93,7 +73,6 @@ public class DataInitializer implements CommandLineRunner {
                 if (user.getRole() != role) {
                     user.setRole(role);
                     userRepository.save(user);
-                    log.info("🔄 Updated role for {} to {}", email, role);
                 }
             },
             () -> {
@@ -105,7 +84,7 @@ public class DataInitializer implements CommandLineRunner {
                         .build();
                 userRepository.save(user);
                 walletService.getOrCreateWallet(user.getId());
-                log.info("👤 Created User: {} with currency: {}", email, currency);
+                log.info("👤 Created Admin User: {}", email);
             }
         );
     }
@@ -118,43 +97,5 @@ public class DataInitializer implements CommandLineRunner {
                 Subject.builder().name("Biology").icon("🧬").build(),
                 Subject.builder().name("Computer Science").icon("💻").build()).forEach(subjectRepository::save);
         log.info("📚 Subjects seeded.");
-    }
-
-    private void seedSessionsForUser(String studentEmail, String teacherEmail) {
-        User student = userRepository.findByEmail(studentEmail).orElse(null);
-        User teacher = userRepository.findByEmail(teacherEmail).orElse(null);
-
-        if (student != null && teacher != null && sessionRepository.count() < 2) {
-            // Paid Upcoming Session
-            sessionRepository.save(Session.builder()
-                    .student(student).teacher(teacher)
-                    .startTime(LocalDateTime.now().plusHours(2))
-                    .endTime(LocalDateTime.now().plusHours(3))
-                    .amount(500.0).isPaid(true)
-                    .status(Session.SessionStatus.CONFIRMED).build());
-
-            // Completed Past Session
-            sessionRepository.save(Session.builder()
-                    .student(student).teacher(teacher)
-                    .startTime(LocalDateTime.now().minusDays(1))
-                    .endTime(LocalDateTime.now().minusDays(1).plusHours(1))
-                    .amount(400.0).isPaid(true)
-                    .status(Session.SessionStatus.COMPLETED).build());
-
-            log.info("📅 Demo sessions seeded for {}", studentEmail);
-        }
-        
-        // Seed Pending Payment for Parent test
-        if (paymentRepository.count() == 0) {
-            paymentRepository.save(Payment.builder()
-                    .student(student)
-                    .amount(1200.0)
-                    .currency("INR")
-                    .forMonth(java.time.LocalDate.now().withDayOfMonth(1))
-                    .status(Payment.PaymentStatus.PENDING)
-                    .transactionNote("Sample pending fee for Parent test")
-                    .build());
-            log.info("💰 Sample pending payment seeded for Parent test.");
-        }
     }
 }

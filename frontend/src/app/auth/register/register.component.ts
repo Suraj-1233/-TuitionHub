@@ -69,6 +69,10 @@ import { PublicService } from '../../shared/services/public.service';
               <span class="role-icon">👩‍🏫</span>
               <span class="role-label">Teacher</span>
             </button>
+            <button type="button" class="role-btn" [class.active]="formData.role === 'PARENT'" (click)="formData.role = 'PARENT'">
+              <span class="role-icon">👨‍👩‍👧‍👦</span>
+              <span class="role-label">Parent</span>
+            </button>
           </div>
 
           <div *ngIf="formData.role === 'TEACHER'" class="approval-notice mb-4">
