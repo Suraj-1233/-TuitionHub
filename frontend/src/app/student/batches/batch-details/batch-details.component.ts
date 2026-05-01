@@ -91,7 +91,7 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
         <!-- Assignments -->
         <div *ngIf="activeTab === 'assignments'" class="animate-slide">
            <h3 class="section-title">Homework & Assignments</h3>
-           <div *ngFor="let a of assignments" class="assignment-card glass mb-4">
+           <div *ngFor="let a of assignments" class="assignment-card mb-4">
               <div class="a-content">
                 <div class="a-info">
                   <h4 class="a-title">{{ a.title }}</h4>
@@ -136,25 +136,26 @@ import { LocalDatePipe } from '../../../shared/pipes/local-date.pipe';
     .info-row .label { font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; }
     .info-row .value { font-weight: 700; color: var(--text-primary); font-size: 0.9rem; }
 
-    .material-card { display: flex; align-items: center; gap: 1rem; background: white; padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1rem; transition: all 0.2s; }
-    .material-card:hover { transform: translateX(5px); border-color: var(--primary-color); box-shadow: var(--shadow-md); }
+    .material-card { display: flex; align-items: center; gap: 1rem; background: white; padding: 1rem; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 1rem; transition: all 0.2s; }
+    .material-card:hover { border-color: var(--primary-color); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.05); }
     .material-icon { font-size: 1.5rem; background: #F8FAFC; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
     .material-info { flex: 1; }
     .material-name { display: block; font-weight: 700; color: var(--text-primary); font-size: 0.9rem; }
     .material-date { font-size: 0.75rem; color: var(--text-secondary); }
 
-    .assignment-card { padding: 0.75rem 1.25rem; border-radius: 12px; transition: all 0.3s; }
-    .assignment-card:hover { border-color: var(--primary-color); transform: translateY(-2px); }
+    .assignment-card { background: white; padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid #E2E8F0; transition: all 0.2s; }
+    .assignment-card:hover { border-color: #CBD5E1; background: #F8FAFC; }
     .a-content { display: flex; justify-content: space-between; align-items: center; }
-    .a-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+    .a-title { font-size: 0.95rem; font-weight: 700; color: #1E293B; margin: 0; }
     .a-meta { display: flex; gap: 1.5rem; margin-top: 0.25rem; }
-    .a-meta span { font-size: 0.75rem; color: var(--text-secondary); }
+    .a-meta span { font-size: 0.75rem; color: #64748B; display: flex; align-items: center; gap: 0.4rem; }
     
     .submit-box { display: flex; gap: 0.5rem; align-items: center; }
-    .submit-box .form-control { width: 200px; height: 36px; font-size: 0.8rem; }
+    .submit-box .form-control { width: 220px; height: 34px; font-size: 0.75rem; border-radius: 6px; border: 1px solid #CBD5E1; }
+    .submit-box .form-control:focus { border-color: var(--primary-color); box-shadow: none; }
     
     .status-badge { padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; }
-    .status-badge.success { background: #DCFCE7; color: #16A34A; border: 1px solid #BBF7D0; }
+    .status-badge.success { background: #F0FDF4; color: #16A34A; border: 1px solid #DCFCE7; }
 
     .section-title { font-size: 1.1rem; font-weight: 800; color: #0F172A; margin: 2rem 0 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
     .empty-state { text-align: center; padding: 3rem; color: #94A3B8; font-style: italic; }
