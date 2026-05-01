@@ -155,56 +155,70 @@ import { Assignment, AssignmentService, Submission } from 'src/app/shared/servic
                 <div class="info-row"><span class="label">Student Timezone:</span><span class="value">{{ batch.students![0].timezone }}</span></div>
                 <p class="text-sm text-secondary">The student sees class times converted to their local timezone automatically.</p>
               </div>
-            </div>
-           </div>
-        </div>
-        <!-- Submissions Modal -->
+             <!-- Submissions Modal -->
         <div class="modal-overlay" *ngIf="showSubmissionsModal" (click)="showSubmissionsModal = false">
           <div class="modal-content submissions-modal animate-pop" (click)="$event.stopPropagation()">
             <div class="modal-header">
-              <h2 class="modal-title">Submissions: {{ selectedAssignmentForSub?.title }}</h2>
+              <div>
+                <h2 class="modal-title">Submissions: {{ selectedAssignmentForSub?.title }}</h2>
+                <p class="text-xs text-secondary mt-1">Review and grade your students' homework.</p>
+              </div>
               <button class="close-btn" (click)="showSubmissionsModal = false">✕</button>
             </div>
             
             <div class="submissions-list-container">
-              <div *ngIf="isSubmissionsLoading" class="p-8 text-center">Loading submissions...</div>
+              <div *ngIf="isSubmissionsLoading" class="p-8 text-center">
+                 <div class="spinner mx-auto mb-2"></div>
+                 <p class="text-secondary">Fetching submissions...</p>
+              </div>
               
               <div *ngIf="!isSubmissionsLoading && assignmentSubmissions.length === 0" class="empty-state">
+                <span class="text-3xl block mb-2">📥</span>
                 No submissions found for this assignment yet.
               </div>
 
-              <div class="submission-item" *ngFor="let sub of assignmentSubmissions">
+              <div class="submission-card" *ngFor="let sub of assignmentSubmissions">
                 <div class="sub-header">
                   <div class="sub-student">
-                    <div class="avatar-tiny">{{ sub.studentName?.charAt(0) || 'S' }}</div>
-                    <span>{{ sub.studentName || 'Unknown Student' }}</span>
+                    <div class="avatar-sm">{{ sub.studentName?.charAt(0) || 'S' }}</div>
+                    <div class="flex flex-col">
+                      <span class="font-bold text-slate-800">{{ sub.studentName || 'Unknown Student' }}</span>
+                      <span class="text-[10px] text-slate-400">Submitted on {{ sub.submittedAt | localDate }}</span>
+                    </div>
                   </div>
-                  <span class="sub-date">{{ sub.submittedAt | localDate }}</span>
                 </div>
                 
-                <div class="sub-content">
-                  <p class="text-sm mb-2"><strong>Content:</strong></p>
-                  <div class="content-box">
-                    <a *ngIf="sub.contentUrl?.startsWith('http')" [href]="sub.contentUrl" target="_blank" class="text-link">View Attached File 📎</a>
-                    <p *ngIf="!sub.contentUrl?.startsWith('http')" class="text-sm">{{ sub.contentUrl }}</p>
+                <div class="sub-body">
+                  <!-- PDF View Card -->
+                  <div class="homework-file-card" *ngIf="sub.contentUrl">
+                    <div class="file-icon">📄</div>
+                    <div class="file-info">
+                      <span class="file-label">Homework Document</span>
+                      <span class="file-type">PDF / File Submission</span>
+                    </div>
+                    <a [href]="getFileUrl(sub.contentUrl)" target="_blank" class="btn-view-file">
+                      View File 👁️
+                    </a>
+                  </div>
+                  
+                  <div *ngIf="!sub.contentUrl" class="p-4 bg-slate-50 rounded-lg text-xs text-slate-400 italic text-center">
+                    No file attached to this submission.
                   </div>
                 </div>
 
-                <div class="grading-section mt-4">
-                  <div class="grid grid-cols-2 gap-3 mb-2">
-                    <div class="form-group mb-0">
-                      <label class="form-label text-xs">Marks (Max: {{ selectedAssignmentForSub?.maxMarks }})</label>
-                      <input type="number" class="form-control form-control-sm" [(ngModel)]="sub.marksObtained" [max]="selectedAssignmentForSub?.maxMarks || 100">
+                <div class="grading-panel">
+                  <div class="grade-inputs">
+                    <div class="input-group">
+                      <label>Marks (Max: {{ selectedAssignmentForSub?.maxMarks }})</label>
+                      <input type="number" class="grade-input" [(ngModel)]="sub.marksObtained" [max]="selectedAssignmentForSub?.maxMarks || 100">
                     </div>
-                    <div class="flex items-end">
-                      <button class="btn btn-primary btn-sm w-full" (click)="saveGrade(sub)">
-                        {{ sub.id ? 'Update Grade' : 'Save Grade' }}
-                      </button>
-                    </div>
+                    <button class="btn-save-grade" (click)="saveGrade(sub)">
+                      Save Grade & Feedback
+                    </button>
                   </div>
-                  <div class="form-group mb-0">
-                    <label class="form-label text-xs">Teacher Feedback</label>
-                    <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="sub.feedback" placeholder="Great work! Keep it up."></textarea>
+                  <div class="input-group mt-3">
+                    <label>Teacher's Feedback</label>
+                    <textarea class="feedback-input" rows="2" [(ngModel)]="sub.feedback" placeholder="e.g. Excellent presentation! Keep it up."></textarea>
                   </div>
                 </div>
               </div>
@@ -247,41 +261,44 @@ import { Assignment, AssignmentService, Submission } from 'src/app/shared/servic
     .info-row { display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem; }
     .info-row .label { font-weight: 600; color: var(--text-secondary); }
     .info-row .value { font-weight: 700; color: var(--text-primary); }
-    .info-row .value { font-weight: 700; color: var(--text-primary); }
     .empty-state { text-align: center; padding: 3rem; color: var(--text-secondary); font-style: italic; }
 
-    
-    .btn-success { background: #22C55E; color: white; border: none; }
-    .btn-danger { background: #EF4444; color: white; border: none; }
-    .btn-success:hover { background: #16A34A; }
-    .btn-danger:hover { background: #DC2626; }
-    .btn-sm { padding: 0.25rem 0.75rem; font-size: 0.8rem; border-radius: 6px; cursor: pointer; }
-    
-    .border-b { border-bottom-width: 1px; }
-    .border-gray-100 { border-color: #F1F5F9; }
-    .border-gray-50 { border-color: #F8FAFC; }
-    .bg-blue-50 { background-color: #EFF6FF; }
-    .text-blue-700 { color: #1D4ED8; }
-    .border-blue-100 { border-color: #DBEAFE; }
+    /* Submissions Modal Redesign */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1100; }
+    .submissions-modal { width: 700px; max-height: 90vh; background: white; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+    .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid #F1F5F9; display: flex; justify-content: space-between; align-items: center; background: #FFF; }
+    .modal-title { font-size: 1.4rem; font-weight: 800; color: #0F172A; }
+    .close-btn { background: #F1F5F9; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; color: #64748B; font-weight: bold; transition: all 0.2s; }
+    .close-btn:hover { background: #FEE2E2; color: #EF4444; }
 
-    /* Submissions Modal Styles */
-    .submissions-modal { width: 650px; max-height: 85vh; display: flex; flex-direction: column; padding: 0; }
-    .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-    .modal-title { font-size: 1.25rem; font-weight: 800; margin: 0; }
-    .close-btn { background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-secondary); }
+    .submissions-list-container { flex: 1; overflow-y: auto; padding: 1.5rem 2rem; background: #F8FAFC; }
+    .submission-card { background: white; border-radius: 20px; border: 1px solid #E2E8F0; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     
-    .submissions-list-container { flex: 1; overflow-y: auto; padding: 1.5rem; }
-    .submission-item { background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; }
-    .sub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .sub-student { display: flex; align-items: center; gap: 0.75rem; font-weight: 700; color: var(--text-primary); }
-    .avatar-tiny { width: 30px; height: 30px; background: #6366F1; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
-    .sub-date { font-size: 0.7rem; color: var(--text-secondary); }
+    .sub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+    .sub-student { display: flex; align-items: center; gap: 1rem; }
+    .avatar-sm { width: 40px; height: 40px; background: linear-gradient(135deg, #6366F1 0%, #4338CA 100%); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; }
     
-    .content-box { background: white; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color); max-height: 200px; overflow-y: auto; }
-    .form-control-sm { padding: 0.5rem; font-size: 0.875rem; }
+    .homework-file-card { background: #EEF2FF; border: 1px solid #C7D2FE; border-radius: 12px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; }
+    .file-icon { font-size: 1.75rem; }
+    .file-info { flex: 1; display: flex; flex-direction: column; }
+    .file-label { font-weight: 800; color: #3730A3; font-size: 0.9rem; }
+    .file-type { font-size: 0.7rem; color: #6366F1; font-weight: 600; }
+    .btn-view-file { background: white; color: #4338CA; border: 1px solid #C7D2FE; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.8rem; text-decoration: none; transition: all 0.2s; }
+    .btn-view-file:hover { background: #4338CA; color: white; transform: translateY(-1px); }
+
+    .grading-panel { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed #E2E8F0; }
+    .grade-inputs { display: flex; gap: 1rem; align-items: flex-end; }
+    .input-group { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; }
+    .input-group label { font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.025em; }
     
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1100; }
-    .modal-content { background: white; border-radius: 24px; box-shadow: var(--shadow-2xl); position: relative; }
+    .grade-input { background: #F8FAFC; border: 1px solid #E2E8F0; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 700; color: #0F172A; }
+    .feedback-input { background: #F8FAFC; border: 1px solid #E2E8F0; padding: 0.75rem 1rem; border-radius: 8px; width: 100%; resize: none; font-size: 0.85rem; }
+    
+    .btn-save-grade { background: #0F172A; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+    .btn-save-grade:hover { background: #334155; transform: translateY(-1px); }
+
+    .spinner { width: 30px; height: 30px; border: 3px solid #E2E8F0; border-top-color: #6366F1; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   `]
 })
 export class TeacherBatchDetailsComponent implements OnInit {
